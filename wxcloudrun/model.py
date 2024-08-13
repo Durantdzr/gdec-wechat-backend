@@ -43,7 +43,7 @@ class ConferenceSchedule(db.Model):
     is_deleted = db.Column('is_deleted', db.INT, default=0)
 
     def get_live(self):
-        status_ENUM = {1: '即将直播', 2: '正在直播', 3: '会议结束'}
+        status_ENUM = {1: '即将直播', 2: '正在直播', 3: '查看回放'}
         return {'id': self.id, 'title': self.title, 'location': self.location, 'live_time': self.get_live_time(),
                 'status': status_ENUM.get(self.live_status), 'live_url': self.live_url, 'record_url': self.record_url}
 
@@ -52,12 +52,13 @@ class ConferenceSchedule(db.Model):
             self.conference_date.weekday()) + ')' + self.begin_time + '~' + self.end_time
 
     def get_schedule(self):
+        status_ENUM = {0: '我要报名', 1: '正在直播', 2: '会议结束'}
         if self.guest is None:
             guest_id=[]
         else:
             guest_id=self.guest.split(',')
         return {'id': self.id, 'title': self.title, 'location': self.location,
-                'conference_date': self.conference_date.strftime('%m-%d'), 'status': self.status, 'guest_id': guest_id}
+                'conference_date': self.conference_date.strftime('%m-%d'), 'status': status_ENUM.get(self.status), 'guest_id': guest_id}
 
 class User(db.Model):
     # 设置结构体表格名称
