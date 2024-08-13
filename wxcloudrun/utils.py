@@ -16,7 +16,7 @@ def batchdownloadfile(openid, file):
         "env": config.ENV,
         "file_list": [
             {
-                "fileid": 'cloud://{}.{}@{}/'.format(config.ENV, config.COS_BUCKET, file),
+                "fileid": 'cloud://{}.{}/{}'.format(config.ENV, config.COS_BUCKET, file),
                 "max_age": 7200
             }
         ]
