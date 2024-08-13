@@ -9,6 +9,7 @@
 
 import requests
 import config
+import imghdr
 
 
 def batchdownloadfile(openid, file):
@@ -26,3 +27,22 @@ def batchdownloadfile(openid, file):
                            json=data)
     result=result.json()
     return result.get('file_list')[0].get('download_url')
+
+def uploadfile(openid, file):
+    data = {
+        "env": config.ENV,
+        "path": file
+    }
+
+    result = requests.post('http://api.weixin.qq.com/tcb/uploadfile', params={"openid": openid},
+                           json=data)
+    result=result.json()
+
+
+def valid_image(stream):
+    header = stream.read(512)
+    stream.seek(0)
+    format = imghdr.what(None, header)
+    if not format:
+        return None
+    return '.' + (format if format != 'jpeg' else 'jpg')

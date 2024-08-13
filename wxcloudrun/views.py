@@ -1,10 +1,12 @@
 from datetime import datetime
 from flask import render_template, request
 from run import app
-# from wxcloudrun.dao import delete_counterbyid, query_counterbyid, insert_counter, update_counterbyid
+from wxcloudrun.dao import insert_user
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule,User
 from wxcloudrun.response import make_succ_empty_response, make_succ_response, make_err_response
-from wxcloudrun.utils import batchdownloadfile
+from wxcloudrun.utils import batchdownloadfile,uploadfile,valid_image
+from werkzeug.utils import secure_filename
+import imghdr
 import config
 import requests
 @app.route('/api/conference/get_information_list', methods=['GET'])
@@ -71,3 +73,45 @@ def get_user_phone():
     result = requests.post('http://api.weixin.qq.com/wxa/getopendata', params={"openid": wxOpenid},
                            json={'cloudid_list': [params.get("cloudid")]})
     return make_succ_response(result.json())
+
+@app.route('/api/user/upload_user_info', methods=['POST'])
+def upload_user_info():
+    """
+    :return:提交用户审核
+    """
+    # 获取请求体参数
+    params = request.get_json()
+    user=User.query.filter(User.openid==request.headers['X-WX-OPENID'],User.is_deleted==0).first()
+    if user is  None:
+        user = User()
+        user.openid = request.headers['X-WX-OPENID']
+    user.name = params.get("name")
+    user.phone= params.get("phone")
+    user.code= params.get("code")
+    user.company = params.get("company")
+    user.title = params.get("title")
+    user.type = params.get("type")
+    user.socail = params.get("socail",0)
+    insert_user(user)
+    return make_succ_response(user.id)
+
+@app.route('/api/user/upload_user_img', methods=['POST'])
+def upload_user_img():
+    """
+    :return:上传用户头像
+    """
+    # 获取请求体参数
+    user = User.query.filter(User.openid == request.headers['X-WX-OPENID'], User.is_deleted == 0).first()
+    if user is None:
+        user = User()
+        user.openid = request.headers['X-WX-OPENID']
+    file = request.files['file']
+    if file:  # 这里可以加入文件类型判断等逻辑
+        format=valid_image(file.stream)
+        file.save('guest/'+request.headers['X-WX-OPENID']+format)
+        uploadfile(request.headers['X-WX-OPENID'],'guest/'+request.headers['X-WX-OPENID']+format)
+        user.img_url='guest/'+request.headers['X-WX-OPENID']+format
+        insert_user(user)
+        return make_succ_response(user.id)
+    else:
+        return make_err_response('请上传文件')
