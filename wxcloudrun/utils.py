@@ -25,4 +25,4 @@ def batchdownloadfile(openid, file):
     result = requests.post('http://api.weixin.qq.com/tcb/batchdownloadfile', params={"openid": openid},
                            json=data)
     result=result.json()
-    return result.get('file_list',[])[0].get('download_url')
+    return result.get('file_list')[0].get('download_url')

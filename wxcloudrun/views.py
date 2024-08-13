@@ -2,10 +2,10 @@ from datetime import datetime
 from flask import render_template, request
 from run import app
 # from wxcloudrun.dao import delete_counterbyid, query_counterbyid, insert_counter, update_counterbyid
-from wxcloudrun.model import ConferenceInfo, ConferenceSchedule
+from wxcloudrun.model import ConferenceInfo, ConferenceSchedule,User
 from wxcloudrun.response import make_succ_empty_response, make_succ_response, make_err_response
 from wxcloudrun.utils import batchdownloadfile
-
+import config
 @app.route('/api/conference/get_information_list', methods=['GET'])
 def get_information_list():
     """
@@ -53,6 +53,7 @@ def get_hall_schedule():
         schedule['guest_img']=[]
         if len(schedule.get('guest_id',[]))>0:
             for guest in schedule.get('guest_id',[]):
-                schedule['guest_img'].append(batchdownloadfile(wxOpenid,'guest/1.png'))
+                user=User.query.filter_by(id=guest).first()
+                schedule['guest_img'].append('https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, user.img_url))
         data.append(schedule)
     return make_succ_response(data)
