@@ -6,6 +6,7 @@ from wxcloudrun.model import ConferenceInfo, ConferenceSchedule,User
 from wxcloudrun.response import make_succ_empty_response, make_succ_response, make_err_response
 from wxcloudrun.utils import batchdownloadfile
 import config
+import requests
 @app.route('/api/conference/get_information_list', methods=['GET'])
 def get_information_list():
     """
@@ -57,3 +58,16 @@ def get_hall_schedule():
                 schedule['guest_img'].append('https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, user.img_url))
         data.append(schedule)
     return make_succ_response(data)
+
+@app.route('/api/get_user_phone', methods=['POST'])
+def get_user_phone():
+    """
+    :return:获取手机号
+    """
+
+    # 获取请求体参数
+    wxOpenid = request.headers['X-WX-OPENID']
+    params = request.get_json()
+    result = requests.post('http://api.weixin.qq.com/wxa/getopendata', params={"openid": wxOpenid},
+                           json={'cloudid_list': [params.get("cloudid")]})
+    return make_succ_response(result.json())
