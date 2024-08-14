@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from wxcloudrun import db
+import config
 
 
 # 计数表
@@ -54,11 +55,22 @@ class ConferenceSchedule(db.Model):
     def get_schedule(self):
         status_ENUM = {0: '我要报名', 1: '正在直播', 2: '会议结束'}
         if self.guest is None:
-            guest_id=[]
+            guest_id = []
         else:
-            guest_id=self.guest.split(',')
+            guest_id = self.guest.split(',')
         return {'id': self.id, 'title': self.title, 'location': self.location,
-                'conference_date': self.conference_date.strftime('%m-%d'), 'status': status_ENUM.get(self.status), 'guest_id': guest_id}
+                'conference_date': self.conference_date.strftime('%m-%d'), 'status': status_ENUM.get(self.status),
+                'guest_id': guest_id}
+
+
+class ConferenceHall(db.Model):
+    # 设置结构体表格名称
+    __tablename__ = 'conference_hall'
+
+    # 设定结构体对应表格的字段
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column('name', db.String(50), nullable=True)
+
 
 class User(db.Model):
     # 设置结构体表格名称
@@ -75,4 +87,26 @@ class User(db.Model):
     socail = db.Column('socail', db.INT, default=0)
     is_deleted = db.Column('is_deleted', db.INT, default=0)
     img_url = db.Column('img_url', db.TEXT)
+    status = db.Column('status', db.INT, default=0)
 
+    def get_status(self):
+        status_ENUM = {0: '审核未通过', 1: '审核已通过'}
+        return status_ENUM.get(self.status, '审核未通过')
+
+    def get(self):
+        return {"id":self.id,"name": self.name, "company": self.company, "title": self.title,
+                "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url)}
+
+
+class RelationFriend(db.Model):
+    # 设置结构体表格名称
+    __tablename__ = 'r_user_friend'
+    # 设定结构体对应表格的字段
+    id = db.Column(db.Integer, primary_key=True)
+    operater_id = db.Column('operater_id', db.Integer)
+    inviter_id = db.Column('inviter_id', db.Integer)
+    meeting_date = db.Column('meeting_date', db.TIMESTAMP, nullable=True)
+    create_time = db.Column('create_time', db.TIMESTAMP, nullable=True,default=datetime.now)
+    visit_info = db.Column('visit_info', db.String(100), nullable=True)
+    is_deleted = db.Column('is_deleted', db.INT, default=0)
+    status = db.Column('status', db.INT, default=0)
