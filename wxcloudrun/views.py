@@ -1,16 +1,18 @@
 from datetime import datetime
-from flask import render_template, request
+from flask import render_template, request, jsonify
 from run import app
 from wxcloudrun.dao import insert_user, search_friends_byopenid, insert_realtion_friend, get_friend_list, \
     save_realtion_friendbyid,is_invited_user
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, RelationFriend
 from wxcloudrun.response import make_succ_empty_response, make_succ_response, make_err_response
-from wxcloudrun.utils import batchdownloadfile, uploadfile, valid_image
+from wxcloudrun.utils import batchdownloadfile, uploadfile, valid_image,vaild_password
 from werkzeug.utils import secure_filename
 import imghdr
 import config
 import requests
-
+import jwt
+from datetime import timedelta
+from flask_jwt_extended import create_access_token, create_refresh_token
 
 @app.route('/api/conference/get_information_list', methods=['GET'])
 def get_information_list():
@@ -200,3 +202,16 @@ def save_invite():
         return make_succ_response(save_realtion_friendbyid(int(relation_id)))
     else:
         return make_err_response('操作者不是接受邀请用户。')
+
+@app.route('/api/manage/login', methods=['POST'])
+def login():
+    params = request.get_json()
+    username = params.get('username')
+    pwdhash = params.get('pwdhash')
+    user = User.query.filter_by(name=username,type='管理员').first()
+    if not user:
+        return make_err_response('不存在该用户')
+    if pwdhash != vaild_password(user.password):
+        return make_err_response('密码错误')
+    access_token = create_access_token(identity=username,expires_delta=timedelta(days=1))
+    return make_succ_response({"access_token":access_token})

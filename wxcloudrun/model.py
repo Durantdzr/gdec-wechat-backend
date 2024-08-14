@@ -88,13 +88,14 @@ class User(db.Model):
     is_deleted = db.Column('is_deleted', db.INT, default=0)
     img_url = db.Column('img_url', db.TEXT)
     status = db.Column('status', db.INT, default=0)
+    password = db.Column('pwd', db.String(50), nullable=True)
 
     def get_status(self):
         status_ENUM = {0: '审核未通过', 1: '审核已通过'}
         return status_ENUM.get(self.status, '审核未通过')
 
     def get(self):
-        return {"id":self.id,"name": self.name, "company": self.company, "title": self.title,
+        return {"id": self.id, "name": self.name, "company": self.company, "title": self.title,
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url)}
 
 
@@ -106,7 +107,7 @@ class RelationFriend(db.Model):
     operater_id = db.Column('operater_id', db.Integer)
     inviter_id = db.Column('inviter_id', db.Integer)
     meeting_date = db.Column('meeting_date', db.TIMESTAMP, nullable=True)
-    create_time = db.Column('create_time', db.TIMESTAMP, nullable=True,default=datetime.now)
+    create_time = db.Column('create_time', db.TIMESTAMP, nullable=True, default=datetime.now)
     visit_info = db.Column('visit_info', db.String(100), nullable=True)
     is_deleted = db.Column('is_deleted', db.INT, default=0)
     status = db.Column('status', db.INT, default=0)

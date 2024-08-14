@@ -10,6 +10,7 @@
 import requests
 import config
 import imghdr
+import hashlib
 
 
 def batchdownloadfile(openid, file):
@@ -25,8 +26,9 @@ def batchdownloadfile(openid, file):
 
     result = requests.post('http://api.weixin.qq.com/tcb/batchdownloadfile', params={"openid": openid},
                            json=data)
-    result=result.json()
+    result = result.json()
     return result.get('file_list')[0].get('download_url')
+
 
 def uploadfile(openid, file):
     data = {
@@ -36,7 +38,7 @@ def uploadfile(openid, file):
 
     result = requests.post('http://api.weixin.qq.com/tcb/uploadfile', params={"openid": openid},
                            json=data)
-    result=result.json()
+    result = result.json()
 
 
 def valid_image(stream):
@@ -46,3 +48,6 @@ def valid_image(stream):
     if not format:
         return None
     return '.' + (format if format != 'jpeg' else 'jpg')
+
+def vaild_password(password):
+    return hashlib.md5(password.encode(encoding='UTF-8')).hexdigest()
