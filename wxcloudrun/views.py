@@ -1,5 +1,4 @@
-from datetime import datetime
-from flask import render_template, request, jsonify
+from flask import render_template, request
 from run import app
 from wxcloudrun.dao import insert_user, search_friends_byopenid, insert_realtion_friend, get_friend_list, \
     save_realtion_friendbyid,is_invited_user
@@ -12,7 +11,7 @@ import config
 import requests
 import jwt
 from datetime import timedelta
-from flask_jwt_extended import create_access_token, create_refresh_token
+from flask_jwt_extended import create_access_token, get_jwt_identity,jwt_required
 
 @app.route('/api/conference/get_information_list', methods=['GET'])
 def get_information_list():
@@ -214,4 +213,8 @@ def login():
     if pwdhash != vaild_password(user.password):
         return make_err_response('密码错误')
     access_token = create_access_token(identity=username,expires_delta=timedelta(days=1))
-    return make_succ_response({"access_token":access_token})
+    return make_succ_response({"access_token":access_token},code=200)
+
+@app.route('/api/manage/logout', methods=['POST'])
+def logout():
+    return make_succ_response('用户已登出',code=200)

@@ -4,12 +4,12 @@ from flask import Response
 
 
 def make_succ_empty_response():
-    data = json.dumps({'code': 200, 'data': {}})
+    data = json.dumps({'code': 0, 'data': {}})
     return Response(data, mimetype='application/json')
 
 
-def make_succ_response(data):
-    data = json.dumps({'code': 200, 'data': data})
+def make_succ_response(data,code=0):
+    data = json.dumps({'code': code, 'data': data})
     return Response(data, mimetype='application/json')
 
 

@@ -23,3 +23,5 @@ from wxcloudrun import views
 
 # 加载配置
 app.config.from_object('config')
+
+
