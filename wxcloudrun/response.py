@@ -1,18 +1,19 @@
 import json
 
 from flask import Response
-from wxcloudrun.utils import uploadfile
+
+
 def make_succ_empty_response():
     data = json.dumps({'code': 0, 'data': {}})
     return Response(data, mimetype='application/json')
 
 
-def make_succ_response(data,code=0):
+def make_succ_response(data, code=0):
     data = json.dumps({'code': code, 'data': data})
     return Response(data, mimetype='application/json')
 
 
-def make_succ_page_response(data,code=0,total=0):
+def make_succ_page_response(data, code=0, total=0):
     data = json.dumps({'code': code, 'data': data, 'total': total})
     return Response(data, mimetype='application/json')
 

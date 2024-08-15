@@ -13,6 +13,7 @@ import imghdr
 import hashlib
 import json
 
+
 def batchdownloadfile(openid, filelist):
     data = {
         "env": config.ENV,
@@ -30,7 +31,7 @@ def batchdownloadfile(openid, filelist):
     return result
 
 
-def uploadfile(openid, file):
+def uploadfile(file, openid='o1gww5Zct8sqPnwbev1uw3PoDgvg'):
     data = {
         "env": config.ENV,
         "path": file
@@ -39,9 +40,9 @@ def uploadfile(openid, file):
     result = requests.post('http://api.weixin.qq.com/tcb/uploadfile', params={"openid": openid},
                            json=data)
     result = result.json()
-    result2=requests.post(result.get('url'),
-                  data={"Signature": result.get('authorization'), "x-cos-security-token": result.get('token'),
-                        "x-cos-meta-fileid": result.get('cos_file_id'),"key":file}, files=[
+    result2 = requests.post(result.get('url'),
+                            data={"Signature": result.get('authorization'), "x-cos-security-token": result.get('token'),
+                                  "x-cos-meta-fileid": result.get('cos_file_id'), "key": file}, files=[
             ('file', (file, open(file, 'rb'), 'application/json'))])
     return result
 
@@ -59,9 +60,8 @@ def vaild_password(password):
     return hashlib.md5(password.encode(encoding='UTF-8')).hexdigest()
 
 
-
-def uploadwebfile(data,openid,file):
+def uploadwebfile(data, file, openid='o1gww5Zct8sqPnwbev1uw3PoDgvg'):
     data = {'code': 0, 'data': data}
     with open(file, 'w') as f:
         json.dump(data, f)
-    uploadfile(openid,file)
+    uploadfile(openid, file)
