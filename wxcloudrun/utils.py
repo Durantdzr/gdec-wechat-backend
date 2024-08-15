@@ -43,7 +43,7 @@ def uploadfile(openid, file):
                   data={"Signature": result.get('authorization'), "x-cos-security-token": result.get('token'),
                         "x-cos-meta-fileid": result.get('cos_file_id'),"key":file}, files=[
             ('file', (file, open(file, 'rb'), 'application/json'))])
-    return [result,result2.json()]
+    return result
 
 
 def valid_image(stream):

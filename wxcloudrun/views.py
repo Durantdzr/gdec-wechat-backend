@@ -206,7 +206,7 @@ def get_guest_list():
     """
     # 获取请求体参数
     guests=User.query.filter_by(type='嘉宾').all()
-    return make_web_succ_response([guest.get() for guest in guests])
+    return make_web_succ_response([guest.get() for guest in guests],openid='1111',web_file='get_guest_list.json')
 
 @app.route('/api/uploadfile/json', methods=['POST'])
 def uploadfile_json():
@@ -218,7 +218,7 @@ def uploadfile_json():
     data = request.get_json()
     with open('data.json', 'w') as f:
         json.dump(data, f)
-    return make_web_succ_response(uploadfile(wxopenid,'data.json'))
+    return make_succ_response(uploadfile(wxopenid,'data.json'))
 
 
 @app.route('/api/downloadfile/json', methods=['GET'])
@@ -229,4 +229,4 @@ def downloadfile_json():
     # 获取请求体参数
     wxopenid = request.headers['X-WX-OPENID']
     cloudid = request.args.get('cloudid', "")
-    return make_web_succ_response(batchdownloadfile(wxopenid,[cloudid]))
+    return make_succ_response(batchdownloadfile(wxopenid,[cloudid]))
