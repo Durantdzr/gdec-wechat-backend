@@ -219,3 +219,14 @@ def uploadfile_json():
     with open('data.json', 'w') as f:
         json.dump(data, f)
     return make_web_succ_response(uploadfile(wxopenid,'data.json'))
+
+
+@app.route('/api/uploadfile/json', methods=['GET'])
+def uploadfile_json():
+    """
+    :return:获取嘉宾列表
+    """
+    # 获取请求体参数
+    wxopenid = request.headers['X-WX-OPENID']
+    cloudid = request.args.get('cloudid', "")
+    return make_web_succ_response(batchdownloadfile(wxopenid,[cloudid]))

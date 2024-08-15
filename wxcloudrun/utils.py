@@ -13,21 +13,21 @@ import imghdr
 import hashlib
 
 
-def batchdownloadfile(openid, file):
+def batchdownloadfile(openid, filelist):
     data = {
         "env": config.ENV,
         "file_list": [
             {
-                "fileid": 'cloud://{}.{}/{}'.format(config.ENV, config.COS_BUCKET, file),
+                "fileid": file,
                 "max_age": 7200
-            }
+            } for file in filelist
         ]
     }
 
     result = requests.post('http://api.weixin.qq.com/tcb/batchdownloadfile', params={"openid": openid},
                            json=data)
     result = result.json()
-    return result.get('file_list')[0].get('download_url')
+    return result
 
 
 def uploadfile(openid, file):
