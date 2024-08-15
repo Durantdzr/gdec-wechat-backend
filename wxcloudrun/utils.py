@@ -61,7 +61,7 @@ def vaild_password(password):
 
 
 def uploadwebfile(data,openid,file):
-    data = json.dumps({'code': 0, 'data': data})
+    data = {'code': 0, 'data': data}
     with open(file, 'w') as f:
         json.dump(data, f)
     uploadfile(openid,file)
