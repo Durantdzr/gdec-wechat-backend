@@ -108,6 +108,6 @@ def update_user_statusbyid(userlist,status):
         return None
 
 def get_guests_list():
-    guests = User.query.filter_by(type='嘉宾').all()
+    guests = User.query.filter(User.type=='嘉宾',User.is_deleted==0).all()
     data = [guest.get_guest() for guest in guests]
     return data

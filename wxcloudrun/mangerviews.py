@@ -90,7 +90,7 @@ def add_guest():
     user.name = params.get('name')
     user.company = params.get('company')
     user.title = params.get('title')
-    user.info = params.get('info')
+    user.guest_info = params.get('info')
     user.img_url = params.get('cdn_param')
     user.type = '嘉宾'
     user.status = 2
