@@ -75,4 +75,4 @@ def review_register():
         update_user_statusbyid(userlist, 1)
     else:
         return make_err_response('无该操作方法')
-    return make_succ_response('操作成功')
+    return make_succ_response('操作成功',code=200)
