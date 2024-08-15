@@ -205,8 +205,9 @@ def get_guest_list():
     :return:获取嘉宾列表
     """
     # 获取请求体参数
+    wxopenid = request.headers['X-WX-OPENID']
     guests=User.query.filter_by(type='嘉宾').all()
-    return make_web_succ_response([guest.get() for guest in guests],openid='1111',web_file='get_guest_list.json')
+    return make_web_succ_response([guest.get() for guest in guests],openid=wxopenid,web_file='get_guest_list.json')
 
 @app.route('/api/uploadfile/json', methods=['POST'])
 def uploadfile_json():
