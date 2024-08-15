@@ -99,6 +99,39 @@ def add_guest():
     uploadwebfile(data, file='get_guest_list.json')
     return make_succ_response(user.id, code=200)
 
+@app.route('/api/manage/edit_guest', methods=['post'])
+@jwt_required()
+def edit_guest():
+    """
+        :return:编辑嘉宾用户
+        """
+    operator = get_jwt_identity()
+    params = request.get_json()
+    user = User.query.filter_by(id=params.get('id')).first()
+    user.name = params.get('name')
+    user.company = params.get('company')
+    user.title = params.get('title')
+    user.guest_info = params.get('info')
+    user.img_url = params.get('cdn_param')
+    insert_user(user)
+    data = get_guests_list()
+    uploadwebfile(data, file='get_guest_list.json')
+    return make_succ_response(user.id, code=200)
+
+@app.route('/api/manage/delete_guest', methods=['post'])
+@jwt_required()
+def delete_guest():
+    """
+        :return:编辑嘉宾用户
+        """
+    operator = get_jwt_identity()
+    params = request.get_json()
+    user = User.query.filter_by(id=params.get('id')).first()
+    user.is_deleted = 1
+    insert_user(user)
+    data = get_guests_list()
+    uploadwebfile(data, file='get_guest_list.json')
+    return make_succ_response(user.id, code=200)
 
 @app.route('/api/manage/upload_img', methods=['post'])
 @jwt_required()

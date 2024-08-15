@@ -105,7 +105,7 @@ class User(db.Model):
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url)}
     def get_guest(self):
         return {"id": self.id, "name": self.name, "company": self.company, "title": self.title,"info":self.guest_info,
-                "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url)}
+                "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url),'cdn_param':self.img_url}
 
 
 class RelationFriend(db.Model):
