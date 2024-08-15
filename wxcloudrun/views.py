@@ -3,12 +3,13 @@ from run import app
 from wxcloudrun.dao import insert_user, search_friends_byopenid, insert_realtion_friend, get_friend_list, \
     save_realtion_friendbyid, is_invited_user, update_user_statusbyid
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, RelationFriend
-from wxcloudrun.response import make_web_succ_response, make_succ_response, make_err_response
-from wxcloudrun.utils import batchdownloadfile, uploadfile, valid_image
+from wxcloudrun.response import make_succ_response, make_err_response
+from wxcloudrun.utils import batchdownloadfile, uploadfile, valid_image, uploadwebfile
 import imghdr
 import config
 import requests
 import json
+
 
 @app.route('/api/conference/get_information_list', methods=['GET'])
 def get_information_list():
@@ -199,6 +200,7 @@ def save_invite():
     else:
         return make_err_response('操作者不是接受邀请用户。')
 
+
 @app.route('/api/conference/get_guest_list', methods=['GET'])
 def get_guest_list():
     """
@@ -206,8 +208,11 @@ def get_guest_list():
     """
     # 获取请求体参数
     wxopenid = request.headers['X-WX-OPENID']
-    guests=User.query.filter_by(type='嘉宾').all()
-    return make_web_succ_response([guest.get() for guest in guests],openid=wxopenid,web_file='get_guest_list.json')
+    guests = User.query.filter_by(type='嘉宾').all()
+    data = [guest.get() for guest in guests]
+    uploadwebfile(data, openid=wxopenid, file='get_guest_list.json')
+    return make_succ_response(data)
+
 
 @app.route('/api/uploadfile/json', methods=['POST'])
 def uploadfile_json():
@@ -219,7 +224,7 @@ def uploadfile_json():
     data = request.get_json()
     with open('data.json', 'w') as f:
         json.dump(data, f)
-    return make_succ_response(uploadfile(wxopenid,'data.json'))
+    return make_succ_response(uploadfile(wxopenid, 'data.json'))
 
 
 @app.route('/api/downloadfile/json', methods=['GET'])
@@ -230,4 +235,4 @@ def downloadfile_json():
     # 获取请求体参数
     wxopenid = request.headers['X-WX-OPENID']
     cloudid = request.args.get('cloudid', "")
-    return make_succ_response(batchdownloadfile(wxopenid,[cloudid]))
+    return make_succ_response(batchdownloadfile(wxopenid, [cloudid]))

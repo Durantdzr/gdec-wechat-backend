@@ -11,7 +11,7 @@ import requests
 import config
 import imghdr
 import hashlib
-
+import json
 
 def batchdownloadfile(openid, filelist):
     data = {
@@ -57,3 +57,11 @@ def valid_image(stream):
 
 def vaild_password(password):
     return hashlib.md5(password.encode(encoding='UTF-8')).hexdigest()
+
+
+
+def uploadwebfile(data,openid,file):
+    data = json.dumps({'code': 0, 'data': data})
+    with open(file, 'w') as f:
+        json.dump(data, f)
+    uploadfile(openid,file)
