@@ -39,7 +39,11 @@ def uploadfile(openid, file):
     result = requests.post('http://api.weixin.qq.com/tcb/uploadfile', params={"openid": openid},
                            json=data)
     result = result.json()
-    return result
+    result2=requests.post(result.get('url'),
+                  data={"Signature": result.get('authorization'), "x-cos-security-token": result.get('token'),
+                        "x-cos-meta-fileid": result.get('cos_file_id'),"key":file}, files=[
+            ('file', (file, open(file, 'rb'), 'application/json'))])
+    return [result,result2.json()]
 
 
 def valid_image(stream):
@@ -49,6 +53,7 @@ def valid_image(stream):
     if not format:
         return None
     return '.' + (format if format != 'jpeg' else 'jpg')
+
 
 def vaild_password(password):
     return hashlib.md5(password.encode(encoding='UTF-8')).hexdigest()
