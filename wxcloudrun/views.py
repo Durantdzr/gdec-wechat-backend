@@ -238,7 +238,7 @@ def get_register_list():
     page_size = request.args.get('page_size', default=10, type=int)
     name=request.args.get('name', default='', type=str)
     users=User.query.filter(User.name.like('%' + name + '%'),User.status!=2,User.is_deleted==0).paginate(page, per_page=page_size,error_out=False)
-    return make_succ_page_response([user.get() for user in users.items],code=200,total=users.total)
+    return make_succ_page_response([user.get_full() for user in users.items],code=200,total=users.total)
 
 
 @app.route('/api/manage/review_register', methods=['post'])

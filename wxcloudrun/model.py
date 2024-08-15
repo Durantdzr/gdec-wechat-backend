@@ -95,6 +95,10 @@ class User(db.Model):
         return status_ENUM.get(self.status, '审核未通过')
 
     def get(self):
+        return {"id": self.id, "name": self.name, "company": self.company, "title": self.title,
+                "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url)}
+
+    def get_full(self):
         return {"id": self.id, "name": self.name, "company": self.company, "title": self.title, "phone": self.phone,
                 "code": self.code, "type": self.type,
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url)}
