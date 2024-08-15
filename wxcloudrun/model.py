@@ -82,13 +82,14 @@ class User(db.Model):
     phone = db.Column('phone', db.String(20), nullable=True)
     code = db.Column('code', db.String(50), nullable=True)
     company = db.Column('company', db.String(100), nullable=True)
-    title = db.Column('title', db.String(30), nullable=True)
-    type = db.Column('type', db.INT, default=0)
+    title = db.Column('title', db.String(255), nullable=True)
+    type = db.Column('type', db.String(10), default='普通观众')
     socail = db.Column('socail', db.INT, default=0)
     is_deleted = db.Column('is_deleted', db.INT, default=0)
     img_url = db.Column('img_url', db.TEXT)
     status = db.Column('status', db.INT, default=0)
     password = db.Column('pwd', db.String(50), nullable=True)
+    guest_info = db.Column('guest_info', db.String(200))
 
     def get_status(self):
         status_ENUM = {1: '审核未通过', 2: '审核已通过', 0: '未审核'}

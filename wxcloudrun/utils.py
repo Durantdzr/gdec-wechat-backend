@@ -39,6 +39,7 @@ def uploadfile(openid, file):
     result = requests.post('http://api.weixin.qq.com/tcb/uploadfile', params={"openid": openid},
                            json=data)
     result = result.json()
+    return result
 
 
 def valid_image(stream):
