@@ -209,7 +209,7 @@ def get_guest_list():
     # 获取请求体参数
     wxopenid = request.headers['X-WX-OPENID']
     guests = User.query.filter_by(type='嘉宾').all()
-    data = [guest.get() for guest in guests]
+    data = [guest.get_guest() for guest in guests]
     uploadwebfile(data, openid=wxopenid, file='get_guest_list.json')
     return make_succ_response(data)
 
