@@ -8,12 +8,12 @@
 """
 from flask import request
 from run import app
-from wxcloudrun.dao import update_user_statusbyid
+from wxcloudrun.dao import update_user_statusbyid,insert_user,get_guests_list
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, RelationFriend
 from wxcloudrun.response import make_succ_page_response, make_succ_response, make_err_response
-from wxcloudrun.utils import batchdownloadfile, uploadfile, valid_image, vaild_password
+from wxcloudrun.utils import batchdownloadfile, uploadfile, valid_image, vaild_password,uploadwebfile
 from datetime import timedelta
-from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, get_current_user
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
 
 
 @app.route('/api/manage/login', methods=['POST'])
@@ -75,4 +75,45 @@ def review_register():
         update_user_statusbyid(userlist, 1)
     else:
         return make_err_response('无该操作方法')
-    return make_succ_response('操作成功',code=200)
+    return make_succ_response('操作成功', code=200)
+
+
+@app.route('/api/manage/add_guest', methods=['post'])
+@jwt_required()
+def add_guest():
+    """
+        :return:新增嘉宾用户
+        """
+    operator = get_jwt_identity()
+    params = request.get_json()
+    user=User()
+    user.name=params.get('name')
+    user.company=params.get('company')
+    user.title=params.get('title')
+    user.info=params.get('info')
+    user.img_url = params.get('cdn_param')
+    user.type='嘉宾'
+    user.status=2
+    insert_user(user)
+    data=get_guests_list()
+    uploadwebfile(data, openid='', file='get_guest_list.json')
+    return make_succ_response(user.id, code=200)
+
+
+@app.route('/api/manage/upload_img', methods=['post'])
+@jwt_required()
+def upload_img():
+    """
+        :return:审核用户注册
+        """
+    operator = get_jwt_identity()
+    params = request.get_json()
+    opt = params.get('opt')
+    userlist = params.get('userlist')
+    if opt == 'agree':
+        update_user_statusbyid(userlist, 2)
+    elif opt == 'unagree':
+        update_user_statusbyid(userlist, 1)
+    else:
+        return make_err_response('无该操作方法')
+    return make_succ_response('操作成功', code=200)

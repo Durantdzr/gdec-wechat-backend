@@ -106,3 +106,8 @@ def update_user_statusbyid(userlist,status):
     except OperationalError as e:
         logger.info("query_counterbyid errorMsg= {} ".format(e))
         return None
+
+def get_guests_list():
+    guests = User.query.filter_by(type='嘉宾').all()
+    data = [guest.get_guest() for guest in guests]
+    return data

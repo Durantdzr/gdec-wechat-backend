@@ -1,7 +1,7 @@
 from flask import request
 from run import app
 from wxcloudrun.dao import insert_user, search_friends_byopenid, insert_realtion_friend, get_friend_list, \
-    save_realtion_friendbyid, is_invited_user, update_user_statusbyid
+    save_realtion_friendbyid, is_invited_user, update_user_statusbyid,get_guests_list
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, RelationFriend
 from wxcloudrun.response import make_succ_response, make_err_response
 from wxcloudrun.utils import batchdownloadfile, uploadfile, valid_image, uploadwebfile
@@ -208,8 +208,7 @@ def get_guest_list():
     """
     # 获取请求体参数
     wxopenid = request.headers['X-WX-OPENID']
-    guests = User.query.filter_by(type='嘉宾').all()
-    data = [guest.get_guest() for guest in guests]
+    data = get_guests_list()
     uploadwebfile(data, openid=wxopenid, file='get_guest_list.json')
     return make_succ_response(data)
 
@@ -236,3 +235,12 @@ def downloadfile_json():
     wxopenid = request.headers['X-WX-OPENID']
     cloudid = request.args.get('cloudid', "")
     return make_succ_response(batchdownloadfile(wxopenid, [cloudid]))
+
+@app.route('/api/get_openid', methods=['GET'])
+def get_openid():
+    """
+    :return:获取嘉宾列表
+    """
+    # 获取请求体参数
+    wxopenid = request.headers['X-WX-OPENID']
+    return make_succ_response(wxopenid)

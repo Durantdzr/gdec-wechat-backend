@@ -89,7 +89,7 @@ class User(db.Model):
     img_url = db.Column('img_url', db.TEXT)
     status = db.Column('status', db.INT, default=0)
     password = db.Column('pwd', db.String(50), nullable=True)
-    guest_info = db.Column('guest_info', db.String(200))
+    guest_info = db.Column('guest_info', db.TEXT)
 
     def get_status(self):
         status_ENUM = {1: '审核未通过', 2: '审核已通过', 0: '未审核'}
