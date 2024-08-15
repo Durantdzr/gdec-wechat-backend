@@ -91,3 +91,18 @@ def is_invited_user(relation_id,wxopenid):
         return True
     else:
         return False
+
+def update_user_statusbyid(userlist,status):
+    """
+    :param id: Counter的ID
+    :return: Counter实体
+    """
+    try:
+        records = User.query.filter(User.id.in_(userlist)).all()
+        for record in records:
+            record.status = status
+        db.session.commit()
+        return True
+    except OperationalError as e:
+        logger.info("query_counterbyid errorMsg= {} ".format(e))
+        return None

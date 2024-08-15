@@ -91,11 +91,12 @@ class User(db.Model):
     password = db.Column('pwd', db.String(50), nullable=True)
 
     def get_status(self):
-        status_ENUM = {0: '审核未通过', 1: '审核已通过'}
+        status_ENUM = {1: '审核未通过', 2: '审核已通过', 0: '未审核'}
         return status_ENUM.get(self.status, '审核未通过')
 
     def get(self):
-        return {"id": self.id, "name": self.name, "company": self.company, "title": self.title,
+        return {"id": self.id, "name": self.name, "company": self.company, "title": self.title, "phone": self.phone,
+                "code": self.code, "type": self.type,
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url)}
 
 
