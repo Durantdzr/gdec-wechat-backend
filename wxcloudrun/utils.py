@@ -64,4 +64,4 @@ def uploadwebfile(data, file, openid='o1gww5Zct8sqPnwbev1uw3PoDgvg'):
     data = {'code': 0, 'data': data}
     with open(file, 'w') as f:
         json.dump(data, f)
-    uploadfile(openid, file)
+    uploadfile(openid=openid, file=file)

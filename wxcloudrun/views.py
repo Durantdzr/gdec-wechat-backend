@@ -235,12 +235,3 @@ def downloadfile_json():
     wxopenid = request.headers['X-WX-OPENID']
     cloudid = request.args.get('cloudid', "")
     return make_succ_response(batchdownloadfile(wxopenid, [cloudid]))
-
-@app.route('/api/get_openid', methods=['GET'])
-def get_openid():
-    """
-    :return:获取嘉宾列表
-    """
-    # 获取请求体参数
-    wxopenid = request.headers['X-WX-OPENID']
-    return make_succ_response(wxopenid)
