@@ -221,8 +221,8 @@ def uploadfile_json():
     return make_web_succ_response(uploadfile(wxopenid,'data.json'))
 
 
-@app.route('/api/uploadfile/json', methods=['GET'])
-def uploadfile_json():
+@app.route('/api/downloadfile/json', methods=['GET'])
+def downloadfile_json():
     """
     :return:获取嘉宾列表
     """
