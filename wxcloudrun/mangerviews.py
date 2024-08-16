@@ -147,6 +147,6 @@ def upload_img():
         filename='guest/' + str(u) + format
         file.save(filename)
         uploadfile(filename)
-        return make_succ_response({'img_url':'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, filename),"cdn_param":filename})
+        return make_succ_response({'img_url':'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, filename),"cdn_param":filename},code=200)
     else:
         return make_err_response('请上传文件')
