@@ -147,9 +147,13 @@ def manage_get_guest_list():
     """
     # 获取请求体参数
     name = request.args.get('name', '')
-    guests = User.query.filter(User.type=='嘉宾',User.is_deleted==0,User.name.like('%' + name + '%')).all()
-    data = [guest.get_guest() for guest in guests]
-    return make_succ_response(data, code=200)
+    page = request.args.get('page', default=1, type=int)
+    page_size = request.args.get('page_size', default=10, type=int)
+    guests = User.query.filter(User.type=='嘉宾',User.is_deleted==0,User.name.like('%' + name + '%')).paginate(page,
+                                                                                                                 per_page=page_size,
+                                                                                                                 error_out=False)
+    data = [guest.get_guest() for guest in guests.item]
+    return make_succ_page_response(data, code=200, total=guests.total)
 
 
 @app.route('/api/manage/upload_img', methods=['post'])
@@ -181,10 +185,14 @@ def manage_get_hall_schedule():
     """
     # 获取请求体参数
     title = request.args.get('title', '')
+    page = request.args.get('page', default=1, type=int)
+    page_size = request.args.get('page_size', default=10, type=int)
     result = ConferenceSchedule.query.filter(ConferenceSchedule.is_deleted == 0,
-                                             ConferenceSchedule.title.like('%' + title + '%')).all()
+                                             ConferenceSchedule.title.like('%' + title + '%')).paginate(page,
+                                                                                                                 per_page=page_size,
+                                                                                                                 error_out=False)
     data = []
-    for item in result:
+    for item in result.item:
         schedule = item.get_schedule()
         schedule['guest_info'] = []
         if len(schedule.get('guest_id', [])) > 0:
@@ -192,7 +200,7 @@ def manage_get_hall_schedule():
                 user = User.query.filter_by(id=guest).first()
                 schedule['guest_info'].append(user.get_guest())
         data.append(schedule)
-    return make_succ_response(data, code=200)
+    return make_succ_page_response(data, code=200, total=result.total)
 
 
 @app.route('/api/manage/get_hall_list', methods=['GET'])
@@ -276,9 +284,13 @@ def get_cooperater():
     """
     # 获取请求体参数
     name = request.args.get('name', '')
+    page = request.args.get('page', default=1, type=int)
+    page_size = request.args.get('page_size', default=10, type=int)
     result = ConferenCoopearter.query.filter(ConferenCoopearter.is_deleted == 0,
-                                             ConferenCoopearter.name.like('%' + name + '%')).all()
-    return make_succ_response([item.get() for item in result], code=200)
+                                             ConferenCoopearter.name.like('%' + name + '%')).paginate(page,
+                                                                                                                 per_page=page_size,
+                                                                                                                 error_out=False)
+    return make_succ_page_response([item.get() for item in result.item], code=200, total=result.total)
 
 @app.route('/api/manage/add_cooperater', methods=['post'])
 @jwt_required()
