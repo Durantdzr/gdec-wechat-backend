@@ -9,6 +9,7 @@ import imghdr
 import config
 import requests
 import json
+import uuid
 
 
 @app.route('/api/conference/get_information_list', methods=['GET'])
@@ -96,6 +97,7 @@ def upload_user_info():
     user.title = params.get("title")
     user.type = params.get("type")
     user.socail = params.get("socail", 0)
+    user.img_url=params.get("cdn_param")
     insert_user(user)
     return make_succ_response(user.id)
 
@@ -106,18 +108,16 @@ def upload_user_img():
     :return:上传用户头像
     """
     # 获取请求体参数
-    user = User.query.filter(User.openid == request.headers['X-WX-OPENID']).first()
-    if user is None:
-        user = User()
-        user.openid = request.headers['X-WX-OPENID']
+
     file = request.files['file']
     if file:  # 这里可以加入文件类型判断等逻辑
         format = valid_image(file.stream)
-        file.save('guest/' + request.headers['X-WX-OPENID'] + format)
-        uploadfile(request.headers['X-WX-OPENID'], 'guest/' + request.headers['X-WX-OPENID'] + format)
-        user.img_url = 'guest/' + request.headers['X-WX-OPENID'] + format
-        insert_user(user)
-        return make_succ_response(user.id)
+        u = uuid.uuid4()
+        filename = 'guest/' + str(u) + format
+        file.save(filename)
+        uploadfile(filename,openid=request.headers['X-WX-OPENID'])
+        return make_succ_response(
+            {'img_url': 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, filename), "cdn_param": filename})
     else:
         return make_err_response('请上传文件')
 

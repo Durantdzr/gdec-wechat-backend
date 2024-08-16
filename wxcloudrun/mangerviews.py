@@ -135,7 +135,7 @@ def delete_guest():
 
 @app.route('/api/manage/get_guest_list', methods=['GET'])
 @jwt_required()
-def get_guest_list():
+def get_manage_guest_list():
     """
     :return:获取嘉宾列表
     """
