@@ -133,6 +133,16 @@ def delete_guest():
     uploadwebfile(data, file='get_guest_list.json')
     return make_succ_response(user.id, code=200)
 
+@app.route('/api/manage/get_guest_list', methods=['GET'])
+@jwt_required()
+def get_guest_list():
+    """
+    :return:获取嘉宾列表
+    """
+    # 获取请求体参数
+    data = get_guests_list()
+    return make_succ_response(data,code=200)
+
 @app.route('/api/manage/upload_img', methods=['post'])
 @jwt_required()
 def upload_img():
