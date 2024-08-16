@@ -200,4 +200,61 @@ def manage_get_hall_list():
     result = ConferenceHall.query.all()
     return make_succ_response([{'hall_name':item.name,'id':item.id} for item in result],code=200)
 
+@app.route('/api/manage/add_hall_schedule', methods=['post'])
+@jwt_required()
+def add_hall_schedule():
+    """
+        :return:新增日程
+        """
+    operator = get_jwt_identity()
+    params = request.get_json()
+    schedule = ConferenceSchedule()
+    schedule.title = params.get('title')
+    schedule.hall = params.get('hall')
+    schedule.location = params.get('location')
+    schedule.conference_date = params.get('conference_date')
+    schedule.begin_time = params.get('begin_time')
+    schedule.end_time = params.get('end_time')
+    schedule.status = params.get('status')
+    schedule.guest = ','.join([str(item)for item in params.get('guest')])
+    schedule.live_status = params.get('live_status')
+    schedule.live_url = params.get('live_url')
+    schedule.record_url = params.get('record_url')
+    insert_user(schedule)
+    return make_succ_response(schedule.id, code=200)
 
+@app.route('/api/manage/edit_hall_schedule', methods=['post'])
+@jwt_required()
+def edit_hall_schedule():
+    """
+        :return:编辑日程
+        """
+    operator = get_jwt_identity()
+    params = request.get_json()
+    schedule = ConferenceSchedule.query.filter_by(id=params.get('id')).first()
+    schedule.title = params.get('title')
+    schedule.hall = params.get('hall')
+    schedule.location = params.get('location')
+    schedule.conference_date = params.get('conference_date')
+    schedule.begin_time = params.get('begin_time')
+    schedule.end_time = params.get('end_time')
+    schedule.status = params.get('status')
+    schedule.guest = ','.join([str(item)for item in params.get('guest')])
+    schedule.live_status = params.get('live_status')
+    schedule.live_url = params.get('live_url')
+    schedule.record_url = params.get('record_url')
+    insert_user(schedule)
+    return make_succ_response(schedule.id, code=200)
+
+@app.route('/api/manage/delete_hall_schedule', methods=['post'])
+@jwt_required()
+def delete_hall_schedule():
+    """
+        :return:删除日程
+        """
+    operator = get_jwt_identity()
+    params = request.get_json()
+    schedule = ConferenceSchedule.query.filter_by(id=params.get('id')).first()
+    schedule.is_deleted = 1
+    insert_user(schedule)
+    return make_succ_response(schedule.id, code=200)
