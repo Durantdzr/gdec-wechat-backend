@@ -57,11 +57,11 @@ class ConferenceSchedule(db.Model):
         if self.guest is None:
             guest_id = []
         else:
-            guest_id = self.guest.split(',')
+            guest_id = list(map(int, self.guest.split(',')))
         return {'id': self.id, 'title': self.title, 'location': self.location, "hall": self.hall,
                 'conference_date': self.conference_date.strftime('%Y-%m-%d'), 'status': self.status,
-                'live_status': self.live_status,"begin_time": self.begin_time, "end_time": self.end_time,
-                'live_url': self.live_url, "record_url": self.record_url,'guest_id': guest_id}
+                'live_status': self.live_status, "begin_time": self.begin_time, "end_time": self.end_time,
+                'live_url': self.live_url, "record_url": self.record_url, 'guest_id': guest_id}
 
 
 class ConferenceHall(db.Model):
@@ -123,3 +123,19 @@ class RelationFriend(db.Model):
     visit_info = db.Column('visit_info', db.String(100), nullable=True)
     is_deleted = db.Column('is_deleted', db.INT, default=0)
     status = db.Column('status', db.INT, default=0)
+
+
+class ConferenCoopearter(db.Model):
+    # 设置结构体表格名称
+    __tablename__ = 'conference_coopearter'
+    # 设定结构体对应表格的字段
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column('name', db.String(30), nullable=True)
+    img_url = db.Column('img_url', db.String(100), nullable=True)
+    url = db.Column('url', db.String(50), nullable=True)
+    type = db.Column('type', db.String(10), nullable=True)
+    is_deleted = db.Column('is_deleted', db.INT, default=0)
+
+    def get(self):
+        return {"id": self.id, "name": self.name,"cdn_param":self.img_url,"type":self.type,
+                "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url), "url": self.url}

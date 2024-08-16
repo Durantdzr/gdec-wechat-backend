@@ -9,7 +9,8 @@
 from flask import request
 from run import app
 from wxcloudrun.dao import update_user_statusbyid, insert_user, get_guests_list
-from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, RelationFriend
+from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, RelationFriend, \
+    ConferenCoopearter
 from wxcloudrun.response import make_succ_page_response, make_succ_response, make_err_response
 from wxcloudrun.utils import batchdownloadfile, uploadfile, valid_image, vaild_password, uploadwebfile
 from datetime import timedelta
@@ -177,8 +178,9 @@ def manage_get_hall_schedule():
         :return:大会会场日程
     """
     # 获取请求体参数
-    title=request.args.get('title','')
-    result = ConferenceSchedule.query.filter(ConferenceSchedule.is_deleted == 0,ConferenceSchedule.title.like('%' + title + '%')).all()
+    title = request.args.get('title', '')
+    result = ConferenceSchedule.query.filter(ConferenceSchedule.is_deleted == 0,
+                                             ConferenceSchedule.title.like('%' + title + '%')).all()
     data = []
     for item in result:
         schedule = item.get_schedule()
@@ -188,7 +190,8 @@ def manage_get_hall_schedule():
                 user = User.query.filter_by(id=guest).first()
                 schedule['guest_info'].append(user.get_guest())
         data.append(schedule)
-    return make_succ_response(data,code=200)
+    return make_succ_response(data, code=200)
+
 
 @app.route('/api/manage/get_hall_list', methods=['GET'])
 @jwt_required()
@@ -198,7 +201,8 @@ def manage_get_hall_list():
     """
     # 获取请求体参数
     result = ConferenceHall.query.all()
-    return make_succ_response([{'hall_name':item.name,'id':item.id} for item in result],code=200)
+    return make_succ_response([{'hall_name': item.name, 'id': item.id} for item in result], code=200)
+
 
 @app.route('/api/manage/add_hall_schedule', methods=['post'])
 @jwt_required()
@@ -216,12 +220,13 @@ def add_hall_schedule():
     schedule.begin_time = params.get('begin_time')
     schedule.end_time = params.get('end_time')
     schedule.status = params.get('status')
-    schedule.guest = ','.join([str(item)for item in params.get('guest_id')])
+    schedule.guest = ','.join([str(item) for item in params.get('guest_id')])
     schedule.live_status = params.get('live_status')
     schedule.live_url = params.get('live_url')
     schedule.record_url = params.get('record_url')
     insert_user(schedule)
     return make_succ_response(schedule.id, code=200)
+
 
 @app.route('/api/manage/edit_hall_schedule', methods=['post'])
 @jwt_required()
@@ -239,12 +244,13 @@ def edit_hall_schedule():
     schedule.begin_time = params.get('begin_time')
     schedule.end_time = params.get('end_time')
     schedule.status = params.get('status')
-    schedule.guest = ','.join([str(item)for item in params.get('guest_id')])
+    schedule.guest = ','.join([str(item) for item in params.get('guest_id')])
     schedule.live_status = params.get('live_status')
     schedule.live_url = params.get('live_url')
     schedule.record_url = params.get('record_url')
     insert_user(schedule)
     return make_succ_response(schedule.id, code=200)
+
 
 @app.route('/api/manage/delete_hall_schedule', methods=['post'])
 @jwt_required()
@@ -258,3 +264,63 @@ def delete_hall_schedule():
     schedule.is_deleted = 1
     insert_user(schedule)
     return make_succ_response(schedule.id, code=200)
+
+
+@app.route('/api/manage/get_cooperater', methods=['GET'])
+@jwt_required()
+def get_cooperater():
+    """
+        :return:大会合作伙伴
+    """
+    # 获取请求体参数
+    name = request.args.get('name', '')
+    result = ConferenCoopearter.query.filter(ConferenCoopearter.is_deleted == 0,
+                                             ConferenCoopearter.name.like('%' + name + '%')).all()
+    return make_succ_response([item.get() for item in result], code=200)
+
+@app.route('/api/manage/add_cooperater', methods=['post'])
+@jwt_required()
+def add_cooperater():
+    """
+        :return:新增合作伙伴
+        """
+    operator = get_jwt_identity()
+    params = request.get_json()
+    cooperater = ConferenCoopearter()
+    cooperater.name = params.get('name')
+    cooperater.img_url = params.get('cdn_param')
+    cooperater.url = params.get('url')
+    cooperater.type = params.get('type')
+    insert_user(cooperater)
+    return make_succ_response(cooperater.id, code=200)
+
+
+@app.route('/api/manage/edit_cooperater', methods=['post'])
+@jwt_required()
+def edit_cooperater():
+    """
+        :return:编辑合作伙伴
+        """
+    operator = get_jwt_identity()
+    params = request.get_json()
+    cooperater = ConferenCoopearter.query.filter_by(id=params.get('id')).first()
+    cooperater.name = params.get('name')
+    cooperater.img_url = params.get('cdn_param')
+    cooperater.url = params.get('url')
+    cooperater.type = params.get('type')
+    insert_user(cooperater)
+    return make_succ_response(cooperater.id, code=200)
+
+
+@app.route('/api/manage/delete_cooperater', methods=['post'])
+@jwt_required()
+def delete_cooperater():
+    """
+        :return:删除合作伙伴
+        """
+    operator = get_jwt_identity()
+    params = request.get_json()
+    cooperater = ConferenCoopearter.query.filter_by(id=params.get('id')).first()
+    cooperater.is_deleted = 1
+    insert_user(cooperater)
+    return make_succ_response(cooperater.id, code=200)
