@@ -16,6 +16,8 @@ from datetime import timedelta
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
 import uuid
 import config
+
+
 @app.route('/api/manage/login', methods=['POST'])
 def login():
     """
@@ -99,6 +101,7 @@ def add_guest():
     uploadwebfile(data, file='get_guest_list.json')
     return make_succ_response(user.id, code=200)
 
+
 @app.route('/api/manage/edit_guest', methods=['post'])
 @jwt_required()
 def edit_guest():
@@ -118,6 +121,7 @@ def edit_guest():
     uploadwebfile(data, file='get_guest_list.json')
     return make_succ_response(user.id, code=200)
 
+
 @app.route('/api/manage/delete_guest', methods=['post'])
 @jwt_required()
 def delete_guest():
@@ -133,15 +137,17 @@ def delete_guest():
     uploadwebfile(data, file='get_guest_list.json')
     return make_succ_response(user.id, code=200)
 
+
 @app.route('/api/manage/get_guest_list', methods=['GET'])
 @jwt_required()
-def get_manage_guest_list():
+def manage_get_guest_list():
     """
     :return:获取嘉宾列表
     """
     # 获取请求体参数
     data = get_guests_list()
-    return make_succ_response(data,code=200)
+    return make_succ_response(data, code=200)
+
 
 @app.route('/api/manage/upload_img', methods=['post'])
 @jwt_required()
@@ -154,9 +160,44 @@ def upload_img():
     if file:  # 这里可以加入文件类型判断等逻辑
         format = valid_image(file.stream)
         u = uuid.uuid4()
-        filename='guest/' + str(u) + format
+        filename = 'guest/' + str(u) + format
         file.save(filename)
         uploadfile(filename)
-        return make_succ_response({'img_url':'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, filename),"cdn_param":filename},code=200)
+        return make_succ_response(
+            {'img_url': 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, filename), "cdn_param": filename},
+            code=200)
     else:
         return make_err_response('请上传文件')
+
+
+@app.route('/api/manage/get_hall_schedule', methods=['GET'])
+@jwt_required()
+def manage_get_hall_schedule():
+    """
+        :return:大会会场日程
+    """
+    # 获取请求体参数
+    title=request.args.get('title','')
+    result = ConferenceSchedule.query.filter(ConferenceSchedule.is_deleted == 0,ConferenceSchedule.title.like('%' + title + '%')).all()
+    data = []
+    for item in result:
+        schedule = item.get_schedule()
+        schedule['guest_info'] = []
+        if len(schedule.get('guest_id', [])) > 0:
+            for guest in schedule.get('guest_id', []):
+                user = User.query.filter_by(id=guest).first()
+                schedule['guest_info'].append(user.get_guest())
+        data.append(schedule)
+    return make_succ_response(data)
+
+@app.route('/api/manage/get_hall_list', methods=['GET'])
+@jwt_required()
+def manage_get_hall_list():
+    """
+        :return:大会会场列表
+    """
+    # 获取请求体参数
+    result = ConferenceHall.query.all()
+    return make_succ_response([{'hall_name':item.name,'id':item.id} for item in result])
+
+

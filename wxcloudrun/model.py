@@ -58,9 +58,10 @@ class ConferenceSchedule(db.Model):
             guest_id = []
         else:
             guest_id = self.guest.split(',')
-        return {'id': self.id, 'title': self.title, 'location': self.location,
-                'conference_date': self.conference_date.strftime('%m-%d'), 'status': status_ENUM.get(self.status),
-                'guest_id': guest_id}
+        return {'id': self.id, 'title': self.title, 'location': self.location, "hall": self.hall,
+                'conference_date': self.conference_date.strftime('%Y-%m-%d'), 'status': self.status,
+                'live_status': self.live_status,"begin_time": self.begin_time, "end_time": self.end_time,
+                'live_url': self.live_url, "record_url": self.record_url,'guest_id': guest_id}
 
 
 class ConferenceHall(db.Model):
@@ -103,9 +104,11 @@ class User(db.Model):
         return {"id": self.id, "name": self.name, "company": self.company, "title": self.title, "phone": self.phone,
                 "code": self.code, "type": self.type,
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url)}
+
     def get_guest(self):
-        return {"id": self.id, "name": self.name, "company": self.company, "title": self.title,"info":self.guest_info,
-                "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url),'cdn_param':self.img_url}
+        return {"id": self.id, "name": self.name, "company": self.company, "title": self.title, "info": self.guest_info,
+                "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url),
+                'cdn_param': self.img_url}
 
 
 class RelationFriend(db.Model):
