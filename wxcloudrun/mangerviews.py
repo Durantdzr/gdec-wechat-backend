@@ -146,7 +146,9 @@ def manage_get_guest_list():
     :return:获取嘉宾列表
     """
     # 获取请求体参数
-    data = get_guests_list()
+    name = request.args.get('name', '')
+    guests = User.query.filter(User.type=='嘉宾',User.is_deleted==0,User.name.like('%' + name + '%')).all()
+    data = [guest.get_guest() for guest in guests]
     return make_succ_response(data, code=200)
 
 
