@@ -152,7 +152,7 @@ def manage_get_guest_list():
     guests = User.query.filter(User.type=='嘉宾',User.is_deleted==0,User.name.like('%' + name + '%')).paginate(page,
                                                                                                                  per_page=page_size,
                                                                                                                  error_out=False)
-    data = [guest.get_guest() for guest in guests.item]
+    data = [guest.get_guest() for guest in guests.items]
     return make_succ_page_response(data, code=200, total=guests.total)
 
 
@@ -192,7 +192,7 @@ def manage_get_hall_schedule():
                                                                                                                  per_page=page_size,
                                                                                                                  error_out=False)
     data = []
-    for item in result.item:
+    for item in result.items:
         schedule = item.get_schedule()
         schedule['guest_info'] = []
         if len(schedule.get('guest_id', [])) > 0:
@@ -290,7 +290,7 @@ def get_cooperater():
                                              ConferenCoopearter.name.like('%' + name + '%')).paginate(page,
                                                                                                                  per_page=page_size,
                                                                                                                  error_out=False)
-    return make_succ_page_response([item.get() for item in result.item], code=200, total=result.total)
+    return make_succ_page_response([item.get() for item in result.items], code=200, total=result.total)
 
 @app.route('/api/manage/add_cooperater', methods=['post'])
 @jwt_required()
