@@ -188,7 +188,7 @@ def manage_get_hall_schedule():
                 user = User.query.filter_by(id=guest).first()
                 schedule['guest_info'].append(user.get_guest())
         data.append(schedule)
-    return make_succ_response(data)
+    return make_succ_response(data,code=200)
 
 @app.route('/api/manage/get_hall_list', methods=['GET'])
 @jwt_required()
@@ -198,6 +198,6 @@ def manage_get_hall_list():
     """
     # 获取请求体参数
     result = ConferenceHall.query.all()
-    return make_succ_response([{'hall_name':item.name,'id':item.id} for item in result])
+    return make_succ_response([{'hall_name':item.name,'id':item.id} for item in result],code=200)
 
 
