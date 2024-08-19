@@ -435,12 +435,13 @@ def add_media():
     operator = get_jwt_identity()
     media=Media()
     params = request.get_json()
+    media.name=params.get('name')
+    media.info=params.get('info')
+    insert_user(media)
     filename = 'web/' + str(media.id)
     if params.get('type') == '文字':
         with open(filename, 'w') as f:
             f.write(params.get('doc'))
         uploadfile(filename)
-    media.name=params.get('name')
-    media.info=params.get('info')
-    insert_user(media)
+
     return make_succ_response(media.id,code=200)
