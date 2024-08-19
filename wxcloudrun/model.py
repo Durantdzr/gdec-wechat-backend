@@ -162,5 +162,11 @@ class Media(db.Model):
     name = db.Column('name', db.String(50), nullable=True)
     info = db.Column('info', db.String(100), nullable=True)
     type = db.Column('type', db.String(10), nullable=True)
-    media_param = db.Column('media_param', db.String(100), nullable=True)
+    media_param = db.Column('media_param', db.TEXT, nullable=True)
     is_deleted = db.Column('is_deleted', db.INT, default=0)
+
+    def get(self):
+        if self.type=='图片':
+            return {"id": self.id, "name": self.name, "info": self.info, "type": self.type, "cdn_param": self.media_param}
+        else:
+            return {"id": self.id, "name": self.name, "info": self.info, "type": self.type, "doc": self.media_param}
