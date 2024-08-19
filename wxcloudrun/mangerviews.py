@@ -467,7 +467,7 @@ def edit_media():
         """
     operator = get_jwt_identity()
     params = request.get_json()
-    media = Media.query.filter(id == params.get('id')).first()
+    media = Media.query.filter(Media.id == params.get('id')).first()
     media.name = params.get('name')
     media.info = params.get('info')
     media.type = params.get('type')
@@ -495,7 +495,7 @@ def delete_media():
         """
     operator = get_jwt_identity()
     params = request.get_json()
-    media = Media.query.filter(id == params.get('id')).first()
+    media = Media.query.filter(Media.id == params.get('id')).first()
     media.is_deleted = 1
     insert_user(media)
     return make_succ_response(media.id, code=200)
@@ -505,7 +505,7 @@ def delete_media():
 @jwt_required()
 def get_media():
     """
-        :return:删除门户介质
+        :return:获取门户介质
         """
     operator = get_jwt_identity()
     info = request.args.get('info', '')
