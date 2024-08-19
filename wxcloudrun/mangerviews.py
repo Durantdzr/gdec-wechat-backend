@@ -442,4 +442,5 @@ def add_media():
         uploadfile(filename)
     media.name=params.get('name')
     media.info=params.get('info')
+    insert_user(media)
     return make_succ_response(media.id,code=200)
