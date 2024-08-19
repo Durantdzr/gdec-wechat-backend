@@ -91,6 +91,8 @@ class User(db.Model):
     status = db.Column('status', db.INT, default=0)
     password = db.Column('pwd', db.String(50), nullable=True)
     guest_info = db.Column('guest_info', db.TEXT)
+    order =db.Column('order', db.Integer,default=0)
+    forum = db.Column('forum', db.String)
 
     def get_status(self):
         status_ENUM = {1: '审核未通过', 2: '审核已通过', 0: '未审核'}
@@ -108,7 +110,7 @@ class User(db.Model):
     def get_guest(self):
         return {"id": self.id, "name": self.name, "company": self.company, "title": self.title, "info": self.guest_info,
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url),
-                'cdn_param': self.img_url}
+                'cdn_param': self.img_url,'forum':self.forum,'order':self.order}
 
 
 class RelationFriend(db.Model):

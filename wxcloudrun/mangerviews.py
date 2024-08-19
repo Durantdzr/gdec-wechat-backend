@@ -97,6 +97,8 @@ def add_guest():
     user.img_url = params.get('cdn_param')
     user.type = '嘉宾'
     user.status = 2
+    if params.get('order') is not None:
+        user.order = params.get('order')
     insert_user(user)
     data = get_guests_list()
     uploadwebfile(data, file='get_guest_list.json')
@@ -117,6 +119,7 @@ def edit_guest():
     user.title = params.get('title')
     user.guest_info = params.get('info')
     user.img_url = params.get('cdn_param')
+    user.order = params.get('order')
     insert_user(user)
     data = get_guests_list()
     uploadwebfile(data, file='get_guest_list.json')
@@ -149,9 +152,11 @@ def manage_get_guest_list():
     name = request.args.get('name', '')
     page = request.args.get('page', default=1, type=int)
     page_size = request.args.get('page_size', default=10, type=int)
-    guests = User.query.filter(User.type=='嘉宾',User.is_deleted==0,User.name.like('%' + name + '%')).paginate(page,
-                                                                                                                 per_page=page_size,
-                                                                                                                 error_out=False)
+    guests = User.query.filter(User.type == '嘉宾', User.is_deleted == 0, User.name.like('%' + name + '%')).order_by(
+        User.order.desc()).paginate(
+        page,
+        per_page=page_size,
+        error_out=False)
     data = [guest.get_guest() for guest in guests.items]
     return make_succ_page_response(data, code=200, total=guests.total)
 
@@ -189,8 +194,8 @@ def manage_get_hall_schedule():
     page_size = request.args.get('page_size', default=10, type=int)
     result = ConferenceSchedule.query.filter(ConferenceSchedule.is_deleted == 0,
                                              ConferenceSchedule.title.like('%' + title + '%')).paginate(page,
-                                                                                                                 per_page=page_size,
-                                                                                                                 error_out=False)
+                                                                                                        per_page=page_size,
+                                                                                                        error_out=False)
     data = []
     for item in result.items:
         schedule = item.get_schedule()
@@ -288,9 +293,10 @@ def get_cooperater():
     page_size = request.args.get('page_size', default=10, type=int)
     result = ConferenCoopearter.query.filter(ConferenCoopearter.is_deleted == 0,
                                              ConferenCoopearter.name.like('%' + name + '%')).paginate(page,
-                                                                                                                 per_page=page_size,
-                                                                                                                 error_out=False)
+                                                                                                      per_page=page_size,
+                                                                                                      error_out=False)
     return make_succ_page_response([item.get() for item in result.items], code=200, total=result.total)
+
 
 @app.route('/api/manage/add_cooperater', methods=['post'])
 @jwt_required()
