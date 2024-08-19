@@ -1,8 +1,8 @@
 from flask import request
 from run import app
 from wxcloudrun.dao import insert_user, search_friends_byopenid, insert_realtion_friend, get_friend_list, \
-    save_realtion_friendbyid, is_invited_user, update_user_statusbyid,get_guests_list
-from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, RelationFriend
+    save_realtion_friendbyid, is_invited_user, update_user_statusbyid, get_guests_list
+from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, RelationFriend, ConferenceSignUp
 from wxcloudrun.response import make_succ_response, make_err_response
 from wxcloudrun.utils import batchdownloadfile, uploadfile, valid_image, uploadwebfile
 import imghdr
@@ -65,6 +65,24 @@ def get_hall_schedule():
     return make_succ_response(data)
 
 
+@app.route('/api/conference/sign_up_conference', methods=['POST'])
+def sign_up_conference():
+    """
+    :return:用户报名会议接口
+    """
+    # 获取请求体参数
+    params = request.get_json()
+    user = User.query.filter(User.openid == request.headers['X-WX-OPENID']).first()
+    if ConferenceSignUp.query.filter(ConferenceSignUp.schedule_id == params['schedule_id'],
+                                     ConferenceSignUp.user_id == user.id).first():
+        return make_err_response('已报名过该会议')
+    sign_up = ConferenceSignUp()
+    sign_up.user_id = user.id
+    sign_up.schedule_id = params.get('schedule_id')
+    insert_user(sign_up)
+    return make_succ_response(sign_up.id)
+
+
 @app.route('/api/get_user_phone', methods=['POST'])
 def get_user_phone():
     """
@@ -97,7 +115,7 @@ def upload_user_info():
     user.title = params.get("title")
     user.type = params.get("type")
     user.socail = params.get("socail", 0)
-    user.img_url=params.get("cdn_param")
+    user.img_url = params.get("cdn_param")
     insert_user(user)
     return make_succ_response(user.id)
 
@@ -115,7 +133,7 @@ def upload_user_img():
         u = uuid.uuid4()
         filename = 'guest/' + str(u) + format
         file.save(filename)
-        uploadfile(filename,openid=request.headers['X-WX-OPENID'])
+        uploadfile(filename, openid=request.headers['X-WX-OPENID'])
         return make_succ_response(
             {'img_url': 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, filename), "cdn_param": filename})
     else:
@@ -141,6 +159,17 @@ def get_user_privilege():
         data['schdule'] = True
         data['document'] = True
     return make_succ_response(data)
+
+
+@app.route('/api/user/get_user_by_id', methods=['GET'])
+def get_user_by_id():
+    """
+    :return:获取某id的用户信息
+    """
+    # 获取请求体参数
+    wxopenid = request.headers['X-WX-OPENID']
+    user = User.query.filter(User.id == request.args.get('user_id')).first()
+    return make_succ_response(user.get())
 
 
 @app.route('/api/user/search_friend', methods=['GET'])

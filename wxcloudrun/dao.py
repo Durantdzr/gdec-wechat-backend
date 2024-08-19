@@ -3,7 +3,7 @@ import logging
 from sqlalchemy.exc import OperationalError
 
 from wxcloudrun import db
-from wxcloudrun.model import ConferenceInfo, RelationFriend, User
+from wxcloudrun.model import ConferenceInfo, RelationFriend, User,ConferenceSignUp
 from sqlalchemy import or_, and_
 import config
 
@@ -110,8 +110,24 @@ def update_user_statusbyid(userlist, status):
         logger.info("query_counterbyid errorMsg= {} ".format(e))
         return None
 
+def update_schedule_statusbyid(signuplist, status):
+    """
+    :param id: Counter的ID
+    :return: Counter实体
+    """
+    try:
+        records = ConferenceSignUp.query.filter(ConferenceSignUp.id.in_(signuplist)).all()
+        for record in records:
+            record.status = status
+        db.session.commit()
+        return True
+    except OperationalError as e:
+        logger.info("query_counterbyid errorMsg= {} ".format(e))
+        return None
+
 
 def get_guests_list():
-    guests = User.query.filter(User.type == '嘉宾', User.is_deleted == 0).all()
+    guests = User.query.filter(User.type == '嘉宾', User.is_deleted == 0).order_by(
+        User.order.desc()).all()
     data = [guest.get_guest() for guest in guests]
     return data

@@ -91,7 +91,7 @@ class User(db.Model):
     status = db.Column('status', db.INT, default=0)
     password = db.Column('pwd', db.String(50), nullable=True)
     guest_info = db.Column('guest_info', db.TEXT)
-    order =db.Column('order', db.Integer,default=0)
+    order = db.Column('order', db.Integer, default=0)
     forum = db.Column('forum', db.String)
 
     def get_status(self):
@@ -110,7 +110,7 @@ class User(db.Model):
     def get_guest(self):
         return {"id": self.id, "name": self.name, "company": self.company, "title": self.title, "info": self.guest_info,
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url),
-                'cdn_param': self.img_url,'forum':self.forum,'order':self.order}
+                'cdn_param': self.img_url, 'forum': self.forum, 'order': self.order}
 
 
 class RelationFriend(db.Model):
@@ -139,5 +139,15 @@ class ConferenCoopearter(db.Model):
     is_deleted = db.Column('is_deleted', db.INT, default=0)
 
     def get(self):
-        return {"id": self.id, "name": self.name,"cdn_param":self.img_url,"type":self.type,
+        return {"id": self.id, "name": self.name, "cdn_param": self.img_url, "type": self.type,
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url), "url": self.url}
+
+
+class ConferenceSignUp(db.Model):
+    # 设置结构体表格名称
+    __tablename__ = 'conference_sign_up'
+    # 设定结构体对应表格的字段
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column('user_id', db.Integer)
+    schedule_id = db.Column('schedule_id', db.Integer)
+    status = db.Column('status', db.Integer, default=0)

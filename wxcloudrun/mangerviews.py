@@ -344,3 +344,21 @@ def delete_cooperater():
     cooperater.is_deleted = 1
     insert_user(cooperater)
     return make_succ_response(cooperater.id, code=200)
+
+@app.route('/api/manage/review_conference_sign_up', methods=['post'])
+@jwt_required()
+def review_conference_sign_up():
+    """
+        :return:审核用户报名会议
+        """
+    operator = get_jwt_identity()
+    params = request.get_json()
+    opt = params.get('opt')
+    userlist = params.get('signuplist')
+    if opt == 'agree':
+        update_user_statusbyid(userlist, 2)
+    elif opt == 'unagree':
+        update_user_statusbyid(userlist, 1)
+    else:
+        return make_err_response('无该操作方法')
+    return make_succ_response('操作成功', code=200)
