@@ -63,6 +63,52 @@ def get_register_list():
     return make_succ_page_response([user.get_full() for user in users.items], code=200, total=users.total)
 
 
+@app.route('/api/manage/get_user_list', methods=['GET'])
+@jwt_required()
+def get_success_user_list():
+    """
+        :return:获取已审核用户列表
+    """
+    operator = get_jwt_identity()
+    page = request.args.get('page', default=1, type=int)
+    page_size = request.args.get('page_size', default=10, type=int)
+    name = request.args.get('name', default='', type=str)
+    users = User.query.filter(User.name.like('%' + name + '%'), User.status == 2, User.is_deleted == 0,User.type.notin_(['管理员','嘉宾'])).paginate(page,
+                                                                                                                 per_page=page_size,
+                                                                                                                 error_out=False)
+    return make_succ_page_response([user.get_full() for user in users.items], code=200, total=users.total)
+
+@app.route('/api/manage/edit_user', methods=['post'])
+@jwt_required()
+def edit_user():
+    """
+        :return:编辑用户
+        """
+    operator = get_jwt_identity()
+    params = request.get_json()
+    user = User.query.filter_by(id=params.get('id')).first()
+    user.name = params.get('name')
+    user.company = params.get('company')
+    user.title = params.get('title')
+    user.phone = params.get('phone')
+    user.img_url = params.get('cdn_param')
+    user.type=params.get('type')
+    insert_user(user)
+    return make_succ_response(user.id, code=200)
+
+
+@app.route('/api/manage/delete_user', methods=['post'])
+@jwt_required()
+def delete_user():
+    """
+        :return:删除用户
+        """
+    operator = get_jwt_identity()
+    params = request.get_json()
+    user = User.query.filter_by(id=params.get('id')).first()
+    user.is_deleted = 1
+    insert_user(user)
+    return make_succ_response(user.id, code=200)
 @app.route('/api/manage/review_register', methods=['post'])
 @jwt_required()
 def review_register():
@@ -377,8 +423,4 @@ def get_conference_sign_up():
     page = request.args.get('page', default=1, type=int)
     page_size = request.args.get('page_size', default=10, type=int)
     result, total = get_review_conference_list(name, page, page_size)
-    # result = ConferenCoopearter.query.filter(ConferenCoopearter.is_deleted == 0,
-    #                                          ConferenCoopearter.name.like('%' + name + '%')).paginate(page,
-    #                                                                                                   per_page=page_size,
-    #                                                                                                   error_out=False)
     return make_succ_page_response(result, code=200, total=total)
