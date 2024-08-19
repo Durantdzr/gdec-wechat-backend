@@ -11,7 +11,7 @@ from run import app
 from wxcloudrun.dao import update_user_statusbyid, insert_user, get_guests_list, get_review_conference_list, \
     update_schedule_statusbyid
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, RelationFriend, \
-    ConferenCoopearter
+    ConferenCoopearter,Media
 from wxcloudrun.response import make_succ_page_response, make_succ_response, make_err_response
 from wxcloudrun.utils import batchdownloadfile, uploadfile, valid_image, vaild_password, uploadwebfile
 from datetime import timedelta
@@ -424,3 +424,22 @@ def get_conference_sign_up():
     page_size = request.args.get('page_size', default=10, type=int)
     result, total = get_review_conference_list(name, page, page_size)
     return make_succ_page_response(result, code=200, total=total)
+
+
+@app.route('/api/manage/add_media', methods=['post'])
+@jwt_required()
+def add_media():
+    """
+        :return:创建门户介质
+        """
+    operator = get_jwt_identity()
+    media=Media()
+    params = request.get_json()
+    filename = 'web/' + str(media.id)
+    if params.get('type') == '文字':
+        with open(filename, 'w') as f:
+            f.write(params.get('doc'))
+        uploadfile(filename)
+    media.name=params.get('name')
+    media.info=params.get('info')
+    return make_succ_response(media.id,code=200)

@@ -152,3 +152,14 @@ class ConferenceSignUp(db.Model):
     user_id = db.Column('user_id', db.Integer)
     schedule_id = db.Column('schedule_id', db.Integer)
     status = db.Column('status', db.Integer, default=0)
+
+
+class Media(db.Model):
+    # 设置结构体表格名称
+    __tablename__ = 'manage_media'
+    # 设定结构体对应表格的字段
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column('name', db.String(50), nullable=True)
+    info = db.Column('info', db.String(100), nullable=True)
+    type = db.Column('type', db.String(10), nullable=True)
+    media_param = db.Column('media_param', db.String(100), nullable=True)
