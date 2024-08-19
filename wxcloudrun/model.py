@@ -163,3 +163,4 @@ class Media(db.Model):
     info = db.Column('info', db.String(100), nullable=True)
     type = db.Column('type', db.String(10), nullable=True)
     media_param = db.Column('media_param', db.String(100), nullable=True)
+    is_deleted = db.Column('is_deleted', db.INT, default=0)

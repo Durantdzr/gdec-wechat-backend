@@ -11,7 +11,7 @@ from run import app
 from wxcloudrun.dao import update_user_statusbyid, insert_user, get_guests_list, get_review_conference_list, \
     update_schedule_statusbyid
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, RelationFriend, \
-    ConferenCoopearter,Media
+    ConferenCoopearter, Media
 from wxcloudrun.response import make_succ_page_response, make_succ_response, make_err_response
 from wxcloudrun.utils import batchdownloadfile, uploadfile, valid_image, vaild_password, uploadwebfile
 from datetime import timedelta
@@ -74,10 +74,12 @@ def get_success_user_list():
     page = request.args.get('page', default=1, type=int)
     page_size = request.args.get('page_size', default=10, type=int)
     name = request.args.get('name', default='', type=str)
-    users = User.query.filter(User.name.like('%' + name + '%'), User.status == 2, User.is_deleted == 0,User.type.notin_(['管理员','嘉宾'])).paginate(page,
-                                                                                                                 per_page=page_size,
-                                                                                                                 error_out=False)
+    users = User.query.filter(User.name.like('%' + name + '%'), User.status == 2, User.is_deleted == 0,
+                              User.type.notin_(['管理员', '嘉宾'])).paginate(page,
+                                                                             per_page=page_size,
+                                                                             error_out=False)
     return make_succ_page_response([user.get_full() for user in users.items], code=200, total=users.total)
+
 
 @app.route('/api/manage/edit_user', methods=['post'])
 @jwt_required()
@@ -93,7 +95,7 @@ def edit_user():
     user.title = params.get('title')
     user.phone = params.get('phone')
     user.img_url = params.get('cdn_param')
-    user.type=params.get('type')
+    user.type = params.get('type')
     insert_user(user)
     return make_succ_response(user.id, code=200)
 
@@ -110,6 +112,8 @@ def delete_user():
     user.is_deleted = 1
     insert_user(user)
     return make_succ_response(user.id, code=200)
+
+
 @app.route('/api/manage/review_register', methods=['post'])
 @jwt_required()
 def review_register():
@@ -434,10 +438,12 @@ def add_media():
         :return:创建门户介质
         """
     operator = get_jwt_identity()
-    media=Media()
+    media = Media()
     params = request.get_json()
-    media.name=params.get('name')
-    media.info=params.get('info')
+    media.name = params.get('name')
+    media.info = params.get('info')
+    media.type = params.get('type')
+    media.media_param = params.get('cdn_param', params.get('doc', ''))
     insert_user(media)
     filename = 'web/' + str(media.id)
     if params.get('type') == '文字':
@@ -446,8 +452,67 @@ def add_media():
         uploadfile(filename)
     if params.get('type') == '图片':
         response = requests.get('https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, params.get('cdn_param')))
-        img=response.content
+        img = response.content
         with open(filename, 'wb') as f:
             f.write(img)
         uploadfile(filename)
-    return make_succ_response(media.id,code=200)
+    return make_succ_response(media.id, code=200)
+
+
+@app.route('/api/manage/edit_media', methods=['post'])
+@jwt_required()
+def edit_media():
+    """
+        :return:编辑门户介质
+        """
+    operator = get_jwt_identity()
+    params = request.get_json()
+    media = Media.query.filter(id == params.get('id')).first()
+    media.name = params.get('name')
+    media.info = params.get('info')
+    media.type = params.get('type')
+    media.media_param = params.get('cdn_param', params.get('doc', ''))
+    insert_user(media)
+    filename = 'web/' + str(media.id)
+    if params.get('type') == '文字':
+        with open(filename, 'w') as f:
+            f.write(params.get('doc'))
+        uploadfile(filename)
+    if params.get('type') == '图片':
+        response = requests.get('https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, params.get('cdn_param')))
+        img = response.content
+        with open(filename, 'wb') as f:
+            f.write(img)
+        uploadfile(filename)
+    return make_succ_response(media.id, code=200)
+
+
+@app.route('/api/manage/delete_media', methods=['post'])
+@jwt_required()
+def delete_media():
+    """
+        :return:删除门户介质
+        """
+    operator = get_jwt_identity()
+    params = request.get_json()
+    media = Media.query.filter(id == params.get('id')).first()
+    media.is_deleted = 1
+    insert_user(media)
+    return make_succ_response(media.id, code=200)
+
+
+@app.route('/api/manage/get_media', methods=['GET'])
+@jwt_required()
+def get_media():
+    """
+        :return:删除门户介质
+        """
+    operator = get_jwt_identity()
+    info = request.args.get('info', '')
+    page = request.args.get('page', default=1, type=int)
+    page_size = request.args.get('page_size', default=10, type=int)
+    result = Media.query.filter(Media.is_deleted == 0,
+                                Media.info.like('%' + info + '%')).paginate(page,
+                                                                            per_page=page_size,
+                                                                            error_out=False)
+    return make_succ_page_response([item.get() for item in result.items], code=200, total=result.total)
