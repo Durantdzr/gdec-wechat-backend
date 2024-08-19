@@ -18,6 +18,7 @@ from datetime import timedelta
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
 import uuid
 import config
+import requests
 
 
 @app.route('/api/manage/login', methods=['POST'])
@@ -443,5 +444,10 @@ def add_media():
         with open(filename, 'w') as f:
             f.write(params.get('doc'))
         uploadfile(filename)
-
+    if params.get('type') == '图片':
+        response = requests.get('https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, params.get('cdn_param')))
+        img=response.content
+        with open(filename, 'wb') as f:
+            f.write(img)
+        uploadfile(filename)
     return make_succ_response(media.id,code=200)
