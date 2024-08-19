@@ -8,7 +8,8 @@
 """
 from flask import request
 from run import app
-from wxcloudrun.dao import update_user_statusbyid, insert_user, get_guests_list
+from wxcloudrun.dao import update_user_statusbyid, insert_user, get_guests_list, get_review_conference_list, \
+    update_schedule_statusbyid
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, RelationFriend, \
     ConferenCoopearter
 from wxcloudrun.response import make_succ_page_response, make_succ_response, make_err_response
@@ -345,6 +346,7 @@ def delete_cooperater():
     insert_user(cooperater)
     return make_succ_response(cooperater.id, code=200)
 
+
 @app.route('/api/manage/review_conference_sign_up', methods=['post'])
 @jwt_required()
 def review_conference_sign_up():
@@ -354,11 +356,29 @@ def review_conference_sign_up():
     operator = get_jwt_identity()
     params = request.get_json()
     opt = params.get('opt')
-    userlist = params.get('signuplist')
+    signuplist = params.get('signuplist')
     if opt == 'agree':
-        update_user_statusbyid(userlist, 2)
+        update_schedule_statusbyid(signuplist, 2)
     elif opt == 'unagree':
-        update_user_statusbyid(userlist, 1)
+        update_schedule_statusbyid(signuplist, 1)
     else:
         return make_err_response('无该操作方法')
     return make_succ_response('操作成功', code=200)
+
+
+@app.route('/api/manage/get_conference_sign_up', methods=['GET'])
+@jwt_required()
+def get_conference_sign_up():
+    """
+        :return:获取报名会议列表
+    """
+    # 获取请求体参数
+    name = request.args.get('name', '')
+    page = request.args.get('page', default=1, type=int)
+    page_size = request.args.get('page_size', default=10, type=int)
+    result, total = get_review_conference_list(name, page, page_size)
+    # result = ConferenCoopearter.query.filter(ConferenCoopearter.is_deleted == 0,
+    #                                          ConferenCoopearter.name.like('%' + name + '%')).paginate(page,
+    #                                                                                                   per_page=page_size,
+    #                                                                                                   error_out=False)
+    return make_succ_page_response(result, code=200, total=total)

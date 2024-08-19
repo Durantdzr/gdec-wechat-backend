@@ -3,7 +3,7 @@ import logging
 from sqlalchemy.exc import OperationalError
 
 from wxcloudrun import db
-from wxcloudrun.model import ConferenceInfo, RelationFriend, User,ConferenceSignUp
+from wxcloudrun.model import ConferenceInfo, RelationFriend, User, ConferenceSignUp, ConferenceSchedule
 from sqlalchemy import or_, and_
 import config
 
@@ -110,6 +110,7 @@ def update_user_statusbyid(userlist, status):
         logger.info("query_counterbyid errorMsg= {} ".format(e))
         return None
 
+
 def update_schedule_statusbyid(signuplist, status):
     """
     :param id: Counter的ID
@@ -131,3 +132,15 @@ def get_guests_list():
         User.order.desc()).all()
     data = [guest.get_guest() for guest in guests]
     return data
+
+
+def get_review_conference_list(name, page, page_size):
+    result = db.session.query(ConferenceSignUp, User, ConferenceSchedule).join(User,
+                                                                               User.id == ConferenceSignUp.user_id).join(
+        ConferenceSchedule, ConferenceSignUp.schedule_id == ConferenceSchedule.id).filter(
+        User.name.like('%' + name + '%'), User.status == 2, User.is_deleted == 0, ConferenceSchedule.is_deleted == 0,
+                                          ConferenceSignUp.status == 0).paginate(page, per_page=page_size,
+                                                                                 error_out=False)
+    return [{"id": signup.id, "user_name": user.name, "schedule_name": schedule.title,
+             "schedule_date": schedule.conference_date.strftime('%Y-%m-%d'), "begin_time": schedule.begin_time,
+             "end_time": schedule.end_time, "phone": user.phone} for signup, user, schedule in result.items],result.total
