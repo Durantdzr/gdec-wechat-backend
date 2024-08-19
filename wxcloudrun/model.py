@@ -166,7 +166,10 @@ class Media(db.Model):
     is_deleted = db.Column('is_deleted', db.INT, default=0)
 
     def get(self):
-        if self.type=='图片':
-            return {"id": self.id, "name": self.name, "info": self.info, "type": self.type, "cdn_param": self.media_param}
+        if self.type == '图片':
+            return {"id": self.id, "name": self.name, "info": self.info, "type": self.type,
+                    "cdn_param": self.media_param,
+                    "web_url": 'https://{}.tcb.qcloud.la/web/{}'.format(config.COS_BUCKET, self.id)}
         else:
-            return {"id": self.id, "name": self.name, "info": self.info, "type": self.type, "doc": self.media_param}
+            return {"id": self.id, "name": self.name, "info": self.info, "type": self.type, "doc": self.media_param,
+                    "web_url": 'https://{}.tcb.qcloud.la/web/{}'.format(config.COS_BUCKET, self.id)}
