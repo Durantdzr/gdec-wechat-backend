@@ -62,21 +62,23 @@ class ConferenceSchedule(db.Model):
         return {'id': self.id, 'title': self.title, 'location': self.location, "hall": self.hall,
                 'conference_date': self.conference_date.strftime('%Y-%m-%d'), 'status': self.status,
                 'live_status': self.live_status, "begin_time": self.begin_time, "end_time": self.end_time,
-                'live_url': self.live_url, "record_url": self.record_url, 'guest_id': guest_id,'org':self.org}
+                'live_url': self.live_url, "record_url": self.record_url, 'guest_id': guest_id, 'org': self.org}
 
     def get_schedule_view(self):
-        if self.live_status > 0:
-            status_ENUM = {0: '我要报名', 1: '正在直播', 2: '查看回放'}
-        else:
-            status_ENUM = {0: '我要报名', 1: '会议进行中', 2: '会议结束'}
+        status_ENUM = {0: '我要报名', 1: '正在直播' if self.live_status == 1 else '会议进行中',
+                       2: '查看回放' if self.live_status == 2 else '会议结束'}
         if self.guest is None:
             guest_id = []
         else:
             guest_id = list(map(int, self.guest.split(',')))
+        if '开幕式' in self.title:
+            ext='开幕式'
+        else:
+            ext=''
         return {'id': self.id, 'title': self.title, 'location': self.location, "hall": self.hall,
                 'conference_date': self.conference_date.strftime('%Y-%m-%d'), 'status': status_ENUM.get(self.status),
                 "begin_time": self.begin_time, "end_time": self.end_time, 'live_url': self.live_url,
-                "record_url": self.record_url, 'guest_id': guest_id}
+                "record_url": self.record_url, 'guest_id': guest_id,'ext':ext}
 
 
 class ConferenceHall(db.Model):

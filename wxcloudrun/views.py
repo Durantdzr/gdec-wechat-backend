@@ -65,6 +65,7 @@ def get_hall_schedule():
                 user = User.query.filter_by(id=guest).first()
                 schedule['guest_img'].append('https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, user.img_url))
         data.append(schedule)
+    uploadwebfile(data, openid=wxOpenid, file='get_hall_schedule'+date+'.json')
     return make_succ_response(data)
 
 
@@ -356,17 +357,3 @@ def get_comedia():
     uploadwebfile(data, openid=wxopenid, file='get_comedia.json')
     return make_succ_response(data)
 
-
-@app.route('/api/conference/get_schedule_bydate', methods=['GET'])
-def get_hall_schedule():
-    """
-        :return:获取大会会场日程
-    """
-    # 获取请求体参数
-    date = request.args.get('date')
-    wxOpenid = request.headers['X-WX-OPENID']
-    result = ConferenceSchedule.query.filter(
-        ConferenceSchedule.is_deleted == 0, ConferenceSchedule.conference_date == date).order_by(
-        ConferenceSchedule.id).all()
-    data = [item.get_schedule_view() for item in result]
-    return make_succ_response(data)
