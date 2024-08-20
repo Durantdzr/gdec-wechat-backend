@@ -303,6 +303,6 @@ def refresh_all_guest_list():
     guests = User.query.filter(User.type == '嘉宾', User.is_deleted == 0).order_by(
         User.order.desc()).all()
     for guest in guests:
-        uploadwebfile(guest.get_guest(), openid=wxopenid, file='web/guest/'+str(guest.id))
+        uploadwebfile(guest.get_guest(), openid=wxopenid, file='web/guest/'+str(guest.id)+'.json')
     # uploadwebfile(data, openid=wxopenid, file='get_guest_list.json')
     return make_succ_response('ok')
