@@ -4,7 +4,7 @@ import logging
 from sqlalchemy.exc import OperationalError
 
 from wxcloudrun import db
-from wxcloudrun.model import ConferenceInfo, RelationFriend, User, ConferenceSignUp, ConferenceSchedule
+from wxcloudrun.model import ConferenceInfo, RelationFriend, User, ConferenceSignUp, ConferenceSchedule,ConferenCoopearter
 from sqlalchemy import or_, and_
 import config
 
@@ -199,3 +199,9 @@ def get_conference_schedule_by_id(userid):
                      "status": signup_status_ENUM.get(signup.status),
                      'info': '距开始还有1小时' if delta / 60 > 0 and delta / 60 < 120 else ''})
     return data
+
+
+def get_cooperater_list(type):
+    result=ConferenCoopearter.query.filter(ConferenCoopearter.type == type,
+                                    ConferenCoopearter.is_deleted == 0).all()
+    return [item.get() for item in result]

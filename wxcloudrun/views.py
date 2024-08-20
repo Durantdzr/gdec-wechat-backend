@@ -2,8 +2,9 @@ from flask import request
 from run import app
 from wxcloudrun.dao import insert_user, search_friends_byopenid, insert_realtion_friend, get_friend_list, \
     save_realtion_friendbyid, is_invited_user, update_user_statusbyid, get_guests_list, get_conference_schedule_by_id, \
-    get_open_guests_list,get_main_hall_guests_list,get_other_hall_guests_list
-from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, RelationFriend, ConferenceSignUp
+    get_open_guests_list, get_main_hall_guests_list, get_other_hall_guests_list,get_cooperater_list
+from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, RelationFriend, ConferenceSignUp, \
+    ConferenCoopearter
 from wxcloudrun.response import make_succ_response, make_err_response
 from wxcloudrun.utils import batchdownloadfile, uploadfile, valid_image, uploadwebfile
 import imghdr
@@ -291,6 +292,7 @@ def get_open_guest_list():
     uploadwebfile(data, openid=wxopenid, file='get_open_guest_list.json')
     return make_succ_response(data)
 
+
 @app.route('/api/conference/get_main_hall_guest_list', methods=['GET'])
 def get_main_hall_guest_list():
     """
@@ -301,6 +303,7 @@ def get_main_hall_guest_list():
     data = get_main_hall_guests_list()
     uploadwebfile(data, openid=wxopenid, file='get_main_hall_guest_list.json')
     return make_succ_response(data)
+
 
 @app.route('/api/conference/get_other_hall_guest_list', methods=['GET'])
 def get_other_hall_guest_list():
@@ -324,5 +327,28 @@ def refresh_all_guest_list():
     guests = User.query.filter(User.type == '嘉宾', User.is_deleted == 0).order_by(
         User.order.desc()).all()
     for guest in guests:
-        uploadwebfile(guest.get_guest(), openid=wxopenid, file='web/guest/'+str(guest.id)+'.json')
+        uploadwebfile(guest.get_guest(), openid=wxopenid, file='web/guest/' + str(guest.id) + '.json')
     return make_succ_response('ok')
+
+
+@app.route('/api/conference/get_cooperater', methods=['GET'])
+def get_cooperaters():
+    """
+    :return:获取合作伙伴信息
+    """
+    # 获取请求体参数
+    wxopenid = request.headers['X-WX-OPENID']
+    data=get_cooperater_list('合作伙伴')
+    uploadwebfile(data, openid=wxopenid, file='get_cooperater.json')
+    return make_succ_response(data)
+
+@app.route('/api/conference/get_comedia', methods=['GET'])
+def get_comedia():
+    """
+    :return:获取合作媒体信息
+    """
+    # 获取请求体参数
+    wxopenid = request.headers['X-WX-OPENID']
+    data=get_cooperater_list('合作媒体')
+    uploadwebfile(data, openid=wxopenid, file='get_comedia.json')
+    return make_succ_response(data)
