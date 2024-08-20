@@ -149,6 +149,8 @@ def get_main_hall_guests_list():
                                                ConferenceSchedule.is_deleted == 0).all()
     guest_id=[]
     for schedule in schedules:
+        if schedule.guest is None:
+            continue
         guest_id.extend(schedule.guest.split(','))
     guests = User.query.filter(User.id.in_(guest_id)).order_by(
         User.order.desc()).all()
@@ -160,6 +162,8 @@ def get_other_hall_guests_list():
                                                ConferenceSchedule.is_deleted == 0).all()
     guest_id=[]
     for schedule in schedules:
+        if schedule.guest is None:
+            continue
         guest_id.extend(schedule.guest.split(','))
     guests = User.query.filter(User.id.in_(guest_id)).order_by(
         User.order.desc()).all()
