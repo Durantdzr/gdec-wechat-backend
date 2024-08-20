@@ -112,7 +112,7 @@ def upload_user_info():
         user = User()
         user.openid = request.headers['X-WX-OPENID']
     if user.status == 2:
-        return make_err_response('用户已完成审核无法修改信息。')
+        return make_err_response('用户已完成审核，无法再次提交审核。')
     user.name = params.get("name")
     user.phone = params.get("phone")
     user.code = params.get("code")
