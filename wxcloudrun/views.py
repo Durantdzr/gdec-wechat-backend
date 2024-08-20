@@ -294,7 +294,7 @@ def get_open_guest_list():
 
 
 @app.route('/api/conference/refresh_all_guest_list', methods=['GET'])
-def get_open_guest_list():
+def refresh_all_guest_list():
     """
     :return:获取嘉宾列表
     """
