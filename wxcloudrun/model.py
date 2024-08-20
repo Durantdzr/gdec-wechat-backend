@@ -73,6 +73,8 @@ class ConferenceSchedule(db.Model):
             guest_id = list(map(int, self.guest.split(',')))
         if '开幕式' in self.title:
             ext='开幕式'
+        elif '主会场' in self.hall:
+            ext='主论坛'
         else:
             ext=''
         return {'id': self.id, 'title': self.title, 'location': self.location, "hall": self.hall,
