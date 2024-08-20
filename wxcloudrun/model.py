@@ -64,7 +64,10 @@ class ConferenceSchedule(db.Model):
                 'live_url': self.live_url, "record_url": self.record_url, 'guest_id': guest_id}
 
     def get_schedule_view(self):
-        status_ENUM = {0: '我要报名', 1: '正在直播', 2: '会议结束'}
+        if self.live_status>0:
+            status_ENUM = {0: '我要报名', 1: '正在直播', 2: '会议结束'}
+        else:
+            status_ENUM = {0: '我要报名', 1: '会议进行中', 2: '会议结束'}
         if self.guest is None:
             guest_id = []
         else:
