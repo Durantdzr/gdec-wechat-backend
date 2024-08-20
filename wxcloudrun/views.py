@@ -2,7 +2,7 @@ from flask import request
 from run import app
 from wxcloudrun.dao import insert_user, search_friends_byopenid, insert_realtion_friend, get_friend_list, \
     save_realtion_friendbyid, is_invited_user, update_user_statusbyid, get_guests_list, get_conference_schedule_by_id, \
-    get_open_guests_list, get_main_hall_guests_list, get_other_hall_guests_list,get_cooperater_list
+    get_open_guests_list, get_main_hall_guests_list, get_other_hall_guests_list, get_cooperater_list
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, RelationFriend, ConferenceSignUp, \
     ConferenCoopearter
 from wxcloudrun.response import make_succ_response, make_err_response
@@ -111,6 +111,8 @@ def upload_user_info():
     if user is None:
         user = User()
         user.openid = request.headers['X-WX-OPENID']
+    if user.status == 2:
+        return make_err_response('用户已完成审核无法修改信息。')
     user.name = params.get("name")
     user.phone = params.get("phone")
     user.code = params.get("code")
@@ -338,9 +340,10 @@ def get_cooperaters():
     """
     # 获取请求体参数
     wxopenid = request.headers['X-WX-OPENID']
-    data=get_cooperater_list('合作伙伴')
+    data = get_cooperater_list('合作伙伴')
     uploadwebfile(data, openid=wxopenid, file='get_cooperater.json')
     return make_succ_response(data)
+
 
 @app.route('/api/conference/get_comedia', methods=['GET'])
 def get_comedia():
@@ -349,6 +352,6 @@ def get_comedia():
     """
     # 获取请求体参数
     wxopenid = request.headers['X-WX-OPENID']
-    data=get_cooperater_list('合作媒体')
+    data = get_cooperater_list('合作媒体')
     uploadwebfile(data, openid=wxopenid, file='get_comedia.json')
     return make_succ_response(data)
