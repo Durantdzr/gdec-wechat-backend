@@ -49,13 +49,13 @@ def get_hall_schedule():
         :return:大会会场日程
     """
     # 获取请求体参数
-    hall = request.args.get('hall')
+    date = request.args.get('date')
     wxOpenid = request.headers['X-WX-OPENID']
     result = ConferenceSchedule.query.filter(
-        ConferenceSchedule.is_deleted == 0, ConferenceSchedule.hall == hall).all()
+        ConferenceSchedule.is_deleted == 0, ConferenceSchedule.conference_date==date).order_by(ConferenceSchedule.id).all()
     data = []
     for item in result:
-        schedule = item.get_schedule()
+        schedule = item.get_schedule_view()
         schedule['guest_img'] = []
         if len(schedule.get('guest_id', [])) > 0:
             for guest in schedule.get('guest_id', []):
