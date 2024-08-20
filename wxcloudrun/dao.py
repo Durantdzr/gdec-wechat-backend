@@ -155,6 +155,17 @@ def get_main_hall_guests_list():
     data = [guest.get_guest() for guest in guests]
     return data
 
+def get_other_hall_guests_list():
+    schedules = ConferenceSchedule.query.filter(ConferenceSchedule.hall != '主会场·城市规划与公共艺术中心',
+                                               ConferenceSchedule.is_deleted == 0).all()
+    guest_id=[]
+    for schedule in schedules:
+        guest_id.extend(schedule.guest.split(','))
+    guests = User.query.filter(User.id.in_(guest_id)).order_by(
+        User.order.desc()).all()
+    data = [guest.get_guest() for guest in guests]
+    return data
+
 
 def get_review_conference_list(name, page, page_size):
     result = db.session.query(ConferenceSignUp, User, ConferenceSchedule).join(User,
