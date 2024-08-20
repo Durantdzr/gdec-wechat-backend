@@ -4,12 +4,12 @@
 @software: PyCharm
 @file: mangerviews.py
 @describe: 
-@time: 2024/8/15 1:20 PM
+@time: 2024/8/15 1:20 PM
 """
 from flask import request
 from run import app
 from wxcloudrun.dao import update_user_statusbyid, insert_user, get_guests_list, get_review_conference_list, \
-    update_schedule_statusbyid,refresh_cooperater,refresh_guest,refresh_guest_info
+    update_schedule_statusbyid, refresh_cooperater, refresh_guest, refresh_guest_info
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, RelationFriend, \
     ConferenCoopearter, Media
 from wxcloudrun.response import make_succ_page_response, make_succ_response, make_err_response
@@ -290,6 +290,7 @@ def add_hall_schedule():
     schedule.live_status = params.get('live_status')
     schedule.live_url = params.get('live_url')
     schedule.record_url = params.get('record_url')
+    schedule.org = params.get('org')
     insert_user(schedule)
     refresh_guest()
     return make_succ_response(schedule.id, code=200)
@@ -315,6 +316,7 @@ def edit_hall_schedule():
     schedule.live_status = params.get('live_status')
     schedule.live_url = params.get('live_url')
     schedule.record_url = params.get('record_url')
+    schedule.org = params.get('org')
     insert_user(schedule)
     refresh_guest()
     return make_succ_response(schedule.id, code=200)
@@ -350,6 +352,7 @@ def get_cooperater():
                                                                                                       per_page=page_size,
                                                                                                       error_out=False)
     return make_succ_page_response([item.get() for item in result.items], code=200, total=result.total)
+
 
 @app.route('/api/manage/add_cooperater', methods=['post'])
 @jwt_required()
