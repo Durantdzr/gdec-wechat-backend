@@ -1,3 +1,4 @@
+import datetime
 import logging
 
 from sqlalchemy.exc import OperationalError
@@ -143,4 +144,20 @@ def get_review_conference_list(name, page, page_size):
                                                                                  error_out=False)
     return [{"id": signup.id, "user_name": user.name, "schedule_name": schedule.title,
              "schedule_date": schedule.conference_date.strftime('%Y-%m-%d'), "begin_time": schedule.begin_time,
-             "end_time": schedule.end_time, "phone": user.phone} for signup, user, schedule in result.items],result.total
+             "end_time": schedule.end_time, "phone": user.phone} for signup, user, schedule in
+            result.items], result.total
+
+
+def get_conference_schedule_by_id(userid):
+    signup_status_ENUM = {0: '等待审核', 1: '审核未通过', 2: '审核通过'}
+    result = db.session.query(ConferenceSignUp, ConferenceSchedule).join(
+        ConferenceSchedule, ConferenceSignUp.schedule_id == ConferenceSchedule.id).filter(
+        ConferenceSchedule.is_deleted == 0, ConferenceSignUp.user_id == userid).all()
+    data=[]
+    for signup, schedule in result:
+        delta=(datetime.datetime.strptime(
+            schedule.conference_date.strftime('%Y-%m-%d') + ' ' + schedule.begin_time, "%Y-%m-%d %H:%M")-datetime.datetime.now()).total_seconds()
+        data.append({"id": signup.id, "schedule_name": schedule.title,
+         "schedule_time": schedule.conference_date.strftime('%Y-%m-%d') + ' ' + schedule.begin_time,
+         "status": signup_status_ENUM.get(signup.status),'info':'距开始还有1小时' if delta/60>0 and delta/60<120 else ''})
+    return data
