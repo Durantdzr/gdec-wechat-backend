@@ -9,7 +9,7 @@
 from flask import request
 from run import app
 from wxcloudrun.dao import update_user_statusbyid, insert_user, get_guests_list, get_review_conference_list, \
-    update_schedule_statusbyid
+    update_schedule_statusbyid,refresh_cooperater,refresh_guest
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, RelationFriend, \
     ConferenCoopearter, Media
 from wxcloudrun.response import make_succ_page_response, make_succ_response, make_err_response
@@ -292,6 +292,7 @@ def add_hall_schedule():
     schedule.live_url = params.get('live_url')
     schedule.record_url = params.get('record_url')
     insert_user(schedule)
+    refresh_guest()
     return make_succ_response(schedule.id, code=200)
 
 
@@ -316,6 +317,7 @@ def edit_hall_schedule():
     schedule.live_url = params.get('live_url')
     schedule.record_url = params.get('record_url')
     insert_user(schedule)
+    refresh_guest()
     return make_succ_response(schedule.id, code=200)
 
 
@@ -330,6 +332,7 @@ def delete_hall_schedule():
     schedule = ConferenceSchedule.query.filter_by(id=params.get('id')).first()
     schedule.is_deleted = 1
     insert_user(schedule)
+    refresh_guest()
     return make_succ_response(schedule.id, code=200)
 
 
@@ -349,7 +352,6 @@ def get_cooperater():
                                                                                                       error_out=False)
     return make_succ_page_response([item.get() for item in result.items], code=200, total=result.total)
 
-
 @app.route('/api/manage/add_cooperater', methods=['post'])
 @jwt_required()
 def add_cooperater():
@@ -364,6 +366,7 @@ def add_cooperater():
     cooperater.url = params.get('url')
     cooperater.type = params.get('type')
     insert_user(cooperater)
+    refresh_cooperater()
     return make_succ_response(cooperater.id, code=200)
 
 
@@ -381,6 +384,7 @@ def edit_cooperater():
     cooperater.url = params.get('url')
     cooperater.type = params.get('type')
     insert_user(cooperater)
+    refresh_cooperater()
     return make_succ_response(cooperater.id, code=200)
 
 
@@ -395,6 +399,7 @@ def delete_cooperater():
     cooperater = ConferenCoopearter.query.filter_by(id=params.get('id')).first()
     cooperater.is_deleted = 1
     insert_user(cooperater)
+    refresh_cooperater()
     return make_succ_response(cooperater.id, code=200)
 
 

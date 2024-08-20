@@ -4,8 +4,10 @@ import logging
 from sqlalchemy.exc import OperationalError
 
 from wxcloudrun import db
-from wxcloudrun.model import ConferenceInfo, RelationFriend, User, ConferenceSignUp, ConferenceSchedule,ConferenCoopearter
+from wxcloudrun.model import ConferenceInfo, RelationFriend, User, ConferenceSignUp, ConferenceSchedule, \
+    ConferenCoopearter
 from sqlalchemy import or_, and_
+from wxcloudrun.utils import uploadwebfile
 import config
 
 # 初始化日志
@@ -146,8 +148,8 @@ def get_open_guests_list():
 
 def get_main_hall_guests_list():
     schedules = ConferenceSchedule.query.filter(ConferenceSchedule.hall == '主会场·城市规划与公共艺术中心',
-                                               ConferenceSchedule.is_deleted == 0).all()
-    guest_id=[]
+                                                ConferenceSchedule.is_deleted == 0).all()
+    guest_id = []
     for schedule in schedules:
         if schedule.guest is None:
             continue
@@ -157,10 +159,11 @@ def get_main_hall_guests_list():
     data = [guest.get_guest() for guest in guests]
     return data
 
+
 def get_other_hall_guests_list():
     schedules = ConferenceSchedule.query.filter(ConferenceSchedule.hall != '主会场·城市规划与公共艺术中心',
-                                               ConferenceSchedule.is_deleted == 0).all()
-    guest_id=[]
+                                                ConferenceSchedule.is_deleted == 0).all()
+    guest_id = []
     for schedule in schedules:
         if schedule.guest is None:
             continue
@@ -202,6 +205,23 @@ def get_conference_schedule_by_id(userid):
 
 
 def get_cooperater_list(type):
-    result=ConferenCoopearter.query.filter(ConferenCoopearter.type == type,
-                                    ConferenCoopearter.is_deleted == 0).all()
+    result = ConferenCoopearter.query.filter(ConferenCoopearter.type == type,
+                                             ConferenCoopearter.is_deleted == 0).all()
     return [item.get() for item in result]
+
+
+def refresh_cooperater():
+    data = get_cooperater_list('合作伙伴')
+    uploadwebfile(data, file='get_cooperater.json')
+    data = get_cooperater_list('合作媒体')
+    uploadwebfile(data, file='get_comedia.json')
+
+def refresh_guest():
+    data = get_guests_list()
+    uploadwebfile(data, file='get_guest_list.json')
+    data = get_open_guests_list()
+    uploadwebfile(data, file='get_open_guest_list.json')
+    data = get_main_hall_guests_list()
+    uploadwebfile(data, file='get_main_hall_guest_list.json')
+    data = get_other_hall_guests_list()
+    uploadwebfile(data, file='get_other_hall_guest_list.json')
