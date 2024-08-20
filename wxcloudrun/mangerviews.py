@@ -9,7 +9,7 @@
 from flask import request
 from run import app
 from wxcloudrun.dao import update_user_statusbyid, insert_user, get_guests_list, get_review_conference_list, \
-    update_schedule_statusbyid,refresh_cooperater,refresh_guest
+    update_schedule_statusbyid,refresh_cooperater,refresh_guest,refresh_guest_info
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, RelationFriend, \
     ConferenCoopearter, Media
 from wxcloudrun.response import make_succ_page_response, make_succ_response, make_err_response
@@ -152,8 +152,8 @@ def add_guest():
     if params.get('order') is not None:
         user.order = params.get('order')
     insert_user(user)
-    data = get_guests_list()
-    uploadwebfile(data, file='get_guest_list.json')
+    refresh_guest()
+    refresh_guest_info(user.id)
     return make_succ_response(user.id, code=200)
 
 
@@ -173,8 +173,8 @@ def edit_guest():
     user.img_url = params.get('cdn_param')
     user.order = params.get('order')
     insert_user(user)
-    data = get_guests_list()
-    uploadwebfile(data, file='get_guest_list.json')
+    refresh_guest()
+    refresh_guest_info(user.id)
     return make_succ_response(user.id, code=200)
 
 
@@ -182,15 +182,14 @@ def edit_guest():
 @jwt_required()
 def delete_guest():
     """
-        :return:编辑嘉宾用户
+        :return:删除嘉宾用户
         """
     operator = get_jwt_identity()
     params = request.get_json()
     user = User.query.filter_by(id=params.get('id')).first()
     user.is_deleted = 1
     insert_user(user)
-    data = get_guests_list()
-    uploadwebfile(data, file='get_guest_list.json')
+    refresh_guest()
     return make_succ_response(user.id, code=200)
 
 

@@ -225,3 +225,7 @@ def refresh_guest():
     uploadwebfile(data, file='get_main_hall_guest_list.json')
     data = get_other_hall_guests_list()
     uploadwebfile(data, file='get_other_hall_guest_list.json')
+
+def refresh_guest_info(userid):
+    guest = User.query.filter(User.id==userid).first()
+    uploadwebfile(guest.get_guest(), file='web/guest/' + str(guest.id) + '.json')
