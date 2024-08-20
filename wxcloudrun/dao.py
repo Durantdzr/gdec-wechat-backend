@@ -202,7 +202,20 @@ def get_conference_schedule_by_id(userid):
                      "status": signup_status_ENUM.get(signup.status),
                      'info': '距开始还有1小时' if delta / 60 > 0 and delta / 60 < 120 else ''})
     return data
-
+def get_hall_schedule_bydate(date):
+    result = ConferenceSchedule.query.filter(
+        ConferenceSchedule.is_deleted == 0, ConferenceSchedule.conference_date == date).order_by(
+        ConferenceSchedule.id).all()
+    data = []
+    for item in result:
+        schedule = item.get_schedule_view()
+        schedule['guest_img'] = []
+        if len(schedule.get('guest_id', [])) > 0:
+            for guest in schedule.get('guest_id', []):
+                user = User.query.filter_by(id=guest).first()
+                schedule['guest_img'].append('https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, user.img_url))
+        data.append(schedule)
+    return data
 
 def get_cooperater_list(type):
     result = ConferenCoopearter.query.filter(ConferenCoopearter.type == type,

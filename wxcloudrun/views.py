@@ -2,7 +2,8 @@ from flask import request
 from run import app
 from wxcloudrun.dao import insert_user, search_friends_byopenid, insert_realtion_friend, get_friend_list, \
     save_realtion_friendbyid, is_invited_user, update_user_statusbyid, get_guests_list, get_conference_schedule_by_id, \
-    get_open_guests_list, get_main_hall_guests_list, get_other_hall_guests_list, get_cooperater_list
+    get_open_guests_list, get_main_hall_guests_list, get_other_hall_guests_list, get_cooperater_list, \
+    get_hall_schedule_bydate
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, RelationFriend, ConferenceSignUp, \
     ConferenCoopearter
 from wxcloudrun.response import make_succ_response, make_err_response
@@ -53,19 +54,7 @@ def get_hall_schedule():
     # 获取请求体参数
     date = request.args.get('date')
     wxOpenid = request.headers['X-WX-OPENID']
-    result = ConferenceSchedule.query.filter(
-        ConferenceSchedule.is_deleted == 0, ConferenceSchedule.conference_date == date).order_by(
-        ConferenceSchedule.id).all()
-    data = []
-    for item in result:
-        schedule = item.get_schedule_view()
-        schedule['guest_img'] = []
-        if len(schedule.get('guest_id', [])) > 0:
-            for guest in schedule.get('guest_id', []):
-                user = User.query.filter_by(id=guest).first()
-                schedule['guest_img'].append('https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, user.img_url))
-        data.append(schedule)
-    uploadwebfile(data, openid=wxOpenid, file='get_hall_schedule'+date+'.json')
+    data = get_hall_schedule_bydate(date)
     return make_succ_response(data)
 
 
@@ -356,4 +345,3 @@ def get_comedia():
     data = get_cooperater_list('合作媒体')
     uploadwebfile(data, openid=wxopenid, file='get_comedia.json')
     return make_succ_response(data)
-
