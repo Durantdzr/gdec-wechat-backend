@@ -134,13 +134,27 @@ def get_guests_list():
     data = [guest.get_guest() for guest in guests]
     return data
 
+
 def get_open_guests_list():
-    schedule=ConferenceSchedule.query.filter(ConferenceSchedule.title.like('%开幕式%')).first()
-    guest_id=schedule.guest.split(',')
+    schedule = ConferenceSchedule.query.filter(ConferenceSchedule.title.like('%开幕式%')).first()
+    guest_id = schedule.guest.split(',')
     guests = User.query.filter(User.id.in_(guest_id)).order_by(
         User.order.desc()).all()
     data = [guest.get_guest() for guest in guests]
     return data
+
+
+def get_main_hall_guests_list():
+    schedules = ConferenceSchedule.query.filter(ConferenceSchedule.hall == '主会场·城市规划与公共艺术中心',
+                                               ConferenceSchedule.is_deleted == 0).all()
+    guest_id=[]
+    for schedule in schedules:
+        guest_id.extend(schedule.guest.split(','))
+    guests = User.query.filter(User.id.in_(guest_id)).order_by(
+        User.order.desc()).all()
+    data = [guest.get_guest() for guest in guests]
+    return data
+
 
 def get_review_conference_list(name, page, page_size):
     result = db.session.query(ConferenceSignUp, User, ConferenceSchedule).join(User,
@@ -160,11 +174,13 @@ def get_conference_schedule_by_id(userid):
     result = db.session.query(ConferenceSignUp, ConferenceSchedule).join(
         ConferenceSchedule, ConferenceSignUp.schedule_id == ConferenceSchedule.id).filter(
         ConferenceSchedule.is_deleted == 0, ConferenceSignUp.user_id == userid).all()
-    data=[]
+    data = []
     for signup, schedule in result:
-        delta=(datetime.datetime.strptime(
-            schedule.conference_date.strftime('%Y-%m-%d') + ' ' + schedule.begin_time, "%Y-%m-%d %H:%M")-datetime.datetime.now()).total_seconds()
+        delta = (datetime.datetime.strptime(
+            schedule.conference_date.strftime('%Y-%m-%d') + ' ' + schedule.begin_time,
+            "%Y-%m-%d %H:%M") - datetime.datetime.now()).total_seconds()
         data.append({"id": signup.id, "schedule_name": schedule.title,
-         "schedule_time": schedule.conference_date.strftime('%Y-%m-%d') + ' ' + schedule.begin_time,
-         "status": signup_status_ENUM.get(signup.status),'info':'距开始还有1小时' if delta/60>0 and delta/60<120 else ''})
+                     "schedule_time": schedule.conference_date.strftime('%Y-%m-%d') + ' ' + schedule.begin_time,
+                     "status": signup_status_ENUM.get(signup.status),
+                     'info': '距开始还有1小时' if delta / 60 > 0 and delta / 60 < 120 else ''})
     return data

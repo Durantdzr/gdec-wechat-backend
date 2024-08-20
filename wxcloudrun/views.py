@@ -2,7 +2,7 @@ from flask import request
 from run import app
 from wxcloudrun.dao import insert_user, search_friends_byopenid, insert_realtion_friend, get_friend_list, \
     save_realtion_friendbyid, is_invited_user, update_user_statusbyid, get_guests_list, get_conference_schedule_by_id, \
-    get_open_guests_list
+    get_open_guests_list,get_main_hall_guests_list
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, RelationFriend, ConferenceSignUp
 from wxcloudrun.response import make_succ_response, make_err_response
 from wxcloudrun.utils import batchdownloadfile, uploadfile, valid_image, uploadwebfile
@@ -283,20 +283,30 @@ def get_schedule_list():
 @app.route('/api/conference/get_open_guest_list', methods=['GET'])
 def get_open_guest_list():
     """
-    :return:获取嘉宾列表
+    :return:获取开幕式嘉宾列表
     """
     # 获取请求体参数
     wxopenid = request.headers['X-WX-OPENID']
     data = get_open_guests_list()
-    # uploadwebfile(data, openid=wxopenid, file='get_guest_list.json')
+    uploadwebfile(data, openid=wxopenid, file='get_open_guest_list.json')
     return make_succ_response(data)
 
+@app.route('/api/conference/get_main_hall_guest_list', methods=['GET'])
+def get_open_guest_list():
+    """
+    :return:获取主论坛嘉宾列表
+    """
+    # 获取请求体参数
+    wxopenid = request.headers['X-WX-OPENID']
+    data = get_main_hall_guests_list()
+    uploadwebfile(data, openid=wxopenid, file='get_main_hall_guests_list.json')
+    return make_succ_response(data)
 
 
 @app.route('/api/conference/refresh_all_guest_list', methods=['GET'])
 def refresh_all_guest_list():
     """
-    :return:获取嘉宾列表
+    :return:刷新嘉宾用户信息
     """
     # 获取请求体参数
     wxopenid = request.headers['X-WX-OPENID']
@@ -304,5 +314,4 @@ def refresh_all_guest_list():
         User.order.desc()).all()
     for guest in guests:
         uploadwebfile(guest.get_guest(), openid=wxopenid, file='web/guest/'+str(guest.id)+'.json')
-    # uploadwebfile(data, openid=wxopenid, file='get_guest_list.json')
     return make_succ_response('ok')
