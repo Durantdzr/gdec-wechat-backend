@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 import pymysql
 import config
 from flask_jwt_extended import JWTManager
+from flask_cors import CORS
 # 因MySQLDB不支持Python3，使用pymysql扩展库代替MySQLDB库
 pymysql.install_as_MySQLdb()
 
@@ -15,6 +16,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://{}:{}@{}/GDEC'.format(config.us
                                                                              config.db_address)
 app.config['JWT_SECRET_KEY'] = 'your-secret-key'
 jwt = JWTManager(app)
+CORS(app, resources={r"/api/manage/*": {"origins": "*"}})
 # 初始化DB操作对象
 db = SQLAlchemy(app)
 
