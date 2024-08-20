@@ -134,6 +134,13 @@ def get_guests_list():
     data = [guest.get_guest() for guest in guests]
     return data
 
+def get_open_guests_list():
+    schedule=ConferenceSchedule.query.filter(ConferenceSchedule.title.like('%开幕式%')).first()
+    guest_id=schedule.guest.split(',')
+    guests = User.query.filter(User.id.in_(guest_id)).order_by(
+        User.order.desc()).all()
+    data = [guest.get_guest() for guest in guests]
+    return data
 
 def get_review_conference_list(name, page, page_size):
     result = db.session.query(ConferenceSignUp, User, ConferenceSchedule).join(User,
