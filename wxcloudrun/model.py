@@ -15,10 +15,11 @@ class ConferenceInfo(db.Model):
     org = db.Column('org', db.String(50), nullable=True)
     create_time = db.Column('create_time', db.TIMESTAMP, nullable=False, default=datetime.now)
     file_url = db.Column('file_url', db.TEXT)
+    link_url = db.Column('link_url', db.TEXT)
 
     def get(self):
         return {'id': self.id, 'title': self.title, 'org': self.org, 'file_url': self.file_url,
-                'create_time': self.create_time.strftime('%Y-%m-%d')}
+                'create_time': self.create_time.strftime('%Y-%m-%d'), 'link_url': self.link_url}
 
 
 WEEKDAY = {0: '周一', 1: '周二', 2: '周三', 3: '周四', 4: '周五', 5: '周六', 6: '周日'}
