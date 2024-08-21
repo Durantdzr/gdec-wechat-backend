@@ -4,7 +4,8 @@ import logging
 from sqlalchemy.exc import OperationalError
 
 from wxcloudrun import db
-from wxcloudrun.model import ConferenceInfo, RelationFriend, User, ConferenceSignUp, ConferenceSchedule,ConferenCoopearter
+from wxcloudrun.model import ConferenceInfo, RelationFriend, User, ConferenceSignUp, ConferenceSchedule, \
+    ConferenCoopearter
 from sqlalchemy import or_, and_
 from wxcloudrun.utils import uploadwebfile
 import config
@@ -201,6 +202,8 @@ def get_conference_schedule_by_id(userid):
                      "status": signup_status_ENUM.get(signup.status),
                      'info': '距开始还有1小时' if delta / 60 > 0 and delta / 60 < 120 else ''})
     return data
+
+
 def get_hall_schedule_bydate(date):
     result = ConferenceSchedule.query.filter(
         ConferenceSchedule.is_deleted == 0, ConferenceSchedule.conference_date == date).order_by(
@@ -216,20 +219,25 @@ def get_hall_schedule_bydate(date):
         data.append(schedule)
     return data
 
+
 def get_cooperater_list(type):
     result = ConferenCoopearter.query.filter(ConferenCoopearter.type == type,
                                              ConferenCoopearter.is_deleted == 0).all()
     return [item.get() for item in result]
+
+
 def get_live_data():
     result = ConferenceSchedule.query.filter(ConferenceSchedule.is_deleted == 0,
                                              ConferenceSchedule.live_status > 0).all()
     return [item.get_live() for item in result]
+
 
 def refresh_cooperater():
     data = get_cooperater_list('合作伙伴')
     uploadwebfile(data, file='get_cooperater.json')
     data = get_cooperater_list('合作媒体')
     uploadwebfile(data, file='get_comedia.json')
+
 
 def refresh_guest():
     data = get_guests_list()
@@ -241,6 +249,7 @@ def refresh_guest():
     data = get_other_hall_guests_list()
     uploadwebfile(data, file='get_other_hall_guest_list.json')
 
+
 def refresh_guest_info(userid):
-    guest = User.query.filter(User.id==userid).first()
+    guest = User.query.filter(User.id == userid).first()
     uploadwebfile(guest.get_guest(), file='web/guest/' + str(guest.id) + '.json')

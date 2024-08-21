@@ -68,22 +68,23 @@ class ConferenceSchedule(db.Model):
     def get_schedule_view(self):
         status_ENUM = {0: '我要报名', 1: '正在直播' if self.live_status == 1 else '会议进行中',
                        2: '查看回放' if self.live_status == 2 else '会议结束'}
-        live_status_ENUM = { 1: '未开始' ,2: '直播中' ,3:"回放中"}
+        live_status_ENUM = {1: '未开始', 2: '直播中', 3: "回放中"}
         if self.guest is None:
             guest_id = []
         else:
             guest_id = list(map(int, self.guest.split(',')))
         if '开幕式' in self.title:
-            ext='开幕式'
+            ext = '开幕式'
         elif '主会场' in self.hall:
-            ext='主论坛'
+            ext = '主论坛'
         else:
-            ext=''
+            ext = ''
         return {'id': self.id, 'title': self.title, 'location': self.location, "hall": self.hall,
                 'conference_date': self.conference_date.strftime('%Y-%m-%d'), 'status': status_ENUM.get(self.status),
                 "begin_time": self.begin_time, "end_time": self.end_time, 'live_url': self.live_url,
                 "record_url": self.record_url, 'guest_id': guest_id, 'ext': ext,
                 'live_status': live_status_ENUM.get(self.live_status, '')}
+
 
 class ConferenceHall(db.Model):
     # 设置结构体表格名称
