@@ -221,7 +221,10 @@ def get_cooperater_list(type):
     result = ConferenCoopearter.query.filter(ConferenCoopearter.type == type,
                                              ConferenCoopearter.is_deleted == 0).all()
     return [item.get() for item in result]
-
+def get_live_data():
+    result = ConferenceSchedule.query.filter(ConferenceSchedule.is_deleted == 0,
+                                             ConferenceSchedule.live_status > 0).all()
+    return [item.get_live() for item in result]
 
 def refresh_cooperater():
     data = get_cooperater_list('合作伙伴')

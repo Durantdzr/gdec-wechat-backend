@@ -9,7 +9,7 @@
 from flask import request
 from run import app
 from wxcloudrun.dao import update_user_statusbyid, insert_user, get_guests_list, get_review_conference_list, \
-    update_schedule_statusbyid, refresh_cooperater, refresh_guest, refresh_guest_info, get_hall_schedule_bydate
+    update_schedule_statusbyid, refresh_cooperater, refresh_guest, refresh_guest_info, get_hall_schedule_bydate,get_live_data
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, RelationFriend, \
     ConferenCoopearter, Media
 from wxcloudrun.response import make_succ_page_response, make_succ_response, make_err_response
@@ -293,6 +293,9 @@ def add_hall_schedule():
     schedule.org = params.get('org')
     insert_user(schedule)
     refresh_guest()
+    if schedule.live_status:
+        data = get_live_data()
+        uploadwebfile(data, file='get_live_list.json')
     data = get_hall_schedule_bydate(params.get('conference_date'))
     uploadwebfile(data, file='get_hall_schedule' + params.get('conference_date') + '.json')
     return make_succ_response(schedule.id, code=200)
@@ -321,6 +324,9 @@ def edit_hall_schedule():
     schedule.org = params.get('org')
     insert_user(schedule)
     refresh_guest()
+    if schedule.live_status:
+        data = get_live_data()
+        uploadwebfile(data, file='get_live_list.json')
     data = get_hall_schedule_bydate(params.get('conference_date'))
     uploadwebfile(data, file='get_hall_schedule' + params.get('conference_date') + '.json')
     return make_succ_response(schedule.id, code=200)
@@ -338,6 +344,8 @@ def delete_hall_schedule():
     schedule.is_deleted = 1
     insert_user(schedule)
     refresh_guest()
+    data = get_live_data()
+    uploadwebfile(data, file='get_live_list.json')
     data = get_hall_schedule_bydate(schedule.conference_date.strftime('%Y-%m-%d'))
     uploadwebfile(data, file='get_hall_schedule' + schedule.conference_date.strftime('%Y-%m-%d') + '.json')
     return make_succ_response(schedule.id, code=200)

@@ -3,7 +3,7 @@ from run import app
 from wxcloudrun.dao import insert_user, search_friends_byopenid, insert_realtion_friend, get_friend_list, \
     save_realtion_friendbyid, is_invited_user, update_user_statusbyid, get_guests_list, get_conference_schedule_by_id, \
     get_open_guests_list, get_main_hall_guests_list, get_other_hall_guests_list, get_cooperater_list, \
-    get_hall_schedule_bydate
+    get_hall_schedule_bydate,get_live_data
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, RelationFriend, ConferenceSignUp, \
     ConferenCoopearter
 from wxcloudrun.response import make_succ_response, make_err_response
@@ -31,9 +31,9 @@ def get_live_list():
         :return:大会直播列表
         """
     # 获取请求体参数
-    result = ConferenceSchedule.query.filter(ConferenceSchedule.is_deleted == 0,
-                                             ConferenceSchedule.live_status > 0).all()
-    return make_succ_response([item.get_live() for item in result])
+    data=get_live_data()
+    uploadwebfile(data, file='get_live_list.json')
+    return make_succ_response(data)
 
 
 @app.route('/api/conference/get_hall_list', methods=['GET'])
