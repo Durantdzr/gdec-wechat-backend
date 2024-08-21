@@ -57,6 +57,7 @@ def get_hall_schedule():
     date = request.args.get('date')
     wxOpenid = request.headers['X-WX-OPENID']
     data = get_hall_schedule_bydate(date)
+    uploadwebfile(data, file='get_hall_schedule' + date + '.json')
     return make_succ_response(data)
 
 
