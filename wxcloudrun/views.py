@@ -371,7 +371,7 @@ def get_schedule_by_id():
     wxopenid = request.headers['X-WX-OPENID']
     schedule = ConferenceSchedule.query.filter(ConferenceSchedule.id == request.args.get('id')).first()
     data = schedule.get_schedule_view_simple()
-    uploadwebfile(data, openid=wxopenid, file='get_schedule_by_id'+schedule.id+'.json')
+    uploadwebfile(data, openid=wxopenid, file='get_schedule_by_id'+str(schedule.id)+'.json')
     return make_succ_response(data)
 
 

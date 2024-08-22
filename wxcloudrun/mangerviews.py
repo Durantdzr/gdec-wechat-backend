@@ -12,7 +12,7 @@ from flask import request
 from run import app
 from wxcloudrun.dao import update_user_statusbyid, insert_user, get_guests_list, get_review_conference_list, \
     update_schedule_statusbyid, refresh_cooperater, refresh_guest, refresh_guest_info, get_hall_schedule_bydate, \
-    get_live_data, refresh_conference_info,refresh_schedule_info
+    get_live_data, refresh_conference_info, refresh_schedule_info
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, RelationFriend, \
     ConferenCoopearter, Media
 from wxcloudrun.response import make_succ_page_response, make_succ_response, make_err_response
@@ -295,7 +295,7 @@ def add_hall_schedule():
     schedule.record_url = params.get('record_url')
     schedule.org = params.get('org')
     schedule.agenda = json.dumps(params.get('agenda', ''))
-    schedule.img_url=params.get('cdn_param')
+    schedule.img_url = params.get('cdn_param')
     insert_user(schedule)
     refresh_guest()
     if schedule.live_status:
@@ -303,7 +303,9 @@ def add_hall_schedule():
         uploadwebfile(data, file='get_live_list.json')
     data = get_hall_schedule_bydate(params.get('conference_date'))
     uploadwebfile(data, file='get_hall_schedule' + params.get('conference_date') + '.json')
-
+    schedule = ConferenceSchedule.query.filter(ConferenceSchedule.id == schedule.id).first()
+    data = schedule.get_schedule_view_simple()
+    uploadwebfile(data, file='get_schedule_by_id' + str(schedule.id) + '.json')
     return make_succ_response(schedule.id, code=200)
 
 
@@ -337,6 +339,9 @@ def edit_hall_schedule():
         uploadwebfile(data, file='get_live_list.json')
     data = get_hall_schedule_bydate(params.get('conference_date'))
     uploadwebfile(data, file='get_hall_schedule' + params.get('conference_date') + '.json')
+    schedule = ConferenceSchedule.query.filter(ConferenceSchedule.id == schedule.id).first()
+    data = schedule.get_schedule_view_simple()
+    uploadwebfile(data, file='get_schedule_by_id' + str(schedule.id) + '.json')
     return make_succ_response(schedule.id, code=200)
 
 
@@ -557,9 +562,10 @@ def manage_get_information_list():
     title = request.args.get('title', '')
     page = request.args.get('page', default=1, type=int)
     page_size = request.args.get('page_size', default=10, type=int)
-    result = ConferenceInfo.query.filter(ConferenceInfo.is_deleted == 0,ConferenceInfo.title.like('%' + title + '%')).paginate(page,
-                                                                            per_page=page_size,
-                                                                            error_out=False)
+    result = ConferenceInfo.query.filter(ConferenceInfo.is_deleted == 0,
+                                         ConferenceInfo.title.like('%' + title + '%')).paginate(page,
+                                                                                                per_page=page_size,
+                                                                                                error_out=False)
     return make_succ_page_response([item.get() for item in result.items], code=200, total=result.total)
 
 
