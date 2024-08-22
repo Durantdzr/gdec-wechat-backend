@@ -253,3 +253,7 @@ def refresh_guest():
 def refresh_guest_info(userid):
     guest = User.query.filter(User.id == userid).first()
     uploadwebfile(guest.get_guest(), file='web/guest/' + str(guest.id) + '.json')
+def refresh_conference_info():
+    result = ConferenceInfo.query.filter(ConferenceInfo.is_deleted ==0).all()
+    data=[item.get() for item in result]
+    uploadwebfile(data, file='get_information_list.json')
