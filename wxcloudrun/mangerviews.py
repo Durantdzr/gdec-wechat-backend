@@ -295,6 +295,7 @@ def add_hall_schedule():
     schedule.record_url = params.get('record_url')
     schedule.org = params.get('org')
     schedule.agenda = json.dumps(params.get('agenda', ''))
+    schedule.img_url=params.get('cdn_param')
     insert_user(schedule)
     refresh_guest()
     if schedule.live_status:
@@ -327,6 +328,7 @@ def edit_hall_schedule():
     schedule.record_url = params.get('record_url')
     schedule.org = params.get('org')
     schedule.agenda = json.dumps(params.get('agenda'))
+    schedule.img_url = params.get('cdn_param')
     insert_user(schedule)
     refresh_guest()
     if schedule.live_status:
