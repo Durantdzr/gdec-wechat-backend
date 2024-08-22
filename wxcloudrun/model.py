@@ -17,10 +17,13 @@ class ConferenceInfo(db.Model):
     create_time = db.Column('create_time', db.TIMESTAMP, nullable=False, default=datetime.now)
     file_url = db.Column('file_url', db.TEXT)
     link_url = db.Column('link_url', db.TEXT)
+    is_deleted = db.Column('is_deleted', db.INT, default=0)
 
     def get(self):
-        return {'id': self.id, 'title': self.title, 'org': self.org, 'file_url': self.file_url,
-                'create_time': self.create_time.strftime('%Y-%m-%d'), 'link_url': self.link_url}
+        return {'id': self.id, 'title': self.title, 'org': self.org,
+                'file_url': 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.file_url),
+                "cdn_param": self.file_url, 'create_time': self.create_time.strftime('%Y-%m-%d'),
+                'link_url': self.link_url}
 
 
 WEEKDAY = {0: '周一', 1: '周二', 2: '周三', 3: '周四', 4: '周五', 5: '周六', 6: '周日'}
@@ -65,7 +68,8 @@ class ConferenceSchedule(db.Model):
         return {'id': self.id, 'title': self.title, 'location': self.location, "hall": self.hall,
                 'conference_date': self.conference_date.strftime('%Y-%m-%d'), 'status': self.status,
                 'live_status': self.live_status, "begin_time": self.begin_time, "end_time": self.end_time,
-                'live_url': self.live_url, "record_url": self.record_url, 'guest_id': guest_id, 'org': self.org,"agenda":[] if (self.agenda is None or self.agenda=='') else json.loads(self.agenda)}
+                'live_url': self.live_url, "record_url": self.record_url, 'guest_id': guest_id, 'org': self.org,
+                "agenda": [] if (self.agenda is None or self.agenda == '') else json.loads(self.agenda)}
 
     def get_schedule_view(self):
         status_ENUM = {0: '我要报名', 1: '正在直播' if self.live_status == 1 else '会议进行中',

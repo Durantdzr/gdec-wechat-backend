@@ -541,3 +541,60 @@ def get_media():
                                                                             per_page=page_size,
                                                                             error_out=False)
     return make_succ_page_response([item.get() for item in result.items], code=200, total=result.total)
+
+@app.route('/api/manage/get_information_list', methods=['GET'])
+@jwt_required()
+def manage_get_information_list():
+    """
+        :return:大会资讯列表
+        """
+    # 获取请求体参数
+    result = ConferenceInfo.query.filter(ConferenceInfo.is_deleted ==0).all()
+    return make_succ_response([item.get() for item in result])
+
+@app.route('/api/manage/add_information_list', methods=['post'])
+@jwt_required()
+def manage_add_information_list():
+    """
+        :return:添加大会资讯
+        """
+    # 获取请求体参数
+    conferenceinfo = ConferenceInfo()
+    params = request.get_json()
+    conferenceinfo.title = params.get('title')
+    conferenceinfo.org = params.get('org')
+    conferenceinfo.create_time = params.get('create_time')
+    conferenceinfo.file_url = params.get('cdn_param')
+    conferenceinfo.link_url = params.get('link_url')
+    insert_user(conferenceinfo)
+    return make_succ_response(conferenceinfo.id, code=200)
+
+@app.route('/api/manage/edit_information_list', methods=['post'])
+@jwt_required()
+def manage_edit_information_list():
+    """
+        :return:编辑大会资讯
+        """
+    # 获取请求体参数
+    params = request.get_json()
+    conferenceinfo = ConferenceInfo.query.filter(ConferenceInfo.id == params.get('id')).first()
+    conferenceinfo.title = params.get('title')
+    conferenceinfo.org = params.get('org')
+    conferenceinfo.create_time = params.get('create_time')
+    conferenceinfo.file_url = params.get('cdn_param')
+    conferenceinfo.link_url = params.get('link_url')
+    insert_user(conferenceinfo)
+    return make_succ_response(conferenceinfo.id, code=200)
+
+@app.route('/api/manage/delete_information_list', methods=['post'])
+@jwt_required()
+def manage_delete_information_list():
+    """
+        :return:删除大会资讯
+        """
+    # 获取请求体参数
+    params = request.get_json()
+    conferenceinfo = ConferenceInfo.query.filter(ConferenceInfo.id == params.get('id')).first()
+    conferenceinfo.is_deleted = 1
+    insert_user(conferenceinfo)
+    return make_succ_response(conferenceinfo.id, code=200)
