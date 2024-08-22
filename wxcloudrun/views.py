@@ -366,7 +366,7 @@ def get_schedule_by_id():
 
 
 @app.route('/api/conference/refresh_schedule_list', methods=['GET'])
-def refresh_all_guest_list():
+def refresh_schedule_list():
     """
     :return:刷新嘉宾用户信息
     """
