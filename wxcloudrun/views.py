@@ -23,7 +23,6 @@ def get_information_list():
     # 获取请求体参数
     result = ConferenceInfo.query.filter(ConferenceInfo.is_deleted ==0).all()
     data=[item.get() for item in result]
-    uploadwebfile(data, file='get_information_list.json')
     return make_succ_response([item.get() for item in result])
 
 

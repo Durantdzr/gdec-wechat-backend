@@ -11,7 +11,8 @@ import json
 from flask import request
 from run import app
 from wxcloudrun.dao import update_user_statusbyid, insert_user, get_guests_list, get_review_conference_list, \
-    update_schedule_statusbyid, refresh_cooperater, refresh_guest, refresh_guest_info, get_hall_schedule_bydate,get_live_data
+    update_schedule_statusbyid, refresh_cooperater, refresh_guest, refresh_guest_info, get_hall_schedule_bydate, \
+    get_live_data, refresh_conference_info
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, RelationFriend, \
     ConferenCoopearter, Media
 from wxcloudrun.response import make_succ_page_response, make_succ_response, make_err_response
@@ -293,7 +294,7 @@ def add_hall_schedule():
     schedule.live_url = params.get('live_url')
     schedule.record_url = params.get('record_url')
     schedule.org = params.get('org')
-    schedule.agenda=json.dumps(params.get('agenda',''))
+    schedule.agenda = json.dumps(params.get('agenda', ''))
     insert_user(schedule)
     refresh_guest()
     if schedule.live_status:
@@ -542,6 +543,7 @@ def get_media():
                                                                             error_out=False)
     return make_succ_page_response([item.get() for item in result.items], code=200, total=result.total)
 
+
 @app.route('/api/manage/get_information_list', methods=['GET'])
 @jwt_required()
 def manage_get_information_list():
@@ -549,8 +551,9 @@ def manage_get_information_list():
         :return:大会资讯列表
         """
     # 获取请求体参数
-    result = ConferenceInfo.query.filter(ConferenceInfo.is_deleted ==0).all()
+    result = ConferenceInfo.query.filter(ConferenceInfo.is_deleted == 0).all()
     return make_succ_response([item.get() for item in result])
+
 
 @app.route('/api/manage/add_information_list', methods=['post'])
 @jwt_required()
@@ -567,7 +570,9 @@ def manage_add_information_list():
     conferenceinfo.file_url = params.get('cdn_param')
     conferenceinfo.link_url = params.get('link_url')
     insert_user(conferenceinfo)
+    refresh_conference_info()
     return make_succ_response(conferenceinfo.id, code=200)
+
 
 @app.route('/api/manage/edit_information_list', methods=['post'])
 @jwt_required()
@@ -584,7 +589,9 @@ def manage_edit_information_list():
     conferenceinfo.file_url = params.get('cdn_param')
     conferenceinfo.link_url = params.get('link_url')
     insert_user(conferenceinfo)
+    refresh_conference_info()
     return make_succ_response(conferenceinfo.id, code=200)
+
 
 @app.route('/api/manage/delete_information_list', methods=['post'])
 @jwt_required()
@@ -597,4 +604,5 @@ def manage_delete_information_list():
     conferenceinfo = ConferenceInfo.query.filter(ConferenceInfo.id == params.get('id')).first()
     conferenceinfo.is_deleted = 1
     insert_user(conferenceinfo)
+    refresh_conference_info()
     return make_succ_response(conferenceinfo.id, code=200)
