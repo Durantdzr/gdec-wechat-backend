@@ -6,6 +6,8 @@
 @describe: 
 @time: 2024/8/15 1:20 PM
 """
+import json
+
 from flask import request
 from run import app
 from wxcloudrun.dao import update_user_statusbyid, insert_user, get_guests_list, get_review_conference_list, \
@@ -291,6 +293,7 @@ def add_hall_schedule():
     schedule.live_url = params.get('live_url')
     schedule.record_url = params.get('record_url')
     schedule.org = params.get('org')
+    schedule.agenda=json.dumps(params.get('agenda',''))
     insert_user(schedule)
     refresh_guest()
     if schedule.live_status:
@@ -322,6 +325,7 @@ def edit_hall_schedule():
     schedule.live_url = params.get('live_url')
     schedule.record_url = params.get('record_url')
     schedule.org = params.get('org')
+    schedule.agenda = json.dumps(params.get('agenda'))
     insert_user(schedule)
     refresh_guest()
     if schedule.live_status:

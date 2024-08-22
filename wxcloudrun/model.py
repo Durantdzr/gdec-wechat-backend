@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 
 from wxcloudrun import db
@@ -44,6 +45,7 @@ class ConferenceSchedule(db.Model):
     live_status = db.Column('live_status', db.INT, default=0)
     is_deleted = db.Column('is_deleted', db.INT, default=0)
     org = db.Column('org', db.String(100), nullable=True)
+    agenda = db.Column('agenda', db.TEXT)
 
     def get_live(self):
         status_ENUM = {1: '即将直播', 2: '正在直播', 3: '查看回放'}
@@ -63,7 +65,7 @@ class ConferenceSchedule(db.Model):
         return {'id': self.id, 'title': self.title, 'location': self.location, "hall": self.hall,
                 'conference_date': self.conference_date.strftime('%Y-%m-%d'), 'status': self.status,
                 'live_status': self.live_status, "begin_time": self.begin_time, "end_time": self.end_time,
-                'live_url': self.live_url, "record_url": self.record_url, 'guest_id': guest_id, 'org': self.org}
+                'live_url': self.live_url, "record_url": self.record_url, 'guest_id': guest_id, 'org': self.org,"agenda":[] if (self.agenda is None or self.agenda=='') else json.loads(self.agenda)}
 
     def get_schedule_view(self):
         status_ENUM = {0: '我要报名', 1: '正在直播' if self.live_status == 1 else '会议进行中',
