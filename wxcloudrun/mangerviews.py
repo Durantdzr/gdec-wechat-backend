@@ -551,8 +551,13 @@ def manage_get_information_list():
         :return:大会资讯列表
         """
     # 获取请求体参数
-    result = ConferenceInfo.query.filter(ConferenceInfo.is_deleted == 0).all()
-    return make_succ_response([item.get() for item in result])
+    title = request.args.get('title', '')
+    page = request.args.get('page', default=1, type=int)
+    page_size = request.args.get('page_size', default=10, type=int)
+    result = ConferenceInfo.query.filter(ConferenceInfo.is_deleted == 0,ConferenceInfo.title.like('%' + title + '%')).paginate(page,
+                                                                            per_page=page_size,
+                                                                            error_out=False)
+    return make_succ_page_response([item.get() for item in result.items], code=200, total=result.total)
 
 
 @app.route('/api/manage/add_information_list', methods=['post'])
