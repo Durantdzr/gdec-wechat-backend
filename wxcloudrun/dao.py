@@ -269,3 +269,9 @@ def refresh_conference_info():
     result = ConferenceInfo.query.filter(ConferenceInfo.is_deleted ==0).all()
     data=[item.get() for item in result]
     uploadwebfile(data, file='get_information_list.json')
+
+def refresh_schedule_info():
+    schedules = ConferenceSchedule.query.filter(ConferenceSchedule.is_deleted == 0).all()
+    for schedule in schedules:
+        uploadwebfile(schedule.get_schedule_view_simple(),
+                      file='get_schedule_by_id' + str(schedule.id) + '.json')

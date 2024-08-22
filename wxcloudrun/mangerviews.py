@@ -12,7 +12,7 @@ from flask import request
 from run import app
 from wxcloudrun.dao import update_user_statusbyid, insert_user, get_guests_list, get_review_conference_list, \
     update_schedule_statusbyid, refresh_cooperater, refresh_guest, refresh_guest_info, get_hall_schedule_bydate, \
-    get_live_data, refresh_conference_info
+    get_live_data, refresh_conference_info,refresh_schedule_info
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, RelationFriend, \
     ConferenCoopearter, Media
 from wxcloudrun.response import make_succ_page_response, make_succ_response, make_err_response
@@ -303,6 +303,7 @@ def add_hall_schedule():
         uploadwebfile(data, file='get_live_list.json')
     data = get_hall_schedule_bydate(params.get('conference_date'))
     uploadwebfile(data, file='get_hall_schedule' + params.get('conference_date') + '.json')
+
     return make_succ_response(schedule.id, code=200)
 
 
