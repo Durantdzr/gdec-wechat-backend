@@ -3,7 +3,7 @@ from run import app
 from wxcloudrun.dao import insert_user, search_friends_byopenid, insert_realtion_friend, get_friend_list, \
     save_realtion_friendbyid, is_invited_user, update_user_statusbyid, get_guests_list, get_conference_schedule_by_id, \
     get_open_guests_list, get_main_hall_guests_list, get_other_hall_guests_list, get_cooperater_list, \
-    get_hall_schedule_bydate,get_live_data,get_user_schedule_num_by_id
+    get_hall_schedule_bydate, get_live_data, get_user_schedule_num_by_id
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, RelationFriend, ConferenceSignUp, \
     ConferenCoopearter
 from wxcloudrun.response import make_succ_response, make_err_response
@@ -21,8 +21,8 @@ def get_information_list():
         :return:大会资讯列表
         """
     # 获取请求体参数
-    result = ConferenceInfo.query.filter(ConferenceInfo.is_deleted ==0).all()
-    data=[item.get() for item in result]
+    result = ConferenceInfo.query.filter(ConferenceInfo.is_deleted == 0).all()
+    data = [item.get() for item in result]
     return make_succ_response([item.get() for item in result])
 
 
@@ -32,7 +32,7 @@ def get_live_list():
         :return:大会直播列表
         """
     # 获取请求体参数
-    data=get_live_data()
+    data = get_live_data()
     uploadwebfile(data, file='get_live_list.json')
     return make_succ_response(data)
 
@@ -150,13 +150,14 @@ def get_user_privilege():
     if user is None:
         return make_succ_response(data)
     data['account_status'] = user.get_status()
-    if user.status==2:
+    if user.status == 2:
         data['find_friend'] = True
         data['invited'] = True
         data['schdule'] = True
         data['document'] = True
-        data['invited_num']=len(RelationFriend.query.filter(RelationFriend.inviter_id==user.id, RelationFriend.status==0).all())
-        data['schdule_num']=get_user_schedule_num_by_id(user.id)
+        data['invited_num'] = len(
+            RelationFriend.query.filter(RelationFriend.inviter_id == user.id, RelationFriend.status == 0).all())
+        data['schdule_num'] = get_user_schedule_num_by_id(user.id)
     return make_succ_response(data)
 
 
@@ -349,3 +350,30 @@ def get_comedia():
     data = get_cooperater_list('合作媒体')
     uploadwebfile(data, openid=wxopenid, file='get_comedia.json')
     return make_succ_response(data)
+
+
+@app.route('/api/conference/get_schedule_by_id', methods=['GET'])
+def get_schedule_by_id():
+    """
+    :return:获取某id的会议议程
+    """
+    # 获取请求体参数
+    wxopenid = request.headers['X-WX-OPENID']
+    schedule = ConferenceSchedule.query.filter(ConferenceSchedule.id == request.args.get('id')).first()
+    data = schedule.get_schedule_view_simple()
+    # uploadwebfile(data, openid=wxopenid, file='get_schedule_by_id'+schedule.id+'.json')
+    return make_succ_response(data)
+
+
+@app.route('/api/conference/refresh_schedule_list', methods=['GET'])
+def refresh_all_guest_list():
+    """
+    :return:刷新嘉宾用户信息
+    """
+    # 获取请求体参数
+    wxopenid = request.headers['X-WX-OPENID']
+    schedules = ConferenceSchedule.query.filter(ConferenceSchedule.is_deleted == 0).all()
+    for schedule in schedules:
+        uploadwebfile(schedule.get_schedule_view_simple(), openid=wxopenid,
+                      file='get_schedule_by_id' + str(schedule.id) + '.json')
+    return make_succ_response('ok')
