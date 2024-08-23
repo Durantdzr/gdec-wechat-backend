@@ -137,11 +137,13 @@ def upload_user_img():
     # 获取请求体参数
 
     params = request.get_json()
-    decoded_data = base64.b64decode(params.get('img_encode'))
+    src=params.get('img_encode')
+    data = src.split(',')[1]
+    image_data = base64.b64decode(data)
     u = uuid.uuid4()
     filename = 'guest/' + str(u) + '.jpeg'
     with open(filename, 'wb') as file_to_save:
-        file_to_save.write(decoded_data)
+        file_to_save.write(image_data)
     uploadfile(filename, openid=request.headers['X-WX-OPENID'])
     return make_succ_response(
             {'img_url': 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, filename), "cdn_param": filename})
