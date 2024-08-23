@@ -13,6 +13,7 @@ import config
 import requests
 import json
 import uuid
+import base64
 
 
 @app.route('/api/conference/get_information_list', methods=['GET'])
@@ -135,17 +136,16 @@ def upload_user_img():
     """
     # 获取请求体参数
 
-    file = request.files['file']
-    if file:  # 这里可以加入文件类型判断等逻辑
-        format = valid_image(file.stream)
-        u = uuid.uuid4()
-        filename = 'guest/' + str(u) + format
-        file.save(filename)
-        uploadfile(filename, openid=request.headers['X-WX-OPENID'])
-        return make_succ_response(
+    params = request.get_json()
+    decoded_data = base64.b64decode(params.get('img_encode'))
+    u = uuid.uuid4()
+    filename = 'guest/' + str(u) + '.jpeg'
+    with open(filename, 'wb') as file_to_save:
+        file_to_save.write(decoded_data)
+    uploadfile(filename, openid=request.headers['X-WX-OPENID'])
+    return make_succ_response(
             {'img_url': 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, filename), "cdn_param": filename})
-    else:
-        return make_err_response('请上传文件')
+
 
 
 @app.route('/api/user/privilege', methods=['GET'])
