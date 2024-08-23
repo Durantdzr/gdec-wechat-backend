@@ -7,7 +7,7 @@ from wxcloudrun.dao import insert_user, search_friends_byopenid, insert_realtion
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, RelationFriend, ConferenceSignUp, \
     ConferenCoopearter
 from wxcloudrun.response import make_succ_response, make_err_response
-from wxcloudrun.utils import batchdownloadfile, uploadfile, valid_image, uploadwebfile
+from wxcloudrun.utils import batchdownloadfile, uploadfile, valid_image, uploadwebfile,send_to_begin_msg
 import imghdr
 import config
 import requests
@@ -89,7 +89,18 @@ def get_user_phone():
     params = request.get_json()
     result = requests.post('http://api.weixin.qq.com/wxa/getopendata', params={"openid": wxOpenid},
                            json={'cloudid_list': [params.get("cloudid")]})
-    return make_succ_response(result.json())
+    data=result.json()
+    user = User.query.filter(User.openid == request.headers['X-WX-OPENID']).first()
+    if user is None and data.get('errmsg')=='ok':
+        user = User()
+        user.openid = request.headers['X-WX-OPENID']
+        data_list = data.get('data_list', [{}])[0]
+        json_data = json.loads(data_list.get('json', ''))
+        json_data = json_data.get('data', {})
+        phoneNumber = json_data.get('phoneNumber', '')
+        user.phone=phoneNumber
+        insert_user(user)
+    return make_succ_response(data)
 
 
 @app.route('/api/user/upload_user_info', methods=['POST'])
@@ -384,3 +395,16 @@ def refresh_schedule_list():
     wxopenid = request.headers['X-WX-OPENID']
     refresh_schedule_info()
     return make_succ_response('ok')
+
+
+@app.route('/api/send_msg', methods=['POST'])
+def send_msg():
+    """
+        :return:发送消息
+    """
+    data = request.get_json()
+    wxOpenid = request.headers['X-WX-OPENID']
+    result=send_to_begin_msg(wxOpenid,'ceshi','浦东','09:00')
+
+    return make_succ_response(result)
+

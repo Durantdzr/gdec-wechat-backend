@@ -65,3 +65,30 @@ def uploadwebfile(data, file, openid='omf5s7V9tfLS25ZxIXE0TtJCaZ3w'):
     with open(file, 'w') as f:
         json.dump(data, f)
     uploadfile(openid=openid, file=file)
+
+
+def send_to_begin_msg(openid, title, location, begin_time):
+    data = {
+        "touser": openid,
+        "template_id": "ercDXlwuxY8WfhCWzLnElsvpJmKDSjN7N1HyRliaElM",
+        "data": {
+            "thing2": {
+                "value": title
+            },
+            "thing4": {
+                "value": location
+            },
+            "time3": {
+                "value": begin_time
+            },
+            "thing5": {
+                "value": "活动即将开始，请前往参加"
+            }
+        },
+        "miniprogram_state": "trial",
+        "lang": "zh_CN"
+    }
+
+    result = requests.post('http://api.weixin.qq.com/cgi-bin/message/subscribe/send', params={"openid": openid},
+                           json=data)
+    return result.json()
