@@ -32,7 +32,7 @@ def search_friends_byopenid(openid, name):
     friends = RelationFriend.query.filter(
         or_(RelationFriend.operater_id == user_id, RelationFriend.inviter_id == user_id),
         RelationFriend.is_deleted == 0).all()
-    friend_list = []
+    friend_list = [user_id]
     for friend in friends:
         friend_list.append(friend.operater_id)
         friend_list.append(friend.inviter_id)
