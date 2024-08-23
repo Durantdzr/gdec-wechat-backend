@@ -36,7 +36,8 @@ def search_friends_byopenid(openid, name):
     for friend in friends:
         friend_list.append(friend.operater_id)
         friend_list.append(friend.inviter_id)
-    socail_user = User.query.filter(User.name.like('%' + name + '%'), User.status == 2, User.is_deleted == 0,
+    socail_user = User.query.filter(or_(User.name.like('%' + name + '%'), User.company.like('%' + name + '%')),
+                                    User.status == 2, User.is_deleted == 0,
                                     User.socail == 1, ~User.id.in_(friend_list)).all()
     return socail_user
 
@@ -203,6 +204,7 @@ def get_conference_schedule_by_id(userid):
                      'info': '距开始还有1小时' if delta / 60 > 0 and delta / 60 < 120 else ''})
     return data
 
+
 def get_user_schedule_num_by_id(userid):
     result = db.session.query(ConferenceSignUp, ConferenceSchedule).join(
         ConferenceSchedule, ConferenceSignUp.schedule_id == ConferenceSchedule.id).filter(
@@ -213,8 +215,9 @@ def get_user_schedule_num_by_id(userid):
             schedule.conference_date.strftime('%Y-%m-%d') + ' ' + schedule.begin_time,
             "%Y-%m-%d %H:%M") - datetime.datetime.now()).total_seconds()
         if delta / 60 > 0 and delta / 60 < 120:
-            num+=1
+            num += 1
     return num
+
 
 def get_hall_schedule_bydate(date):
     result = ConferenceSchedule.query.filter(
@@ -265,10 +268,13 @@ def refresh_guest():
 def refresh_guest_info(userid):
     guest = User.query.filter(User.id == userid).first()
     uploadwebfile(guest.get_guest(), file='web/guest/' + str(guest.id) + '.json')
+
+
 def refresh_conference_info():
-    result = ConferenceInfo.query.filter(ConferenceInfo.is_deleted ==0).all()
-    data=[item.get() for item in result]
+    result = ConferenceInfo.query.filter(ConferenceInfo.is_deleted == 0).all()
+    data = [item.get() for item in result]
     uploadwebfile(data, file='get_information_list.json')
+
 
 def refresh_schedule_info():
     schedules = ConferenceSchedule.query.filter(ConferenceSchedule.is_deleted == 0).all()
