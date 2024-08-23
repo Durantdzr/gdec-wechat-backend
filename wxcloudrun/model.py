@@ -150,7 +150,7 @@ class User(db.Model):
     def get_full(self):
         return {"id": self.id, "name": self.name, "company": self.company, "title": self.title, "phone": self.phone,
                 "code": self.code, "type": self.type,
-                "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url),
+                "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url) if self.img_url is not None else None,
                 'cdn_param': self.img_url}
 
     def get_guest(self):
