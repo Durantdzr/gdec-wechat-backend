@@ -31,7 +31,7 @@ def batchdownloadfile(openid, filelist):
     return result
 
 
-def uploadfile(file, openid='o1gww5Zct8sqPnwbev1uw3PoDgvg'):
+def uploadfile(file, openid='omf5s7V9tfLS25ZxIXE0TtJCaZ3w'):
     data = {
         "env": config.ENV,
         "path": file
@@ -60,7 +60,7 @@ def vaild_password(password):
     return hashlib.md5(password.encode(encoding='UTF-8')).hexdigest()
 
 
-def uploadwebfile(data, file, openid='o1gww5Zct8sqPnwbev1uw3PoDgvg'):
+def uploadwebfile(data, file, openid='omf5s7V9tfLS25ZxIXE0TtJCaZ3w'):
     data = {'code': 0, 'data': data}
     with open(file, 'w') as f:
         json.dump(data, f)
