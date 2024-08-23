@@ -262,7 +262,7 @@ def uploadfile_json():
     data = request.get_json()
     with open('data.json', 'w') as f:
         json.dump(data, f)
-    return make_succ_response(uploadfile(wxopenid, 'data.json'))
+    return make_succ_response(uploadfile( 'data.json',wxopenid))
 
 
 @app.route('/api/downloadfile/json', methods=['GET'])
