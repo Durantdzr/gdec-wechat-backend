@@ -102,13 +102,19 @@ def get_user_phone():
         user.phone = phoneNumber
         insert_user(user)
     if user is not None and data.get('errmsg') == 'ok':
+        data_list = data.get('data_list', [{}])[0]
+        json_data = json.loads(data_list.get('json', ''))
+        json_data = json_data.get('data', {})
         user.is_deleted=0
         user.name=None
-        user.phone=None
+        user.phone= json_data.get('phoneNumber', '')
         user.code=None
         user.title=None
         user.type='普通观众'
         user.socail=0
+        user.status=0
+        user.img_url=None
+
         insert_user(user)
     return make_succ_response(data)
 
