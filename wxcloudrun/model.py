@@ -56,7 +56,7 @@ class ConferenceSchedule(db.Model):
         status_ENUM = {1: '即将直播', 2: '正在直播', 3: '查看回放'}
         return {'id': self.id, 'title': self.title, 'location': self.location, 'live_time': self.get_live_time(),
                 'status': status_ENUM.get(self.live_status), 'live_url': self.live_url, 'record_url': self.record_url,
-                "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url)}
+                "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url) if self.img_url is not None else ''}
 
     def get_live_time(self):
         return self.conference_date.strftime('%Y年%m月%d日') + '(' + WEEKDAY.get(
