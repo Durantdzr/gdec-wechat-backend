@@ -246,6 +246,8 @@ def get_hall_schedule_bydate(date):
         if len(schedule.get('guest_id', [])) > 0:
             for guest in schedule.get('guest_id', []):
                 user = User.query.filter_by(id=guest).first()
+                if user is None:
+                    continue
                 schedule['guest_img'].append('https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, user.img_url))
         data.append(schedule)
     return data
