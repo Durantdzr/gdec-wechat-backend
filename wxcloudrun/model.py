@@ -140,7 +140,7 @@ class User(db.Model):
     forum = db.Column('forum', db.String)
 
     def get_status(self):
-        status_ENUM = {1: '审核未通过', 2: '审核已通过', 0: '未注册',3:'待审核'}
+        status_ENUM = {1: '审核未通过', 2: '审核已通过', 0: '未审核',3:'待审核'}
         return status_ENUM.get(self.status, '审核未通过')
 
     def get(self):
