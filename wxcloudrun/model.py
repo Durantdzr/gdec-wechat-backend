@@ -50,6 +50,7 @@ class ConferenceSchedule(db.Model):
     org = db.Column('org', db.String(100), nullable=True)
     agenda = db.Column('agenda', db.TEXT)
     img_url = db.Column('img_url', db.String(100))
+    forum = db.Column('forum', db.String(50), default='')
 
     def get_live(self):
         status_ENUM = {1: '即将直播', 2: '正在直播', 3: '查看回放'}
@@ -140,7 +141,7 @@ class User(db.Model):
     forum = db.Column('forum', db.String)
 
     def get_status(self):
-        status_ENUM = {1: '审核未通过', 2: '审核已通过', 0: '未审核',3:'待审核'}
+        status_ENUM = {1: '审核未通过', 2: '审核已通过', 0: '未审核', 3: '待审核'}
         return status_ENUM.get(self.status, '审核未通过')
 
     def get(self):
@@ -149,8 +150,9 @@ class User(db.Model):
 
     def get_full(self):
         return {"id": self.id, "name": self.name, "company": self.company, "title": self.title, "phone": self.phone,
-                "code": self.code, "type": self.type,"socail":self.socail,
-                "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url) if self.img_url is not None else None,
+                "code": self.code, "type": self.type, "socail": self.socail,
+                "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET,
+                                                                self.img_url) if self.img_url is not None else None,
                 'cdn_param': self.img_url}
 
     def get_guest(self):

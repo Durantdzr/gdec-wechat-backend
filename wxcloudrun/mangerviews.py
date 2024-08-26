@@ -12,13 +12,13 @@ from flask import request
 from run import app
 from wxcloudrun.dao import update_user_statusbyid, insert_user, get_guests_list, get_review_conference_list, \
     update_schedule_statusbyid, refresh_cooperater, refresh_guest, refresh_guest_info, get_hall_schedule_bydate, \
-    get_live_data, refresh_conference_info, refresh_schedule_info
+    get_live_data, refresh_conference_info, refresh_schedule_info, delete_reocrd
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, RelationFriend, \
     ConferenCoopearter, Media
 from wxcloudrun.response import make_succ_page_response, make_succ_response, make_err_response
 from wxcloudrun.utils import batchdownloadfile, uploadfile, valid_image, vaild_password, uploadwebfile
 from datetime import timedelta
-from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, get_jwt
 import uuid
 import config
 import requests
@@ -37,8 +37,14 @@ def login():
         return make_err_response('不存在该用户')
     if pwdhash != vaild_password(user.password):
         return make_err_response('密码错误')
-    access_token = create_access_token(identity=username, expires_delta=timedelta(days=1))
-    return make_succ_response({"access_token": access_token}, code=200)
+    additional_claims = {"forum": user.forum}
+    access_token = create_access_token(identity=username, expires_delta=timedelta(days=1),
+                                       additional_claims=additional_claims)
+    if user.forum == '':
+        branch = 0
+    else:
+        branch = 1
+    return make_succ_response({"access_token": access_token, "branch": branch}, code=200)
 
 
 @app.route('/api/manage/logout', methods=['POST'])
@@ -47,7 +53,7 @@ def logout():
     """
         :return:用户登出
         """
-    operator = get_jwt_identity()
+    forum = get_jwt().get("forum")
     return make_succ_response('用户已登出', code=200)
 
 
@@ -143,6 +149,7 @@ def add_guest():
         :return:新增嘉宾用户
         """
     operator = get_jwt_identity()
+    forum = get_jwt().get("forum")
     params = request.get_json()
     user = User()
     user.name = params.get('name')
@@ -152,6 +159,7 @@ def add_guest():
     user.img_url = params.get('cdn_param')
     user.type = '嘉宾'
     user.status = 2
+    user.forum = forum
     if params.get('order') is not None:
         user.order = params.get('order')
     insert_user(user)
@@ -206,7 +214,8 @@ def manage_get_guest_list():
     name = request.args.get('name', '')
     page = request.args.get('page', default=1, type=int)
     page_size = request.args.get('page_size', default=10, type=int)
-    guests = User.query.filter(User.type == '嘉宾', User.is_deleted == 0, User.name.like('%' + name + '%')).order_by(
+    forum = get_jwt().get("forum","")
+    guests = User.query.filter(User.type == '嘉宾', User.is_deleted == 0, User.name.like('%' + name + '%'),User.forum.like('%' + forum + '%')).order_by(
         User.order.desc()).paginate(
         page,
         per_page=page_size,
@@ -246,8 +255,10 @@ def manage_get_hall_schedule():
     title = request.args.get('title', '')
     page = request.args.get('page', default=1, type=int)
     page_size = request.args.get('page_size', default=10, type=int)
+    forum = get_jwt().get("forum")
     result = ConferenceSchedule.query.filter(ConferenceSchedule.is_deleted == 0,
-                                             ConferenceSchedule.title.like('%' + title + '%')).paginate(page,
+                                             ConferenceSchedule.title.like('%' + title + '%'),
+                                             ConferenceSchedule.forum.like('%' + forum + '%')).paginate(page,
                                                                                                         per_page=page_size,
                                                                                                         error_out=False)
     data = []
@@ -279,6 +290,7 @@ def add_hall_schedule():
     """
         :return:新增日程
         """
+    forum = get_jwt().get("forum")
     operator = get_jwt_identity()
     params = request.get_json()
     schedule = ConferenceSchedule()
@@ -296,6 +308,7 @@ def add_hall_schedule():
     schedule.org = params.get('org')
     schedule.agenda = json.dumps(params.get('agenda', ''))
     schedule.img_url = params.get('cdn_param')
+    schedule.forum=forum
     insert_user(schedule)
     refresh_guest()
     if schedule.live_status:
@@ -461,7 +474,8 @@ def get_conference_sign_up():
     name = request.args.get('name', '')
     page = request.args.get('page', default=1, type=int)
     page_size = request.args.get('page_size', default=10, type=int)
-    result, total = get_review_conference_list(name, page, page_size)
+    forum = get_jwt().get("forum")
+    result, total = get_review_conference_list(name, page, page_size,forum)
     return make_succ_page_response(result, code=200, total=total)
 
 

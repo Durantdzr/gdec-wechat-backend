@@ -24,6 +24,17 @@ def insert_user(user):
         db.session.commit()
     except OperationalError as e:
         logger.info("insert_counter errorMsg= {} ".format(e))
+def delete_reocrd(user):
+    """
+    插入一个User实体
+    :param counter: User实体
+    """
+    try:
+        db.session.delete(user)
+        db.session.commit()
+    except OperationalError as e:
+        logger.info("insert_counter errorMsg= {} ".format(e))
+
 
 
 def search_friends_byopenid(openid, name):
@@ -175,12 +186,12 @@ def get_other_hall_guests_list():
     return data
 
 
-def get_review_conference_list(name, page, page_size):
+def get_review_conference_list(name, page, page_size,forum):
     result = db.session.query(ConferenceSignUp, User, ConferenceSchedule).join(User,
                                                                                User.id == ConferenceSignUp.user_id).join(
         ConferenceSchedule, ConferenceSignUp.schedule_id == ConferenceSchedule.id).filter(
         User.name.like('%' + name + '%'), User.status == 2, User.is_deleted == 0, ConferenceSchedule.is_deleted == 0,
-                                          ConferenceSignUp.status == 0).paginate(page, per_page=page_size,
+                                          ConferenceSignUp.status == 0,ConferenceSchedule.forum.like('%'+forum+'%')).paginate(page, per_page=page_size,
                                                                                  error_out=False)
     return [{"id": signup.id, "user_name": user.name, "schedule_name": schedule.title,
              "schedule_date": schedule.conference_date.strftime('%Y-%m-%d'), "begin_time": schedule.begin_time,
