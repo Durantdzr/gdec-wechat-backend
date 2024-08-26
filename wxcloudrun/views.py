@@ -121,6 +121,8 @@ def upload_user_info():
         user.socail= params.get("socail", 0)
         insert_user(user)
         return make_succ_response(user.id)
+    elif user.status==3:
+        return make_err_response('无法提交用户数据')
     user.name = params.get("name")
     user.phone = params.get("phone")
     user.code = params.get("code")
@@ -129,6 +131,7 @@ def upload_user_info():
     user.type = params.get("type")
     user.socail = params.get("socail", 0)
     user.img_url = params.get("cdn_param")
+    user.status=3
     insert_user(user)
     return make_succ_response(user.id)
 
@@ -187,7 +190,7 @@ def get_user_by_id():
     wxopenid = request.headers['X-WX-OPENID']
     user = User.query.filter(User.id == request.args.get('user_id')).first()
     if user is None:
-        return make_err_response('')
+        return make_err_response('没有该用户')
     return make_succ_response(user.get())
 
 @app.route('/api/user/get_user_by_openid', methods=['GET'])
