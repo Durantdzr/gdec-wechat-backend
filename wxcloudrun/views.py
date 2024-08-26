@@ -3,11 +3,11 @@ from run import app
 from wxcloudrun.dao import insert_user, search_friends_byopenid, insert_realtion_friend, get_friend_list, \
     save_realtion_friendbyid, is_invited_user, update_user_statusbyid, get_guests_list, get_conference_schedule_by_id, \
     get_open_guests_list, get_main_hall_guests_list, get_other_hall_guests_list, get_cooperater_list, \
-    get_hall_schedule_bydate, get_live_data, get_user_schedule_num_by_id,refresh_schedule_info
+    get_hall_schedule_bydate, get_live_data, get_user_schedule_num_by_id, refresh_schedule_info
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, RelationFriend, ConferenceSignUp, \
     ConferenCoopearter
 from wxcloudrun.response import make_succ_response, make_err_response
-from wxcloudrun.utils import batchdownloadfile, uploadfile, valid_image, uploadwebfile,send_to_begin_msg
+from wxcloudrun.utils import batchdownloadfile, uploadfile, valid_image, uploadwebfile, send_to_begin_msg
 import imghdr
 import config
 import requests
@@ -90,16 +90,25 @@ def get_user_phone():
     params = request.get_json()
     result = requests.post('http://api.weixin.qq.com/wxa/getopendata', params={"openid": wxOpenid},
                            json={'cloudid_list': [params.get("cloudid")]})
-    data=result.json()
+    data = result.json()
     user = User.query.filter(User.openid == request.headers['X-WX-OPENID']).first()
-    if user is None and data.get('errmsg')=='ok':
+    if user is None and data.get('errmsg') == 'ok':
         user = User()
         user.openid = request.headers['X-WX-OPENID']
         data_list = data.get('data_list', [{}])[0]
         json_data = json.loads(data_list.get('json', ''))
         json_data = json_data.get('data', {})
         phoneNumber = json_data.get('phoneNumber', '')
-        user.phone=phoneNumber
+        user.phone = phoneNumber
+        insert_user(user)
+    if user is not None and data.get('errmsg') == 'ok':
+        user.is_deleted=0
+        user.name=None
+        user.phone=None
+        user.code=None
+        user.title=None
+        user.type='普通观众'
+        user.socail=0
         insert_user(user)
     return make_succ_response(data)
 
@@ -115,13 +124,13 @@ def upload_user_info():
     if user is None:
         user = User()
         user.openid = request.headers['X-WX-OPENID']
-    if user.status == 2 and user.socail==params.get("socail", 0):
+    if user.status == 2 and user.socail == params.get("socail", 0):
         return make_err_response('用户已完成审核，无法再次提交审核。')
-    elif user.status == 2 :
-        user.socail= params.get("socail", 0)
+    elif user.status == 2:
+        user.socail = params.get("socail", 0)
         insert_user(user)
         return make_succ_response(user.id)
-    elif user.status==3:
+    elif user.status == 3:
         return make_err_response('无法提交用户数据')
     user.name = params.get("name")
     user.phone = params.get("phone")
@@ -131,7 +140,7 @@ def upload_user_info():
     user.type = params.get("type")
     user.socail = params.get("socail", 0)
     user.img_url = params.get("cdn_param")
-    user.status=3
+    user.status = 3
     insert_user(user)
     return make_succ_response(user.id)
 
@@ -144,7 +153,7 @@ def upload_user_img():
     # 获取请求体参数
 
     params = request.get_json()
-    src=params.get('img_encode')
+    src = params.get('img_encode')
     data = src.split(',')[1]
     image_data = base64.b64decode(data)
     u = uuid.uuid4()
@@ -153,8 +162,7 @@ def upload_user_img():
         file_to_save.write(image_data)
     uploadfile(filename, openid=request.headers['X-WX-OPENID'])
     return make_succ_response(
-            {'img_url': 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, filename), "cdn_param": filename})
-
+        {'img_url': 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, filename), "cdn_param": filename})
 
 
 @app.route('/api/user/privilege', methods=['GET'])
@@ -193,6 +201,7 @@ def get_user_by_id():
         return make_err_response('没有该用户')
     return make_succ_response(user.get())
 
+
 @app.route('/api/user/get_user_by_openid', methods=['GET'])
 def get_user_by_openid():
     """
@@ -200,7 +209,7 @@ def get_user_by_openid():
     """
     # 获取请求体参数
     wxopenid = request.headers['X-WX-OPENID']
-    user = User.query.filter(User.openid == wxopenid,User.is_deleted==0).first()
+    user = User.query.filter(User.openid == wxopenid, User.is_deleted == 0).first()
     if user is None:
         return make_err_response('没有该用户')
     return make_succ_response(user.get_full())
@@ -286,7 +295,7 @@ def uploadfile_json():
     data = request.get_json()
     with open('data.json', 'w') as f:
         json.dump(data, f)
-    return make_succ_response(uploadfile( 'data.json',wxopenid))
+    return make_succ_response(uploadfile('data.json', wxopenid))
 
 
 @app.route('/api/downloadfile/json', methods=['GET'])
@@ -395,7 +404,7 @@ def get_schedule_by_id():
     wxopenid = request.headers['X-WX-OPENID']
     schedule = ConferenceSchedule.query.filter(ConferenceSchedule.id == request.args.get('id')).first()
     data = schedule.get_schedule_view_simple()
-    uploadwebfile(data, openid=wxopenid, file='get_schedule_by_id'+str(schedule.id)+'.json')
+    uploadwebfile(data, openid=wxopenid, file='get_schedule_by_id' + str(schedule.id) + '.json')
     return make_succ_response(data)
 
 
@@ -417,7 +426,6 @@ def send_msg():
     """
     params = request.get_json()
     wxOpenid = request.headers['X-WX-OPENID']
-    result=send_to_begin_msg(params.get('openid'),'ceshi','浦东','09:00')
+    result = send_to_begin_msg(params.get('openid'), 'ceshi', '浦东', '09:00')
 
     return make_succ_response(result)
-
