@@ -105,16 +105,24 @@ def get_user_phone():
         data_list = data.get('data_list', [{}])[0]
         json_data = json.loads(data_list.get('json', ''))
         json_data = json_data.get('data', {})
-        user.is_deleted=0
-        user.name=None
-        user.phone= json_data.get('phoneNumber', '')
-        user.code=None
-        user.title=None
-        user.type='普通观众'
-        user.socail=0
-        user.status=0
-        user.img_url=None
-
+        phoneNumber = json_data.get('phoneNumber', '')
+        user.openid = str(uuid.uuid4())
+        insert_user(user)
+        user = User.query.filter(User.phone == phoneNumber).first()
+        if user is None:
+            user = User()
+            user.phone = phoneNumber
+        elif user.is_deleted == 1:
+            user.is_deleted = 0
+            user.name = None
+            user.phone = phoneNumber
+            user.code = None
+            user.title = None
+            user.type = '普通观众'
+            user.socail = 0
+            user.status = 0
+            user.img_url = None
+        user.openid = request.headers['X-WX-OPENID']
         insert_user(user)
     return make_succ_response(data)
 
