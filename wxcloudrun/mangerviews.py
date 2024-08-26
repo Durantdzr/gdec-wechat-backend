@@ -53,7 +53,7 @@ def logout():
     """
         :return:用户登出
         """
-    forum = get_jwt().get("forum")
+    forum = get_jwt().get("forum","")
     return make_succ_response('用户已登出', code=200)
 
 
@@ -149,7 +149,7 @@ def add_guest():
         :return:新增嘉宾用户
         """
     operator = get_jwt_identity()
-    forum = get_jwt().get("forum")
+    forum = get_jwt().get("forum","")
     params = request.get_json()
     user = User()
     user.name = params.get('name')
@@ -255,7 +255,7 @@ def manage_get_hall_schedule():
     title = request.args.get('title', '')
     page = request.args.get('page', default=1, type=int)
     page_size = request.args.get('page_size', default=10, type=int)
-    forum = get_jwt().get("forum")
+    forum = get_jwt().get("forum","")
     result = ConferenceSchedule.query.filter(ConferenceSchedule.is_deleted == 0,
                                              ConferenceSchedule.title.like('%' + title + '%'),
                                              ConferenceSchedule.forum.like('%' + forum + '%')).paginate(page,
@@ -474,7 +474,7 @@ def get_conference_sign_up():
     name = request.args.get('name', '')
     page = request.args.get('page', default=1, type=int)
     page_size = request.args.get('page_size', default=10, type=int)
-    forum = get_jwt().get("forum")
+    forum = get_jwt().get("forum","")
     result, total = get_review_conference_list(name, page, page_size,forum)
     return make_succ_page_response(result, code=200, total=total)
 
