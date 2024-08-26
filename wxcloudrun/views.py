@@ -186,6 +186,8 @@ def get_user_by_id():
     # 获取请求体参数
     wxopenid = request.headers['X-WX-OPENID']
     user = User.query.filter(User.id == request.args.get('user_id')).first()
+    if user is None:
+        return make_err_response('')
     return make_succ_response(user.get())
 
 @app.route('/api/user/get_user_by_openid', methods=['GET'])
@@ -196,6 +198,8 @@ def get_user_by_openid():
     # 获取请求体参数
     wxopenid = request.headers['X-WX-OPENID']
     user = User.query.filter(User.openid == wxopenid,User.is_deleted==0).first()
+    if user is None:
+        return make_err_response('没有该用户')
     return make_succ_response(user.get_full())
 
 
