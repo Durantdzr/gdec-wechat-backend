@@ -92,3 +92,33 @@ def send_to_begin_msg(openid, title, location, begin_time):
     result = requests.post('http://api.weixin.qq.com/cgi-bin/message/subscribe/send', params={"openid": openid},
                            json=data)
     return result.json()
+
+
+def send_check_msg(openid, meetingname, content, name, phrase3, date):
+    data = {
+        "touser": openid,
+        "template_id": "ercDXlwuxY8WfhCWzLnElsvpJmKDSjN7N1HyRliaElM",
+        "data": {
+            "thing8": {
+                "value": meetingname
+            },
+            "thing2": {
+                "value": content
+            },
+            "thing6": {
+                "value": name
+            },
+            "phrase3": {
+                "value": phrase3
+            },
+            "date4": {
+                "value": date
+            }
+        },
+        "miniprogram_state": "trial",
+        "lang": "zh_CN"
+    }
+
+    result = requests.post('http://api.weixin.qq.com/cgi-bin/message/subscribe/send', params={"openid": openid},
+                           json=data)
+    return result.json()

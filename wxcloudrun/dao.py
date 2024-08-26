@@ -7,7 +7,7 @@ from wxcloudrun import db
 from wxcloudrun.model import ConferenceInfo, RelationFriend, User, ConferenceSignUp, ConferenceSchedule, \
     ConferenCoopearter
 from sqlalchemy import or_, and_
-from wxcloudrun.utils import uploadwebfile
+from wxcloudrun.utils import uploadwebfile, send_check_msg
 import config
 
 # 初始化日志
@@ -24,6 +24,8 @@ def insert_user(user):
         db.session.commit()
     except OperationalError as e:
         logger.info("insert_counter errorMsg= {} ".format(e))
+
+
 def delete_reocrd(user):
     """
     插入一个User实体
@@ -34,7 +36,6 @@ def delete_reocrd(user):
         db.session.commit()
     except OperationalError as e:
         logger.info("insert_counter errorMsg= {} ".format(e))
-
 
 
 def search_friends_byopenid(openid, name):
@@ -117,7 +118,10 @@ def update_user_statusbyid(userlist, status):
     """
     try:
         records = User.query.filter(User.id.in_(userlist)).all()
+        status_ENUM = {1: "审核未通过", 2: "审核通过"}
         for record in records:
+            send_check_msg(openid=record.openid, meetingname='全球数商大会', content='用户报名审核', name=record.name,
+                           phrase3=status_ENUM.get(status),date=datetime.datetime.now().strftime('%Y-%m-%d'))
             record.status = status
         db.session.commit()
         return True
@@ -186,13 +190,14 @@ def get_other_hall_guests_list():
     return data
 
 
-def get_review_conference_list(name, page, page_size,forum):
+def get_review_conference_list(name, page, page_size, forum):
     result = db.session.query(ConferenceSignUp, User, ConferenceSchedule).join(User,
                                                                                User.id == ConferenceSignUp.user_id).join(
         ConferenceSchedule, ConferenceSignUp.schedule_id == ConferenceSchedule.id).filter(
         User.name.like('%' + name + '%'), User.status == 2, User.is_deleted == 0, ConferenceSchedule.is_deleted == 0,
-                                          ConferenceSignUp.status == 0,ConferenceSchedule.forum.like('%'+forum+'%')).paginate(page, per_page=page_size,
-                                                                                 error_out=False)
+                                          ConferenceSignUp.status == 0,
+        ConferenceSchedule.forum.like('%' + forum + '%')).paginate(page, per_page=page_size,
+                                                                   error_out=False)
     return [{"id": signup.id, "user_name": user.name, "schedule_name": schedule.title,
              "schedule_date": schedule.conference_date.strftime('%Y-%m-%d'), "begin_time": schedule.begin_time,
              "end_time": schedule.end_time, "phone": user.phone} for signup, user, schedule in
