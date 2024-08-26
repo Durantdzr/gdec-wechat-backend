@@ -415,9 +415,9 @@ def send_msg():
     """
         :return:发送消息
     """
-    data = request.get_json()
+    params = request.get_json()
     wxOpenid = request.headers['X-WX-OPENID']
-    result=send_to_begin_msg(wxOpenid,'ceshi','浦东','09:00')
+    result=send_to_begin_msg(params.get('openid'),'ceshi','浦东','09:00')
 
     return make_succ_response(result)
 
