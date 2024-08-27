@@ -228,7 +228,7 @@ def manage_get_guest_list():
     name = request.args.get('name', '')
     page = request.args.get('page', default=1, type=int)
     page_size = request.args.get('page_size', default=10, type=int)
-    forum1 = request.args.get('name', '')
+    forum1 = request.args.get('forum', '')
     forum = get_jwt().get("forum", "")
     if forum1 != '' and forum == '':
         forum = forum1
@@ -593,11 +593,11 @@ def get_media():
         :return:获取门户介质
         """
     operator = get_jwt_identity()
-    info = request.args.get('info', '')
+    name = request.args.get('name', '')
     page = request.args.get('page', default=1, type=int)
     page_size = request.args.get('page_size', default=10, type=int)
     result = Media.query.filter(Media.is_deleted == 0,
-                                Media.info.like('%' + info + '%')).paginate(page,
+                                Media.name.like('%' + name + '%')).paginate(page,
                                                                             per_page=page_size,
                                                                             error_out=False)
     return make_succ_page_response([item.get() for item in result.items], code=200, total=result.total)
