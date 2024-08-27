@@ -158,7 +158,7 @@ class User(db.Model):
                 "code": self.code, "type": self.type, "socail": self.socail,
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET,
                                                                 self.img_url) if self.img_url is not None else None,
-                'cdn_param': self.img_url}
+                'cdn_param': self.img_url,"status": self.status}
 
     def get_guest(self):
         return {"id": self.id, "name": self.name, "company": self.company, "title": self.title, "info": self.guest_info,
