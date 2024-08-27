@@ -3,7 +3,7 @@ from run import app
 from wxcloudrun.dao import insert_user, search_friends_byopenid, insert_realtion_friend, get_friend_list, \
     save_realtion_friendbyid, is_invited_user, update_user_statusbyid, get_guests_list, get_conference_schedule_by_id, \
     get_open_guests_list, get_main_hall_guests_list, get_other_hall_guests_list, get_cooperater_list, \
-    get_hall_schedule_bydate, get_live_data, get_user_schedule_num_by_id, refresh_schedule_info
+    get_hall_schedule_bydate, get_live_data, get_user_schedule_num_by_id, refresh_schedule_info,get_hall_schedule_byid
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, RelationFriend, ConferenceSignUp, \
     ConferenCoopearter
 from wxcloudrun.response import make_succ_response, make_err_response
@@ -416,9 +416,8 @@ def get_schedule_by_id():
     """
     # 获取请求体参数
     wxopenid = request.headers['X-WX-OPENID']
-    schedule = ConferenceSchedule.query.filter(ConferenceSchedule.id == request.args.get('id')).first()
-    data = schedule.get_schedule_view_simple()
-    uploadwebfile(data, openid=wxopenid, file='get_schedule_by_id' + str(schedule.id) + '.json')
+    data = get_hall_schedule_byid(request.args.get('id'))
+    uploadwebfile(data, openid=wxopenid, file='get_schedule_by_id' + str(request.args.get('id')) + '.json')
     return make_succ_response(data)
 
 

@@ -252,6 +252,18 @@ def get_hall_schedule_bydate(date):
         data.append(schedule)
     return data
 
+def get_hall_schedule_byid(id):
+    result = ConferenceSchedule.query.filter(ConferenceSchedule.id == id).first()
+    schedule = result.get_schedule_view_simple()
+    schedule['guest_info'] = []
+    if len(schedule.get('guest_id', [])) > 0:
+        for guest in schedule.get('guest_id', []):
+            user = User.query.filter_by(id=guest).first()
+            if user is None:
+                continue
+            schedule['guest_info'].append(user.get())
+    return schedule
+
 
 def get_cooperater_list(type):
     result = ConferenCoopearter.query.filter(ConferenCoopearter.type == type,
