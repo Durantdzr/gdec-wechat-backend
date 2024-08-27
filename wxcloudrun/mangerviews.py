@@ -6,9 +6,10 @@
 @describe: 
 @time: 2024/8/15 1:20 PM
 """
+import datetime
 import json
 
-from flask import request
+from flask import request, send_file
 from run import app
 from wxcloudrun.dao import update_user_statusbyid, insert_user, get_guests_list, get_review_conference_list, \
     update_schedule_statusbyid, refresh_cooperater, refresh_guest, refresh_guest_info, get_hall_schedule_bydate, \
@@ -16,13 +17,16 @@ from wxcloudrun.dao import update_user_statusbyid, insert_user, get_guests_list,
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, RelationFriend, \
     ConferenCoopearter, Media
 from wxcloudrun.response import make_succ_page_response, make_succ_response, make_err_response
-from wxcloudrun.utils import batchdownloadfile, uploadfile, valid_image, vaild_password, uploadwebfile
+from wxcloudrun.utils import batchdownloadfile, uploadfile, valid_image, vaild_password, uploadwebfile, \
+    download_cdn_file, zip_folder
 from datetime import timedelta
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, get_jwt
 import uuid
 import config
 import requests
 import base64
+import pandas as pd
+import os
 
 
 @app.route('/api/manage/login', methods=['POST'])
@@ -667,3 +671,27 @@ def manage_delete_information_list():
     insert_user(conferenceinfo)
     refresh_conference_info()
     return make_succ_response(conferenceinfo.id, code=200)
+
+
+@app.route('/api/manage/download_user_list', methods=['GET'])
+# @jwt_required()
+def download_user_list():
+    """
+        :return:下载已审核用户列表
+    """
+    name = request.args.get('name', default='', type=str)
+    users = User.query.filter(User.name.like('%' + name + '%'), User.status == 2, User.is_deleted == 0,
+                              User.type.notin_(['管理员', '嘉宾'])).all()
+    df = pd.read_excel('template.xlsx')
+    now = datetime.datetime.now().strftime('%Y-%m-%d%H:%M:%S')
+    os.mkdir(now)
+    for user in users:
+        if user.img_url is not None:
+            download_cdn_file(user.img_url, '{}/{}'.format(now, user.img_url))
+        df = df.append({"序号": user.id, "员工编号": user.id, "姓名": user.name, "性别": "男", "电话号码": user.phone,
+                        "证件类型": "身份证" if user.code is None or len(user.code) == 18 else '普通护照',
+                        "证件号码": user.code,
+                        "照片路径(相对路径)": user.img_url}, ignore_index=True)
+    df.to_excel('{}/人员信息表.xlsx'.format(now), index=False)
+    zip_folder(now, '{}.zip'.format(now))
+    return send_file('../{}.zip'.format(now))

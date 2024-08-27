@@ -12,6 +12,8 @@ import config
 import imghdr
 import hashlib
 import json
+import zipfile
+import os
 
 
 def batchdownloadfile(openid, filelist):
@@ -122,3 +124,16 @@ def send_check_msg(openid, meetingname, content, name, phrase3, date):
     result = requests.post('http://api.weixin.qq.com/cgi-bin/message/subscribe/send', params={"openid": openid},
                            json=data)
     return result.json()
+
+def zip_folder(folder_path, output_path):
+    with zipfile.ZipFile(output_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        for root, dirs, files in os.walk(folder_path):
+            for file in files:
+                file_path = os.path.join(root, file)
+                file_in_zip_path = os.path.relpath(file_path, os.path.dirname(folder_path))
+                zipf.write(file_path, file_in_zip_path)
+
+def download_cdn_file(cdn_param,output_file):
+    response = requests.get('https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, cdn_param))
+    with open(output_file,"wb") as file:
+        file.write(response.content)
