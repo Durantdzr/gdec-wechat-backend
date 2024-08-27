@@ -4,6 +4,7 @@ import pymysql
 import config
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
+
 # 因MySQLDB不支持Python3，使用pymysql扩展库代替MySQLDB库
 pymysql.install_as_MySQLdb()
 
@@ -13,7 +14,8 @@ app.config['DEBUG'] = config.DEBUG
 
 # 设定数据库链接
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://{}:{}@{}/GDEC'.format(config.username, config.password,
-                                                                             config.db_address)
+                                                                       config.db_address)
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = 'your-secret-key'
 jwt = JWTManager(app)
 CORS(app, resources={r"/api/manage/*": {"origins": "*"}})
@@ -21,9 +23,7 @@ CORS(app, resources={r"/api/manage/*": {"origins": "*"}})
 db = SQLAlchemy(app)
 
 # 加载控制器
-from wxcloudrun import views,mangerviews
+from wxcloudrun import views, mangerviews
 
 # 加载配置
 app.config.from_object('config')
-
-
