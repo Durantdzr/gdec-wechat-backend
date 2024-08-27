@@ -685,6 +685,7 @@ def download_user_list():
     df = pd.read_excel('template.xlsx')
     now = datetime.datetime.now().strftime('%Y-%m-%d%H:%M:%S')
     os.mkdir(now)
+    os.mkdir('{}/guest'.format(now))
     for user in users:
         if user.img_url is not None:
             download_cdn_file(user.img_url, '{}/{}'.format(now, user.img_url))
