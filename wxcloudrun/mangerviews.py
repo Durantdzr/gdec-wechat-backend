@@ -68,9 +68,18 @@ def get_register_list():
     page = request.args.get('page', default=1, type=int)
     page_size = request.args.get('page_size', default=10, type=int)
     name = request.args.get('name', default='', type=str)
-    users = User.query.filter(User.name.like('%' + name + '%'), User.status != 2, User.is_deleted == 0).paginate(page,
-                                                                                                                 per_page=page_size,
-                                                                                                                 error_out=False)
+    status = request.args.get('status', type=int)
+    if status is None:
+        users = User.query.filter(User.name.like('%' + name + '%'), User.status != 2, User.is_deleted == 0).paginate(
+            page,
+            per_page=page_size,
+            error_out=False)
+    else:
+        users = User.query.filter(User.name.like('%' + name + '%'), User.status == status,
+                                  User.is_deleted == 0).paginate(
+            page,
+            per_page=page_size,
+            error_out=False)
     return make_succ_page_response([user.get_full() for user in users.items], code=200, total=users.total)
 
 
