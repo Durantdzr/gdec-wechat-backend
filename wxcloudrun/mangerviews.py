@@ -22,7 +22,7 @@ from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_requir
 import uuid
 import config
 import requests
-
+import base64
 
 @app.route('/api/manage/login', methods=['POST'])
 def login():
@@ -243,6 +243,24 @@ def upload_img():
             code=200)
     else:
         return make_err_response('请上传文件')
+
+@app.route('/api/manage/upload_base64img', methods=['post'])
+@jwt_required()
+def upload_base64img():
+    """
+        :return:上传图片
+        """
+    params = request.get_json()
+    src = params.get('img_encode')
+    data = src.split(',')[1]
+    image_data = base64.b64decode(data)
+    u = uuid.uuid4()
+    filename = 'guest/' + str(u) + '.jpeg'
+    with open(filename, 'wb') as file_to_save:
+        file_to_save.write(image_data)
+    uploadfile(filename)
+    return make_succ_response(
+        {'img_url': 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, filename), "cdn_param": filename})
 
 
 @app.route('/api/manage/get_hall_schedule', methods=['GET'])
