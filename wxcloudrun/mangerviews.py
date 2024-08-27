@@ -674,7 +674,7 @@ def manage_delete_information_list():
 
 
 @app.route('/api/manage/download_user_list', methods=['GET'])
-# @jwt_required()
+@jwt_required()
 def download_user_list():
     """
         :return:下载已审核用户列表
@@ -693,5 +693,5 @@ def download_user_list():
                         "证件号码": user.code,
                         "照片路径(相对路径)": user.img_url}, ignore_index=True)
     df.to_excel('{}/人员信息表.xlsx'.format(now), index=False)
-    zip_folder(now, '{}.zip'.format(now))
-    return send_file('../{}.zip'.format(now))
+    zip_folder(now, '数商大会人员信息导出{}.zip'.format(now))
+    return send_file('../数商大会人员信息导出{}.zip'.format(now),download_name='数商大会人员信息导出{}.zip'.format(now))
