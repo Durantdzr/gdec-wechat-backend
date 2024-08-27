@@ -238,7 +238,7 @@ def get_user_schedule_num_by_id(userid):
 def get_hall_schedule_bydate(date):
     result = ConferenceSchedule.query.filter(
         ConferenceSchedule.is_deleted == 0, ConferenceSchedule.conference_date == date).order_by(
-        ConferenceSchedule.id).all()
+        ConferenceSchedule.begin_time.asc()).all()
     data = []
     for item in result:
         schedule = item.get_schedule_view()
