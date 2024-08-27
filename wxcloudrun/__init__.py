@@ -16,7 +16,7 @@ app.config['DEBUG'] = config.DEBUG
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://{}:{}@{}/GDEC'.format(config.username, config.password,
                                                                        config.db_address)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JWT_SECRET_KEY'] = 'your-secret-key'
+app.config['JWT_SECRET_KEY'] = config.JWT_SECRET_KEY
 jwt = JWTManager(app)
 CORS(app, resources={r"/api/manage/*": {"origins": "*"}})
 # 初始化DB操作对象
