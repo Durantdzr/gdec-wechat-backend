@@ -10,5 +10,4 @@ SQLAlchemy==1.4.29
 Werkzeug==2.0.2
 Flask-JWT-Extended==4.6.0
 flask-cors==4.0.1
-pandas==1.2.0
-xlsxwriter==1.4.5
+pandas
