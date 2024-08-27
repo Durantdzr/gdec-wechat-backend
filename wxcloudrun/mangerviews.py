@@ -24,6 +24,7 @@ import config
 import requests
 import base64
 
+
 @app.route('/api/manage/login', methods=['POST'])
 def login():
     """
@@ -53,7 +54,7 @@ def logout():
     """
         :return:用户登出
         """
-    forum = get_jwt().get("forum","")
+    forum = get_jwt().get("forum", "")
     return make_succ_response('用户已登出', code=200)
 
 
@@ -149,7 +150,7 @@ def add_guest():
         :return:新增嘉宾用户
         """
     operator = get_jwt_identity()
-    forum = get_jwt().get("forum","")
+    forum = get_jwt().get("forum", "")
     params = request.get_json()
     user = User()
     user.name = params.get('name')
@@ -214,8 +215,12 @@ def manage_get_guest_list():
     name = request.args.get('name', '')
     page = request.args.get('page', default=1, type=int)
     page_size = request.args.get('page_size', default=10, type=int)
-    forum = get_jwt().get("forum","")
-    guests = User.query.filter(User.type == '嘉宾', User.is_deleted == 0, User.name.like('%' + name + '%'),User.forum.like('%' + forum + '%')).order_by(
+    forum1 = request.args.get('name', '')
+    forum = get_jwt().get("forum", "")
+    if forum1 != '' and forum == '':
+        forum = forum1
+    guests = User.query.filter(User.type == '嘉宾', User.is_deleted == 0, User.name.like('%' + name + '%'),
+                               User.forum.like('%' + forum + '%')).order_by(
         User.order.desc()).paginate(
         page,
         per_page=page_size,
@@ -243,6 +248,7 @@ def upload_img():
             code=200)
     else:
         return make_err_response('请上传文件')
+
 
 @app.route('/api/manage/upload_base64img', methods=['post'])
 @jwt_required()
@@ -273,7 +279,7 @@ def manage_get_hall_schedule():
     title = request.args.get('title', '')
     page = request.args.get('page', default=1, type=int)
     page_size = request.args.get('page_size', default=10, type=int)
-    forum = get_jwt().get("forum","")
+    forum = get_jwt().get("forum", "")
     result = ConferenceSchedule.query.filter(ConferenceSchedule.is_deleted == 0,
                                              ConferenceSchedule.title.like('%' + title + '%'),
                                              ConferenceSchedule.forum.like('%' + forum + '%')).paginate(page,
@@ -326,7 +332,7 @@ def add_hall_schedule():
     schedule.org = params.get('org')
     schedule.agenda = json.dumps(params.get('agenda', ''))
     schedule.img_url = params.get('cdn_param')
-    schedule.forum=forum
+    schedule.forum = forum
     insert_user(schedule)
     refresh_guest()
     if schedule.live_status:
@@ -492,8 +498,8 @@ def get_conference_sign_up():
     name = request.args.get('name', '')
     page = request.args.get('page', default=1, type=int)
     page_size = request.args.get('page_size', default=10, type=int)
-    forum = get_jwt().get("forum","")
-    result, total = get_review_conference_list(name, page, page_size,forum)
+    forum = get_jwt().get("forum", "")
+    result, total = get_review_conference_list(name, page, page_size, forum)
     return make_succ_page_response(result, code=200, total=total)
 
 
