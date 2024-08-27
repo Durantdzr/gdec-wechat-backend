@@ -59,14 +59,16 @@ def get_friend_list(openid, name):
     user_id = user.id
     data = []
     operator_friends = db.session.query(RelationFriend, User).join(User, User.id == RelationFriend.inviter_id).filter(
-        User.name.like('%' + name + '%'), RelationFriend.operater_id == user_id, RelationFriend.is_deleted == 0).all()
+        or_(User.name.like('%' + name + '%'), User.company.like('%' + name + '%')),
+        RelationFriend.operater_id == user_id, RelationFriend.is_deleted == 0).all()
     status_ENUM = {0: '已邀请', 1: '已添加'}
     for relation, user in operator_friends:
         data.append({"name": user.name, "id": user.id, "company": user.company, "title": user.title,
                      "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, user.img_url),
                      "status": status_ENUM.get(relation.status), "relation_id": relation.id})
     invited_friends = db.session.query(RelationFriend, User).join(User, User.id == RelationFriend.operater_id).filter(
-        User.name.like('%' + name + '%'), RelationFriend.inviter_id == user_id, RelationFriend.is_deleted == 0).all()
+        or_(User.name.like('%' + name + '%'), User.company.like('%' + name + '%')),
+        RelationFriend.inviter_id == user_id, RelationFriend.is_deleted == 0).all()
     status_ENUM = {0: '接受邀请', 1: '已添加'}
     for relation, user in invited_friends:
         data.append({"name": user.name, "id": user.id, "company": user.company, "title": user.title,
@@ -121,7 +123,7 @@ def update_user_statusbyid(userlist, status):
         status_ENUM = {1: "审核未通过", 2: "审核通过"}
         for record in records:
             send_check_msg(openid=record.openid, meetingname='全球数商大会', content='用户报名审核', name=record.name,
-                           phrase3=status_ENUM.get(status),date=datetime.datetime.now().strftime('%Y-%m-%d'))
+                           phrase3=status_ENUM.get(status), date=datetime.datetime.now().strftime('%Y-%m-%d'))
             record.status = status
         db.session.commit()
         return True
@@ -251,6 +253,7 @@ def get_hall_schedule_bydate(date):
                 schedule['guest_img'].append('https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, user.img_url))
         data.append(schedule)
     return data
+
 
 def get_hall_schedule_byid(id):
     result = ConferenceSchedule.query.filter(ConferenceSchedule.id == id).first()
