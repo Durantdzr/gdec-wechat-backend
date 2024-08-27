@@ -508,7 +508,7 @@ def get_conference_sign_up():
         :return:获取报名会议列表
     """
     # 获取请求体参数
-    name = request.args.get('name', '')
+    name = request.args.get('user_name', '')
     page = request.args.get('page', default=1, type=int)
     page_size = request.args.get('page_size', default=10, type=int)
     forum = get_jwt().get("forum", "")
