@@ -18,7 +18,7 @@ from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, Conferenc
     ConferenCoopearter, Media
 from wxcloudrun.response import make_succ_page_response, make_succ_response, make_err_response
 from wxcloudrun.utils import batchdownloadfile, uploadfile, valid_image, vaild_password, uploadwebfile, \
-    download_cdn_file, zip_folder,get_ticket
+    download_cdn_file, zip_folder,get_ticket,get_urllink
 from datetime import timedelta
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, get_jwt
 import uuid
@@ -705,3 +705,7 @@ def get_signature():
     response,data=get_ticket(url)
     return make_succ_response([response,data])
 
+
+@app.route('/api/manage/generate_urllink', methods=['GET'])
+def generate_urllink():
+    return make_succ_response(get_urllink())

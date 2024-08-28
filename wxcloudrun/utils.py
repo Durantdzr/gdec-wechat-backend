@@ -127,21 +127,27 @@ def send_check_msg(openid, meetingname, content, name, phrase3, date):
                            json=data)
     return result.json()
 
+
+def get_urllink(openid='omf5s7V9tfLS25ZxIXE0TtJCaZ3w'):
+    result = requests.post('http://api.weixin.qq.com/wxa/generate_urllink', params={"openid": openid})
+    return result.json()
+
+
 def get_ticket(url, openid='omf5s7V9tfLS25ZxIXE0TtJCaZ3w'):
     result = requests.get('http://api.weixin.qq.com/cgi-bin/ticket/getticket', params={"openid": openid})
-    ticket_response=result.json()
-    jsapi_ticket = ticket_response.get("ticket","111")
+    ticket_response = result.json()
+    jsapi_ticket = ticket_response.get("ticket", "111")
     nonce_str = ''.join(random.choices('abcdefghijklmnopqrstuvwxyz0123456789', k=16))
     timestamp = int(time.time())
     string1 = f'jsapi_ticket={jsapi_ticket}&noncestr={nonce_str}&timestamp={timestamp}&url={url}'
     signature = hashlib.sha1(string1.encode('utf-8')).hexdigest()
 
-    return result.json(),{
-            'appId': "wx06cb5c6c75d69dc2",
-            'timestamp': timestamp,
-            'nonceStr': nonce_str,
-            'signature': signature
-        }
+    return result.json(), {
+        'appId': "wx06cb5c6c75d69dc2",
+        'timestamp': timestamp,
+        'nonceStr': nonce_str,
+        'signature': signature
+    }
 
 
 def zip_folder(folder_path, output_path):
@@ -152,7 +158,8 @@ def zip_folder(folder_path, output_path):
                 file_in_zip_path = os.path.relpath(file_path, os.path.dirname(folder_path))
                 zipf.write(file_path, file_in_zip_path)
 
-def download_cdn_file(cdn_param,output_file):
+
+def download_cdn_file(cdn_param, output_file):
     response = requests.get('https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, cdn_param))
-    with open(output_file,"wb") as file:
+    with open(output_file, "wb") as file:
         file.write(response.content)
