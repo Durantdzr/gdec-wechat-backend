@@ -13,12 +13,12 @@ from flask import request, send_file
 from run import app
 from wxcloudrun.dao import update_user_statusbyid, insert_user, get_guests_list, get_review_conference_list, \
     update_schedule_statusbyid, refresh_cooperater, refresh_guest, refresh_guest_info, get_hall_schedule_bydate, \
-    get_live_data, refresh_conference_info, refresh_schedule_info, delete_reocrd
+    get_live_data, refresh_conference_info, refresh_schedule_info, delete_reocrd, get_hall_schedule_byid
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, RelationFriend, \
     ConferenCoopearter, Media
 from wxcloudrun.response import make_succ_page_response, make_succ_response, make_err_response
 from wxcloudrun.utils import batchdownloadfile, uploadfile, valid_image, vaild_password, uploadwebfile, \
-    download_cdn_file, zip_folder,get_ticket,get_urllink
+    download_cdn_file, zip_folder, get_ticket, get_urllink
 from datetime import timedelta
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, get_jwt
 import uuid
@@ -353,8 +353,7 @@ def add_hall_schedule():
         uploadwebfile(data, file='get_live_list.json')
     data = get_hall_schedule_bydate(params.get('conference_date'))
     uploadwebfile(data, file='get_hall_schedule' + params.get('conference_date') + '.json')
-    schedule = ConferenceSchedule.query.filter(ConferenceSchedule.id == schedule.id).first()
-    data = schedule.get_schedule_view_simple()
+    data = get_hall_schedule_byid(schedule.id)
     uploadwebfile(data, file='get_schedule_by_id' + str(schedule.id) + '.json')
     return make_succ_response(schedule.id, code=200)
 
@@ -389,8 +388,7 @@ def edit_hall_schedule():
         uploadwebfile(data, file='get_live_list.json')
     data = get_hall_schedule_bydate(params.get('conference_date'))
     uploadwebfile(data, file='get_hall_schedule' + params.get('conference_date') + '.json')
-    schedule = ConferenceSchedule.query.filter(ConferenceSchedule.id == schedule.id).first()
-    data = schedule.get_schedule_view_simple()
+    data = get_hall_schedule_byid(schedule.id)
     uploadwebfile(data, file='get_schedule_by_id' + str(schedule.id) + '.json')
     return make_succ_response(schedule.id, code=200)
 
@@ -513,7 +511,7 @@ def get_conference_sign_up():
     page_size = request.args.get('page_size', default=10, type=int)
     status = request.args.get('status', default=None, type=int)
     forum = get_jwt().get("forum", "")
-    result, total = get_review_conference_list(name, page, page_size, forum,status)
+    result, total = get_review_conference_list(name, page, page_size, forum, status)
     return make_succ_page_response(result, code=200, total=total)
 
 
@@ -696,14 +694,15 @@ def download_user_list():
                         "照片路径(相对路径)": user.img_url}, ignore_index=True)
     df.to_excel('{}/人员信息表.xlsx'.format(now), index=False)
     zip_folder(now, '数商大会人员信息导出{}.zip'.format(now))
-    return send_file('../数商大会人员信息导出{}.zip'.format(now),download_name='数商大会人员信息导出{}.zip'.format(now))
+    return send_file('../数商大会人员信息导出{}.zip'.format(now),
+                     download_name='数商大会人员信息导出{}.zip'.format(now))
 
 
 @app.route('/api/manage/get-signature', methods=['GET'])
 def get_signature():
     url = request.args.get('url', default='', type=str)
-    response,data=get_ticket(url)
-    return make_succ_response([response,data])
+    response, data = get_ticket(url)
+    return make_succ_response([response, data])
 
 
 @app.route('/api/manage/generate_urllink', methods=['GET'])
