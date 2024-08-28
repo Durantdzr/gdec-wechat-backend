@@ -130,7 +130,7 @@ def send_check_msg(openid, meetingname, content, name, phrase3, date):
 def get_ticket(url, openid='omf5s7V9tfLS25ZxIXE0TtJCaZ3w'):
     result = requests.get('http://api.weixin.qq.com/cgi-bin/ticket/getticket', params={"openid": openid})
     ticket_response=result.json()
-    jsapi_ticket = ticket_response['ticket']
+    jsapi_ticket = ticket_response.get("ticket","111")
     nonce_str = ''.join(random.choices('abcdefghijklmnopqrstuvwxyz0123456789', k=16))
     timestamp = int(time.time())
     string1 = f'jsapi_ticket={jsapi_ticket}&noncestr={nonce_str}&timestamp={timestamp}&url={url}'
