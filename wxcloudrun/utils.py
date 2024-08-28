@@ -128,7 +128,7 @@ def send_check_msg(openid, meetingname, content, name, phrase3, date):
     return result.json()
 
 def get_ticket(url, openid='omf5s7V9tfLS25ZxIXE0TtJCaZ3w'):
-    result = requests.get('https://api.weixin.qq.com/cgi-bin/ticket/getticket', params={"openid": openid})
+    result = requests.get('http://api.weixin.qq.com/cgi-bin/ticket/getticket', params={"openid": openid})
     ticket_response=result.json()
     jsapi_ticket = ticket_response['ticket']
     nonce_str = ''.join(random.choices('abcdefghijklmnopqrstuvwxyz0123456789', k=16))
