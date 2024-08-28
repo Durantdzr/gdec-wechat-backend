@@ -10,4 +10,6 @@ db_address = os.environ.get("MYSQL_ADDRESS", '127.0.0.1:3306')
 
 ENV = os.environ.get("ENV", '')
 COS_BUCKET = os.environ.get("COS_BUCKET", '')
-JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", '')
+JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", 'your-secret-key')
+
+CORS_ORIGINS = os.environ.get("CORS_ORIGINS", '*')
