@@ -129,7 +129,8 @@ def send_check_msg(openid, meetingname, content, name, phrase3, date):
 
 
 def get_urllink(openid='omf5s7V9tfLS25ZxIXE0TtJCaZ3w'):
-    result = requests.post('http://api.weixin.qq.com/wxa/generate_urllink', params={"openid": openid})
+    data={"expire_type":1,"expire_interval":15,"env_version":"trial"}
+    result = requests.post('http://api.weixin.qq.com/wxa/generate_urllink', params={"openid": openid},json=data)
     return result.json()
 
 
