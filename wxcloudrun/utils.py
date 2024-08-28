@@ -14,6 +14,8 @@ import hashlib
 import json
 import zipfile
 import os
+import random
+import time
 
 
 def batchdownloadfile(openid, filelist):
@@ -124,6 +126,23 @@ def send_check_msg(openid, meetingname, content, name, phrase3, date):
     result = requests.post('http://api.weixin.qq.com/cgi-bin/message/subscribe/send', params={"openid": openid},
                            json=data)
     return result.json()
+
+def get_ticket(url, openid='omf5s7V9tfLS25ZxIXE0TtJCaZ3w'):
+    result = requests.get('https://api.weixin.qq.com/cgi-bin/ticket/getticket', params={"openid": openid})
+    ticket_response=result.json()
+    jsapi_ticket = ticket_response['ticket']
+    nonce_str = ''.join(random.choices('abcdefghijklmnopqrstuvwxyz0123456789', k=16))
+    timestamp = int(time.time())
+    string1 = f'jsapi_ticket={jsapi_ticket}&noncestr={nonce_str}&timestamp={timestamp}&url={url}'
+    signature = hashlib.sha1(string1.encode('utf-8')).hexdigest()
+
+    return result.json(),{
+            'appId': "wx06cb5c6c75d69dc2",
+            'timestamp': timestamp,
+            'nonceStr': nonce_str,
+            'signature': signature
+        }
+
 
 def zip_folder(folder_path, output_path):
     with zipfile.ZipFile(output_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
