@@ -65,7 +65,7 @@ def get_friend_list(openid, name):
     for relation, user in operator_friends:
         data.append(
             {"name": user.name, "id": user.id, "company": user.company, "title": user.title, "phone": user.phone,
-             "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, user.img_url),
+             "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, user.img_url),"visit_info":relation.visit_info,
              "status": status_ENUM.get(relation.status), "relation_id": relation.id})
     invited_friends = db.session.query(RelationFriend, User).join(User, User.id == RelationFriend.operater_id).filter(
         or_(User.name.like('%' + name + '%'), User.company.like('%' + name + '%')),
@@ -74,7 +74,7 @@ def get_friend_list(openid, name):
     for relation, user in invited_friends:
         data.append(
             {"name": user.name, "id": user.id, "company": user.company, "title": user.title, "phone": user.phone,
-             "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, user.img_url),
+             "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, user.img_url),"visit_info":relation.visit_info,
              "status": status_ENUM.get(relation.status), "relation_id": relation.id})
     return data
 
