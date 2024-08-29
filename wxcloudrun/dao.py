@@ -63,7 +63,7 @@ def get_friend_list(openid, name):
         RelationFriend.operater_id == user_id, RelationFriend.is_deleted == 0).all()
     status_ENUM = {0: '已邀请', 1: '已添加'}
     for relation, user in operator_friends:
-        data.append({"name": user.name, "id": user.id, "company": user.company, "title": user.title,
+        data.append({"name": user.name, "id": user.id, "company": user.company, "title": user.title,"phone": user.phone,
                      "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, user.img_url),
                      "status": status_ENUM.get(relation.status), "relation_id": relation.id})
     invited_friends = db.session.query(RelationFriend, User).join(User, User.id == RelationFriend.operater_id).filter(
@@ -71,7 +71,7 @@ def get_friend_list(openid, name):
         RelationFriend.inviter_id == user_id, RelationFriend.is_deleted == 0).all()
     status_ENUM = {0: '接受邀请', 1: '已添加'}
     for relation, user in invited_friends:
-        data.append({"name": user.name, "id": user.id, "company": user.company, "title": user.title,
+        data.append({"name": user.name, "id": user.id, "company": user.company, "title": user.title,"phone": user.phone,
                      "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, user.img_url),
                      "status": status_ENUM.get(relation.status), "relation_id": relation.id})
     return data
