@@ -228,7 +228,7 @@ def get_conference_schedule_by_id(userid):
         delta = (datetime.datetime.strptime(
             schedule.conference_date.strftime('%Y-%m-%d') + ' ' + schedule.begin_time,
             "%Y-%m-%d %H:%M") - datetime.datetime.now()).total_seconds()
-        data.append({"id": signup.id, "schedule_name": schedule.title,
+        data.append({"id": schedule.id, "schedule_name": schedule.title,
                      "schedule_time": schedule.conference_date.strftime('%Y-%m-%d') + ' ' + schedule.begin_time,
                      "status": signup_status_ENUM.get(signup.status),
                      'info': '距开始还有1小时' if delta / 60 > 0 and delta / 60 < 120 else ''})
