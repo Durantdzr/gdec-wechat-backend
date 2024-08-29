@@ -63,17 +63,19 @@ def get_friend_list(openid, name):
         RelationFriend.operater_id == user_id, RelationFriend.is_deleted == 0).all()
     status_ENUM = {0: '已邀请', 1: '已添加'}
     for relation, user in operator_friends:
-        data.append({"name": user.name, "id": user.id, "company": user.company, "title": user.title,"phone": user.phone,
-                     "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, user.img_url),
-                     "status": status_ENUM.get(relation.status), "relation_id": relation.id})
+        data.append(
+            {"name": user.name, "id": user.id, "company": user.company, "title": user.title, "phone": user.phone,
+             "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, user.img_url),
+             "status": status_ENUM.get(relation.status), "relation_id": relation.id})
     invited_friends = db.session.query(RelationFriend, User).join(User, User.id == RelationFriend.operater_id).filter(
         or_(User.name.like('%' + name + '%'), User.company.like('%' + name + '%')),
         RelationFriend.inviter_id == user_id, RelationFriend.is_deleted == 0).all()
     status_ENUM = {0: '接受邀请', 1: '已添加'}
     for relation, user in invited_friends:
-        data.append({"name": user.name, "id": user.id, "company": user.company, "title": user.title,"phone": user.phone,
-                     "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, user.img_url),
-                     "status": status_ENUM.get(relation.status), "relation_id": relation.id})
+        data.append(
+            {"name": user.name, "id": user.id, "company": user.company, "title": user.title, "phone": user.phone,
+             "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, user.img_url),
+             "status": status_ENUM.get(relation.status), "relation_id": relation.id})
     return data
 
 
@@ -212,7 +214,7 @@ def get_review_conference_list(name, page, page_size, forum, status):
                                                                        error_out=False)
     return [{"id": signup.id, "user_name": user.name, "schedule_name": schedule.title,
              "schedule_date": schedule.conference_date.strftime('%Y-%m-%d'), "begin_time": schedule.begin_time,
-             "end_time": schedule.end_time, "phone": user.phone,"status":signup.status} for signup, user, schedule in
+             "end_time": schedule.end_time, "phone": user.phone, "status": signup.status} for signup, user, schedule in
             result.items], result.total
 
 
@@ -286,7 +288,8 @@ def get_cooperater_list(type):
 
 def get_live_data():
     result = ConferenceSchedule.query.filter(ConferenceSchedule.is_deleted == 0,
-                                             ConferenceSchedule.live_status > 0).all()
+                                             ConferenceSchedule.live_status > 0).order_by(
+        ConferenceSchedule.conference_date.asc(), ConferenceSchedule.begin_time.asc()).all()
     return [item.get_live() for item in result]
 
 
