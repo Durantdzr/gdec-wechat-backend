@@ -98,19 +98,19 @@ def send_to_begin_msg(openid, title, location, begin_time):
     return result.json()
 
 
-def send_check_msg(openid, meetingname, content, name, phrase3, date):
+def send_check_msg(openid, meetingname, content, reason, phrase3, date):
     data = {
         "touser": openid,
-        "template_id": "VP9vKMAYt7SYhdgI6H73hWT_iBJ05ajoiFJmqK3WII0",
+        "template_id": "VP9vKMAYt7SYhdgI6H73hUBqyQo3KctyvNb4pdVRAw0",
         "data": {
-            "thing8": {
+            "thing1": {
                 "value": meetingname
             },
             "thing2": {
                 "value": content
             },
-            "thing6": {
-                "value": name
+            "thing21": {
+                "value": reason
             },
             "phrase3": {
                 "value": phrase3

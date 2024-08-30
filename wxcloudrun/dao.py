@@ -115,7 +115,7 @@ def is_invited_user(relation_id, wxopenid):
         return False
 
 
-def update_user_statusbyid(userlist, status):
+def update_user_statusbyid(userlist, status,reason):
     """
     :param id: Counter的ID
     :return: Counter实体
@@ -124,9 +124,10 @@ def update_user_statusbyid(userlist, status):
         records = User.query.filter(User.id.in_(userlist)).all()
         status_ENUM = {1: "审核未通过", 2: "审核通过"}
         for record in records:
-            send_check_msg(openid=record.openid, meetingname='全球数商大会', content='用户报名审核', name=record.name,
+            send_check_msg(openid=record.openid, meetingname='全球数商大会', content=record.name+'用户报名审核', reason=reason,
                            phrase3=status_ENUM.get(status), date=datetime.datetime.now().strftime('%Y-%m-%d'))
             record.status = status
+            record.reason = reason
         db.session.commit()
         return True
     except OperationalError as e:

@@ -146,11 +146,12 @@ def review_register():
     operator = get_jwt_identity()
     params = request.get_json()
     opt = params.get('opt')
-    userlist = params.get('userlist')
+    reason= params.get('reason',"")
+    userlist = params.get('userlist','')
     if opt == 'agree':
-        update_user_statusbyid(userlist, 2)
+        update_user_statusbyid(userlist, 2,reason)
     elif opt == 'unagree':
-        update_user_statusbyid(userlist, 1)
+        update_user_statusbyid(userlist, 1,reason)
     else:
         return make_err_response('无该操作方法')
     return make_succ_response('操作成功', code=200)
