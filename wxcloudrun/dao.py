@@ -5,7 +5,7 @@ from sqlalchemy.exc import OperationalError
 
 from wxcloudrun import db
 from wxcloudrun.model import ConferenceInfo, RelationFriend, User, ConferenceSignUp, ConferenceSchedule, \
-    ConferenCoopearter
+    ConferenCoopearter, ConferenceCooperatorShow
 from sqlalchemy import or_, and_
 from wxcloudrun.utils import uploadwebfile, send_check_msg
 import config
@@ -65,7 +65,8 @@ def get_friend_list(openid, name):
     for relation, user in operator_friends:
         data.append(
             {"name": user.name, "id": user.id, "company": user.company, "title": user.title, "phone": user.phone,
-             "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, user.img_url),"visit_info":relation.visit_info,
+             "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, user.img_url),
+             "visit_info": relation.visit_info,
              "status": status_ENUM.get(relation.status), "relation_id": relation.id})
     invited_friends = db.session.query(RelationFriend, User).join(User, User.id == RelationFriend.operater_id).filter(
         or_(User.name.like('%' + name + '%'), User.company.like('%' + name + '%')),
@@ -74,7 +75,8 @@ def get_friend_list(openid, name):
     for relation, user in invited_friends:
         data.append(
             {"name": user.name, "id": user.id, "company": user.company, "title": user.title, "phone": user.phone,
-             "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, user.img_url),"visit_info":relation.visit_info,
+             "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, user.img_url),
+             "visit_info": relation.visit_info,
              "status": status_ENUM.get(relation.status), "relation_id": relation.id})
     return data
 
@@ -115,7 +117,7 @@ def is_invited_user(relation_id, wxopenid):
         return False
 
 
-def update_user_statusbyid(userlist, status,reason):
+def update_user_statusbyid(userlist, status, reason):
     """
     :param id: Counter的ID
     :return: Counter实体
@@ -124,7 +126,8 @@ def update_user_statusbyid(userlist, status,reason):
         records = User.query.filter(User.id.in_(userlist)).all()
         status_ENUM = {1: "审核未通过", 2: "审核通过"}
         for record in records:
-            send_check_msg(openid=record.openid, meetingname='全球数商大会', content=record.name+'用户报名审核', reason=reason,
+            send_check_msg(openid=record.openid, meetingname='全球数商大会', content=record.name + '用户报名审核',
+                           reason=reason,
                            phrase3=status_ENUM.get(status), date=datetime.datetime.now().strftime('%Y-%m-%d'))
             record.status = status
             record.reason = reason
@@ -260,7 +263,7 @@ def get_hall_schedule_bydate(date):
         schedule['guest_img'] = []
         if len(schedule.get('guest_id', [])) > 0:
             for guest in schedule.get('guest_id', []):
-                user = User.query.filter_by(id=guest,is_deleted=0).first()
+                user = User.query.filter_by(id=guest, is_deleted=0).first()
                 if user is None:
                     continue
                 schedule['guest_img'].append('https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, user.img_url))
@@ -278,31 +281,31 @@ def get_hall_schedule_byid(id):
     schedule['coorganizer_info'] = []
     if len(schedule.get('guest_id', [])) > 0:
         for guest in schedule.get('guest_id', []):
-            user = User.query.filter_by(id=guest,is_deleted=0).first()
+            user = User.query.filter_by(id=guest, is_deleted=0).first()
             if user is None:
                 continue
             schedule['guest_info'].append(user.get())
     if len(schedule.get('supported', [])) > 0:
         supporteds = ConferenCoopearter.query.filter(ConferenCoopearter.id.in_(schedule.get('supported', [])),
-                                               ConferenCoopearter.is_deleted == 0).all()
+                                                     ConferenCoopearter.is_deleted == 0).all()
         if supporteds is not None:
             for supported in supporteds:
                 schedule['supported_info'].append(supported.get())
     if len(schedule.get('organizer', [])) > 0:
         organizers = ConferenCoopearter.query.filter(ConferenCoopearter.id.in_(schedule.get('organizer', [])),
-                                               ConferenCoopearter.is_deleted == 0).all()
+                                                     ConferenCoopearter.is_deleted == 0).all()
         if organizers is not None:
             for organizer in organizers:
                 schedule['organizer_info'].append(organizer.get())
     if len(schedule.get('coorganizer', [])) > 0:
         coorganizers = ConferenCoopearter.query.filter(ConferenCoopearter.id.in_(schedule.get('coorganizer', [])),
-                                               ConferenCoopearter.is_deleted == 0).all()
+                                                       ConferenCoopearter.is_deleted == 0).all()
         if coorganizers is not None:
             for coorganizer in coorganizers:
                 schedule['coorganizer_info'].append(coorganizer.get())
     if len(schedule.get('sponsor', [])) > 0:
         sponsors = ConferenCoopearter.query.filter(ConferenCoopearter.id.in_(schedule.get('sponsor', [])),
-                                               ConferenCoopearter.is_deleted == 0).all()
+                                                   ConferenCoopearter.is_deleted == 0).all()
         if sponsors is not None:
             for sponsor in sponsors:
                 schedule['sponsor_info'].append(sponsor.get())
@@ -322,8 +325,22 @@ def get_live_data():
     return [item.get_live() for item in result]
 
 
+def get_cooperater():
+    showType = ConferenceCooperatorShow.query.filter(ConferenceCooperatorShow.is_deleted == True).all()
+    type = [show.type for show in showType]
+    schedules = ConferenceSchedule.query.filter(ConferenCoopearter.is_deleted == 0).all()
+    cooperater_id = []
+    for schedule in schedules:
+        result = schedule.get_schedule()
+        for item in type:
+            cooperater_id.extend(result.get(item))
+    result = ConferenceSchedule.query.filter(ConferenCoopearter.is_deleted == 0,
+                                             ConferenCoopearter.id.in_(cooperater_id)).all()
+    return [item.get() for item in result]
+
+
 def refresh_cooperater():
-    data = get_cooperater_list('合作伙伴')
+    data = get_cooperater()
     uploadwebfile(data, file='get_cooperater.json')
     data = get_cooperater_list('合作媒体')
     uploadwebfile(data, file='get_comedia.json')
