@@ -305,8 +305,9 @@ def manage_get_hall_schedule():
         schedule['guest_info'] = []
         if len(schedule.get('guest_id', [])) > 0:
             for guest in schedule.get('guest_id', []):
-                user = User.query.filter_by(id=guest).first()
-                schedule['guest_info'].append(user.get_guest())
+                user = User.query.filter_by(id=guest,is_deleted=0).first()
+                if user is not None:
+                    schedule['guest_info'].append(user.get_guest())
         data.append(schedule)
     return make_succ_page_response(data, code=200, total=result.total)
 

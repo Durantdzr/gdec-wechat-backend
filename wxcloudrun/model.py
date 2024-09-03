@@ -51,6 +51,11 @@ class ConferenceSchedule(db.Model):
     agenda = db.Column('agenda', db.TEXT)
     img_url = db.Column('img_url', db.String(100))
     forum = db.Column('forum', db.String(50), default='')
+    sponsor = db.Column('sponsor', db.String(100), default='')
+    supported = db.Column('supported', db.String(100), default='')
+    organizer = db.Column('organizer', db.String(100), default='')
+    coorganizer = db.Column('co-organizer', db.String(100), default='')
+    background = db.Column('background', db.TEXT)
 
     def get_live(self):
         status_ENUM = {1: '即将直播', 2: '正在直播', 3: '查看回放'}
@@ -111,13 +116,19 @@ class ConferenceSchedule(db.Model):
             guest_id = []
         else:
             guest_id = list(map(int, self.guest.split(',')))
+        sponsor = list(map(int, self.sponsor.split(',')))
+        supported = list(map(int, self.supported.split(',')))
+        organizer = list(map(int, self.organizer.split(',')))
+        coorganizer = list(map(int, self.coorganizer.split(',')))
         return {'id': self.id, 'title': self.title, 'location': self.location,
                 'conference_date': self.conference_date.strftime('%Y-%m-%d'),
                 "begin_time": self.begin_time, "end_time": self.end_time, 'live_url': self.live_url,
                 "record_url": self.record_url, 'ext': ext,
                 "agenda": [] if (self.agenda is None or self.agenda == '') else json.loads(self.agenda),
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url), "guest_id": guest_id,
-                'status': status_ENUM.get(self.status), 'live_status': live_status_ENUM.get(self.live_status, '')}
+                'status': status_ENUM.get(self.status), 'live_status': live_status_ENUM.get(self.live_status, ''),
+                "sponsor": sponsor, "supported": supported, "organizer": organizer, "coorganizer": coorganizer,
+                "background": self.background}
 
 
 class ConferenceHall(db.Model):
@@ -164,7 +175,7 @@ class User(db.Model):
                 "code": self.code, "type": self.type, "socail": self.socail,
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET,
                                                                 self.img_url) if self.img_url is not None else None,
-                'cdn_param': self.img_url, "status": self.status,"reason": self.reason}
+                'cdn_param': self.img_url, "status": self.status, "reason": self.reason}
 
     def get_guest(self):
         return {"id": self.id, "name": self.name, "company": self.company, "title": self.title, "info": self.guest_info,
