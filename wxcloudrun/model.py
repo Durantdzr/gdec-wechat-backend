@@ -74,19 +74,19 @@ class ConferenceSchedule(db.Model):
             guest_id = []
         else:
             guest_id = list(map(int, self.guest.split(',')))
-        if self.sponsor is None:
+        if self.sponsor is None or self.sponsor == '':
             sponsor = []
         else:
             sponsor = list(map(int, self.sponsor.split(',')))
-        if self.supported is None:
+        if self.supported is None or self.supported == '':
             supported = []
         else:
             supported = list(map(int, self.supported.split(',')))
-        if self.organizer is None:
+        if self.organizer is None or self.organizer == '':
             organizer = []
         else:
             organizer = list(map(int, self.organizer.split(',')))
-        if self.coorganizer is None:
+        if self.coorganizer is None or self.coorganizer == '':
             coorganizer = []
         else:
             coorganizer = list(map(int, self.coorganizer.split(',')))
