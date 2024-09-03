@@ -433,9 +433,10 @@ def get_cooperater():
     # 获取请求体参数
     forum = get_jwt().get("forum")
     name = request.args.get('name', '')
+    type = request.args.get('type')
     page = request.args.get('page', default=1, type=int)
     page_size = request.args.get('page_size', default=10, type=int)
-    result = ConferenCoopearter.query.filter(ConferenCoopearter.is_deleted == 0,
+    result = ConferenCoopearter.query.filter(ConferenCoopearter.is_deleted == 0,ConferenCoopearter.type==type,
                                              ConferenCoopearter.name.like('%' + name + '%'),
                                              ConferenCoopearter.forum.like('%' + forum + '%')).paginate(page,
                                                                                                         per_page=page_size,
