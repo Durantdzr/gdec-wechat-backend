@@ -303,11 +303,39 @@ def manage_get_hall_schedule():
     for item in result.items:
         schedule = item.get_schedule()
         schedule['guest_info'] = []
+        schedule['sponsor_info'] = []
+        schedule['supported_info'] = []
+        schedule['organizer_info'] = []
+        schedule['coorganizer_info'] = []
         if len(schedule.get('guest_id', [])) > 0:
             for guest in schedule.get('guest_id', []):
                 user = User.query.filter_by(id=guest, is_deleted=0).first()
                 if user is not None:
                     schedule['guest_info'].append(user.get_guest())
+        if len(schedule.get('supported', [])) > 0:
+            supporteds = ConferenCoopearter.query.filter(ConferenCoopearter.id.in_(schedule.get('supported', [])),
+                                                         ConferenCoopearter.is_deleted == 0).all()
+            if supporteds is not None:
+                for supported in supporteds:
+                    schedule['supported_info'].append(supported.get())
+        if len(schedule.get('organizer', [])) > 0:
+            organizers = ConferenCoopearter.query.filter(ConferenCoopearter.id.in_(schedule.get('organizer', [])),
+                                                         ConferenCoopearter.is_deleted == 0).all()
+            if organizers is not None:
+                for organizer in organizers:
+                    schedule['organizer_info'].append(organizer.get())
+        if len(schedule.get('coorganizer', [])) > 0:
+            coorganizers = ConferenCoopearter.query.filter(ConferenCoopearter.id.in_(schedule.get('coorganizer', [])),
+                                                           ConferenCoopearter.is_deleted == 0).all()
+            if coorganizers is not None:
+                for coorganizer in coorganizers:
+                    schedule['coorganizer_info'].append(coorganizer.get())
+        if len(schedule.get('sponsor', [])) > 0:
+            sponsors = ConferenCoopearter.query.filter(ConferenCoopearter.id.in_(schedule.get('sponsor', [])),
+                                                       ConferenCoopearter.is_deleted == 0).all()
+            if sponsors is not None:
+                for sponsor in sponsors:
+                    schedule['sponsor_info'].append(sponsor.get())
         data.append(schedule)
     return make_succ_page_response(data, code=200, total=result.total)
 
