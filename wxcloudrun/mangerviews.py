@@ -451,12 +451,21 @@ def add_cooperater():
         """
     forum = get_jwt().get("forum")
     params = request.get_json()
-    cooperater = ConferenCoopearter()
+    cooperater = ConferenCoopearter.query.filter(ConferenCoopearter.name == params.get('name'),
+                                                 ConferenCoopearter.is_deleted == 0).first()
+    if cooperater is None:
+        cooperater = ConferenCoopearter()
+        cooperater.forum = forum
+    else:
+        if cooperater.forum=='':
+            cooperater.forum = forum
+        else:
+            cooperater.forum=cooperater.forum+','+forum
     cooperater.name = params.get('name')
     cooperater.img_url = params.get('cdn_param')
     cooperater.url = params.get('url')
     cooperater.type = params.get('type')
-    cooperater.forum = forum
+
     insert_user(cooperater)
     refresh_cooperater()
     return make_succ_response(cooperater.id, code=200)
