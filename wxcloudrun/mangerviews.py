@@ -146,12 +146,12 @@ def review_register():
     operator = get_jwt_identity()
     params = request.get_json()
     opt = params.get('opt')
-    reason= params.get('reason',"")
-    userlist = params.get('userlist','')
+    reason = params.get('reason', "")
+    userlist = params.get('userlist', '')
     if opt == 'agree':
-        update_user_statusbyid(userlist, 2,reason)
+        update_user_statusbyid(userlist, 2, reason)
     elif opt == 'unagree':
-        update_user_statusbyid(userlist, 1,reason)
+        update_user_statusbyid(userlist, 1, reason)
     else:
         return make_err_response('无该操作方法')
     return make_succ_response('操作成功', code=200)
@@ -305,7 +305,7 @@ def manage_get_hall_schedule():
         schedule['guest_info'] = []
         if len(schedule.get('guest_id', [])) > 0:
             for guest in schedule.get('guest_id', []):
-                user = User.query.filter_by(id=guest,is_deleted=0).first()
+                user = User.query.filter_by(id=guest, is_deleted=0).first()
                 if user is not None:
                     schedule['guest_info'].append(user.get_guest())
         data.append(schedule)
@@ -348,11 +348,11 @@ def add_hall_schedule():
     schedule.agenda = json.dumps(params.get('agenda', ''))
     schedule.img_url = params.get('cdn_param')
     schedule.forum = forum
-    schedule.sponsor= ','.join([str(item) for item in params.get('sponsor')])
-    schedule.supported=','.join([str(item) for item in params.get('supported')])
-    schedule.organizer=','.join([str(item) for item in params.get('organizer')])
-    schedule.coorganizer=','.join([str(item) for item in params.get('coorganizer')])
-    schedule.background=params.get('background')
+    schedule.sponsor = ','.join([str(item) for item in params.get('sponsor')])
+    schedule.supported = ','.join([str(item) for item in params.get('supported')])
+    schedule.organizer = ','.join([str(item) for item in params.get('organizer')])
+    schedule.coorganizer = ','.join([str(item) for item in params.get('coorganizer')])
+    schedule.background = params.get('background')
     insert_user(schedule)
     refresh_guest()
     if schedule.live_status:
@@ -431,13 +431,15 @@ def get_cooperater():
         :return:大会合作伙伴
     """
     # 获取请求体参数
+    forum = get_jwt().get("forum")
     name = request.args.get('name', '')
     page = request.args.get('page', default=1, type=int)
     page_size = request.args.get('page_size', default=10, type=int)
     result = ConferenCoopearter.query.filter(ConferenCoopearter.is_deleted == 0,
-                                             ConferenCoopearter.name.like('%' + name + '%')).paginate(page,
-                                                                                                      per_page=page_size,
-                                                                                                      error_out=False)
+                                             ConferenCoopearter.name.like('%' + name + '%'),
+                                             ConferenCoopearter.forum.like('%' + forum + '%')).paginate(page,
+                                                                                                        per_page=page_size,
+                                                                                                        error_out=False)
     return make_succ_page_response([item.get() for item in result.items], code=200, total=result.total)
 
 
@@ -447,13 +449,14 @@ def add_cooperater():
     """
         :return:新增合作伙伴
         """
-    operator = get_jwt_identity()
+    forum = get_jwt().get("forum")
     params = request.get_json()
     cooperater = ConferenCoopearter()
     cooperater.name = params.get('name')
     cooperater.img_url = params.get('cdn_param')
     cooperater.url = params.get('url')
     cooperater.type = params.get('type')
+    cooperater.forum = forum
     insert_user(cooperater)
     refresh_cooperater()
     return make_succ_response(cooperater.id, code=200)

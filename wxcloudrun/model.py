@@ -236,6 +236,7 @@ class ConferenCoopearter(db.Model):
     url = db.Column('url', db.String(50), nullable=True)
     type = db.Column('type', db.String(10), nullable=True)
     is_deleted = db.Column('is_deleted', db.INT, default=0)
+    forum = db.Column('forum', db.String)
 
     def get(self):
         return {"id": self.id, "name": self.name, "cdn_param": self.img_url, "type": self.type,
