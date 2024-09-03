@@ -774,11 +774,11 @@ def get_cooperater_show():
 @jwt_required()
 def edit_cooperater_show():
     params = request.get_json()
-    cooperaterShow = ConferenceCooperatorShow.query.filter(ConferenceCooperatorShow.id.in_(params.get('id'))).first()
+    cooperaterShow = ConferenceCooperatorShow.query.filter(ConferenceCooperatorShow.id.in_(params.get('id'))).all()
     for show in cooperaterShow:
         show.is_show=True
         insert_user(show)
-    cooperaterShow = ConferenceCooperatorShow.query.filter(ConferenceCooperatorShow.id.notin_(params.get('id'))).first()
+    cooperaterShow = ConferenceCooperatorShow.query.filter(ConferenceCooperatorShow.id.notin_(params.get('id'))).all()
     for show in cooperaterShow:
         show.is_show = False
         insert_user(show)
