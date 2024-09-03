@@ -74,13 +74,30 @@ class ConferenceSchedule(db.Model):
             guest_id = []
         else:
             guest_id = list(map(int, self.guest.split(',')))
+        if self.sponsor is None:
+            sponsor = []
+        else:
+            sponsor = list(map(int, self.sponsor.split(',')))
+        if self.supported is None:
+            supported = []
+        else:
+            supported = list(map(int, self.supported.split(',')))
+        if self.organizer is None:
+            organizer = []
+        else:
+            organizer = list(map(int, self.organizer.split(',')))
+        if self.coorganizer is None:
+            coorganizer = []
+        else:
+            coorganizer = list(map(int, self.coorganizer.split(',')))
         return {'id': self.id, 'title': self.title, 'location': self.location, "hall": self.hall,
                 'conference_date': self.conference_date.strftime('%Y-%m-%d'), 'status': self.status,
                 'live_status': self.live_status, "begin_time": self.begin_time, "end_time": self.end_time,
                 'live_url': self.live_url, "record_url": self.record_url, 'guest_id': guest_id, 'org': self.org,
                 "agenda": [] if (self.agenda is None or self.agenda == '') else json.loads(self.agenda),
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url),
-                'cdn_param': self.img_url}
+                'cdn_param': self.img_url, "sponsor": sponsor, "supported": supported, "organizer": organizer,
+                "coorganizer": coorganizer,"background": self.background}
 
     def get_schedule_view(self):
         status_ENUM = {0: '我要报名', 1: '正在直播' if self.live_status == 1 else '会议进行中',
@@ -116,10 +133,22 @@ class ConferenceSchedule(db.Model):
             guest_id = []
         else:
             guest_id = list(map(int, self.guest.split(',')))
-        sponsor = list(map(int, self.sponsor.split(',')))
-        supported = list(map(int, self.supported.split(',')))
-        organizer = list(map(int, self.organizer.split(',')))
-        coorganizer = list(map(int, self.coorganizer.split(',')))
+        if self.sponsor is None:
+            sponsor = []
+        else:
+            sponsor = list(map(int, self.sponsor.split(',')))
+        if self.supported is None:
+            supported = []
+        else:
+            supported = list(map(int, self.supported.split(',')))
+        if self.organizer is None:
+            organizer = []
+        else:
+            organizer = list(map(int, self.organizer.split(',')))
+        if self.coorganizer is None:
+            coorganizer = []
+        else:
+            coorganizer = list(map(int, self.coorganizer.split(',')))
         return {'id': self.id, 'title': self.title, 'location': self.location,
                 'conference_date': self.conference_date.strftime('%Y-%m-%d'),
                 "begin_time": self.begin_time, "end_time": self.end_time, 'live_url': self.live_url,

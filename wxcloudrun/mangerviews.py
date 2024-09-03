@@ -348,6 +348,11 @@ def add_hall_schedule():
     schedule.agenda = json.dumps(params.get('agenda', ''))
     schedule.img_url = params.get('cdn_param')
     schedule.forum = forum
+    schedule.sponsor= ','.join([str(item) for item in params.get('sponsor')])
+    schedule.supported=','.join([str(item) for item in params.get('supported')])
+    schedule.organizer=','.join([str(item) for item in params.get('organizer')])
+    schedule.coorganizer=','.join([str(item) for item in params.get('coorganizer')])
+    schedule.background=params.get('background')
     insert_user(schedule)
     refresh_guest()
     if schedule.live_status:
@@ -383,6 +388,11 @@ def edit_hall_schedule():
     schedule.org = params.get('org')
     schedule.agenda = json.dumps(params.get('agenda'))
     schedule.img_url = params.get('cdn_param')
+    schedule.sponsor = ','.join([str(item) for item in params.get('sponsor')])
+    schedule.supported = ','.join([str(item) for item in params.get('supported')])
+    schedule.organizer = ','.join([str(item) for item in params.get('organizer')])
+    schedule.coorganizer = ','.join([str(item) for item in params.get('coorganizer')])
+    schedule.background = params.get('background')
     insert_user(schedule)
     refresh_guest()
     if schedule.live_status:
