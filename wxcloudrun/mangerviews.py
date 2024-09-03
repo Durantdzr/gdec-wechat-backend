@@ -766,15 +766,20 @@ def generate_urllink():
 @app.route('/api/manage/get_cooperater_show', methods=['GET'])
 @jwt_required()
 def get_cooperater_show():
-    result = ConferenceCooperatorShow.query.all()
-    return make_succ_response([{"type": data.type, "is_show": data.is_show} for data in result], code=200)
+    result = ConferenceCooperatorShow.query.filter(ConferenceCooperatorShow.is_show == True)
+    return make_succ_response([data.id for data in result], code=200)
 
 
 @app.route('/api/manage/edit_cooperater_show', methods=['POST'])
 @jwt_required()
 def edit_cooperater_show():
     params = request.get_json()
-    cooperaterShow = ConferenceCooperatorShow.query.filter(ConferenceCooperatorShow.type == params.get('type')).first()
-    cooperaterShow.is_show = params.get('is_show')
-    insert_user(cooperaterShow)
-    return make_succ_response(cooperaterShow.id, code=200)
+    cooperaterShow = ConferenceCooperatorShow.query.filter(ConferenceCooperatorShow.id.in_(params.get('id'))).first()
+    for show in cooperaterShow:
+        show.is_show=True
+        insert_user(show)
+    cooperaterShow = ConferenceCooperatorShow.query.filter(ConferenceCooperatorShow.id.notin_(params.get('id'))).first()
+    for show in cooperaterShow:
+        show.is_show = True
+        insert_user(show)
+    return make_succ_response(id, code=200)
