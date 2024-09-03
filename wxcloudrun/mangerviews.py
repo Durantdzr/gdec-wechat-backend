@@ -780,6 +780,6 @@ def edit_cooperater_show():
         insert_user(show)
     cooperaterShow = ConferenceCooperatorShow.query.filter(ConferenceCooperatorShow.id.notin_(params.get('id'))).first()
     for show in cooperaterShow:
-        show.is_show = True
+        show.is_show = False
         insert_user(show)
-    return make_succ_response(id, code=200)
+    return make_succ_response(params.get('id'), code=200)
