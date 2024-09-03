@@ -15,7 +15,7 @@ from wxcloudrun.dao import update_user_statusbyid, insert_user, get_guests_list,
     update_schedule_statusbyid, refresh_cooperater, refresh_guest, refresh_guest_info, get_hall_schedule_bydate, \
     get_live_data, refresh_conference_info, refresh_schedule_info, delete_reocrd, get_hall_schedule_byid
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, RelationFriend, \
-    ConferenCoopearter, Media
+    ConferenCoopearter, Media, ConferenceCooperatorShow
 from wxcloudrun.response import make_succ_page_response, make_succ_response, make_err_response
 from wxcloudrun.utils import batchdownloadfile, uploadfile, valid_image, vaild_password, uploadwebfile, \
     download_cdn_file, zip_folder, get_ticket, get_urllink
@@ -376,10 +376,10 @@ def add_hall_schedule():
     schedule.agenda = json.dumps(params.get('agenda', ''))
     schedule.img_url = params.get('cdn_param')
     schedule.forum = forum
-    schedule.sponsor = ','.join([str(item) for item in params.get('sponsor',[])])
-    schedule.supported = ','.join([str(item) for item in params.get('supported',[])])
-    schedule.organizer = ','.join([str(item) for item in params.get('organizer',[])])
-    schedule.coorganizer = ','.join([str(item) for item in params.get('coorganizer',[])])
+    schedule.sponsor = ','.join([str(item) for item in params.get('sponsor', [])])
+    schedule.supported = ','.join([str(item) for item in params.get('supported', [])])
+    schedule.organizer = ','.join([str(item) for item in params.get('organizer', [])])
+    schedule.coorganizer = ','.join([str(item) for item in params.get('coorganizer', [])])
     schedule.background = params.get('background')
     insert_user(schedule)
     refresh_guest()
@@ -416,10 +416,10 @@ def edit_hall_schedule():
     schedule.org = params.get('org')
     schedule.agenda = json.dumps(params.get('agenda'))
     schedule.img_url = params.get('cdn_param')
-    schedule.sponsor = ','.join([str(item) for item in params.get('sponsor',[])])
-    schedule.supported = ','.join([str(item) for item in params.get('supported',[])])
-    schedule.organizer = ','.join([str(item) for item in params.get('organizer',[])])
-    schedule.coorganizer = ','.join([str(item) for item in params.get('coorganizer',[])])
+    schedule.sponsor = ','.join([str(item) for item in params.get('sponsor', [])])
+    schedule.supported = ','.join([str(item) for item in params.get('supported', [])])
+    schedule.organizer = ','.join([str(item) for item in params.get('organizer', [])])
+    schedule.coorganizer = ','.join([str(item) for item in params.get('coorganizer', [])])
     schedule.background = params.get('background')
     insert_user(schedule)
     refresh_guest()
@@ -464,7 +464,7 @@ def get_cooperater():
     type = request.args.get('type')
     page = request.args.get('page', default=1, type=int)
     page_size = request.args.get('page_size', default=10, type=int)
-    result = ConferenCoopearter.query.filter(ConferenCoopearter.is_deleted == 0,ConferenCoopearter.type==type,
+    result = ConferenCoopearter.query.filter(ConferenCoopearter.is_deleted == 0, ConferenCoopearter.type == type,
                                              ConferenCoopearter.name.like('%' + name + '%'),
                                              ConferenCoopearter.forum.like('%' + forum + '%')).paginate(page,
                                                                                                         per_page=page_size,
@@ -486,10 +486,10 @@ def add_cooperater():
         cooperater = ConferenCoopearter()
         cooperater.forum = forum
     else:
-        if cooperater.forum=='':
+        if cooperater.forum == '':
             cooperater.forum = forum
         else:
-            cooperater.forum=cooperater.forum+','+forum
+            cooperater.forum = cooperater.forum + ',' + forum
     cooperater.name = params.get('name')
     cooperater.img_url = params.get('cdn_param')
     cooperater.url = params.get('url')
@@ -761,3 +761,20 @@ def get_signature():
 @app.route('/api/manage/generate_urllink', methods=['GET'])
 def generate_urllink():
     return make_succ_response(get_urllink())
+
+
+@app.route('/api/manage/get_cooperater_show', methods=['GET'])
+@jwt_required()
+def get_cooperater_show():
+    result = ConferenceCooperatorShow.query.all()
+    return make_succ_response([{"type": data.type, "is_show": data.is_show} for data in result], code=200)
+
+
+@app.route('/api/manage/edit_cooperater_show', methods=['POST'])
+@jwt_required()
+def edit_cooperater_show():
+    params = request.get_json()
+    cooperaterShow = ConferenceCooperatorShow.query.filter(ConferenceCooperatorShow.type == params.get('type')).first()
+    cooperaterShow.is_show = params.get('is_show')
+    insert_user(cooperaterShow)
+    return make_succ_response(cooperaterShow.id, code=200)

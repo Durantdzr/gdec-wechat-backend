@@ -97,7 +97,7 @@ class ConferenceSchedule(db.Model):
                 "agenda": [] if (self.agenda is None or self.agenda == '') else json.loads(self.agenda),
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url),
                 'cdn_param': self.img_url, "sponsor": sponsor, "supported": supported, "organizer": organizer,
-                "coorganizer": coorganizer,"background": self.background}
+                "coorganizer": coorganizer, "background": self.background}
 
     def get_schedule_view(self):
         status_ENUM = {0: '我要报名', 1: '正在直播' if self.live_status == 1 else '会议进行中',
@@ -133,19 +133,19 @@ class ConferenceSchedule(db.Model):
             guest_id = []
         else:
             guest_id = list(map(int, self.guest.split(',')))
-        if self.sponsor is None or self.sponsor =='':
+        if self.sponsor is None or self.sponsor == '':
             sponsor = []
         else:
             sponsor = list(map(int, self.sponsor.split(',')))
-        if self.supported is None or self.supported =='':
+        if self.supported is None or self.supported == '':
             supported = []
         else:
             supported = list(map(int, self.supported.split(',')))
-        if self.organizer is None or self.organizer =='':
+        if self.organizer is None or self.organizer == '':
             organizer = []
         else:
             organizer = list(map(int, self.organizer.split(',')))
-        if self.coorganizer is None or self.coorganizer =='':
+        if self.coorganizer is None or self.coorganizer == '':
             coorganizer = []
         else:
             coorganizer = list(map(int, self.coorganizer.split(',')))
@@ -272,3 +272,13 @@ class Media(db.Model):
         else:
             return {"id": self.id, "name": self.name, "info": self.info, "type": self.type, "doc": self.media_param,
                     "web_url": 'https://{}.tcb.qcloud.la/web/{}'.format(config.COS_BUCKET, self.id)}
+
+
+class ConferenceCooperatorShow(db.Model):
+    # 设置结构体表格名称
+    __tablename__ = 'conference_cooperater_show'
+    # 设定结构体对应表格的字段
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column('name', db.String(20))
+    type = db.Column('type', db.String(20))
+    is_show = db.Column('is_show', db.BOOLEAN, default=True)
