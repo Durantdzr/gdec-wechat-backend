@@ -6,7 +6,7 @@ from sqlalchemy.exc import OperationalError
 from wxcloudrun import db
 from wxcloudrun.model import ConferenceInfo, RelationFriend, User, ConferenceSignUp, ConferenceSchedule, \
     ConferenCoopearter, ConferenceCooperatorShow
-from sqlalchemy import or_, and_
+from sqlalchemy import or_
 from wxcloudrun.utils import uploadwebfile, send_check_msg
 import config
 

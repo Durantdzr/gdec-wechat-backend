@@ -11,14 +11,14 @@ import json
 
 from flask import request, send_file
 from run import app
-from wxcloudrun.dao import update_user_statusbyid, insert_user, get_guests_list, get_review_conference_list, \
-    update_schedule_statusbyid, refresh_cooperater, refresh_guest, refresh_guest_info, get_hall_schedule_bydate, \
-    get_live_data, refresh_conference_info, refresh_schedule_info, delete_reocrd, get_hall_schedule_byid
-from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, RelationFriend, \
-    ConferenCoopearter, Media, ConferenceCooperatorShow
+from wxcloudrun.dao import update_user_statusbyid, insert_user, get_review_conference_list, update_schedule_statusbyid, \
+    refresh_cooperater, refresh_guest, refresh_guest_info, get_hall_schedule_bydate, get_live_data, \
+    refresh_conference_info, get_hall_schedule_byid
+from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, ConferenCoopearter, Media, \
+    ConferenceCooperatorShow
 from wxcloudrun.response import make_succ_page_response, make_succ_response, make_err_response
-from wxcloudrun.utils import batchdownloadfile, uploadfile, valid_image, vaild_password, uploadwebfile, \
-    download_cdn_file, zip_folder, get_ticket, get_urllink
+from wxcloudrun.utils import uploadfile, valid_image, vaild_password, uploadwebfile, download_cdn_file, zip_folder, \
+    get_ticket, get_urllink
 from datetime import timedelta
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, get_jwt, verify_jwt_in_request
 import uuid
