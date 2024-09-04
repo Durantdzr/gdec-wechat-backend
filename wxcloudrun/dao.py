@@ -350,7 +350,7 @@ def get_cooperater():
         result = schedule.get_schedule()
         for item in type:
             cooperater_id.extend(result.get(item))
-    result = ConferenceSchedule.query.filter(ConferenCoopearter.is_deleted == 0,
+    result = ConferenCoopearter.query.filter(ConferenCoopearter.is_deleted == 0,
                                              ConferenCoopearter.id.in_(cooperater_id)).all()
     return [item.get() for item in result]
 
