@@ -20,13 +20,30 @@ from wxcloudrun.response import make_succ_page_response, make_succ_response, mak
 from wxcloudrun.utils import batchdownloadfile, uploadfile, valid_image, vaild_password, uploadwebfile, \
     download_cdn_file, zip_folder, get_ticket, get_urllink
 from datetime import timedelta
-from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, get_jwt
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, get_jwt, verify_jwt_in_request
 import uuid
 import config
 import requests
 import base64
 import pandas as pd
 import os
+from functools import wraps
+
+
+def admin_required():
+    def wrapper(fn):
+        @wraps(fn)
+        def decorator(*args, **kwargs):
+            verify_jwt_in_request()
+            claims = get_jwt()
+            if claims["forum"] == "":
+                return fn(*args, **kwargs)
+            else:
+                return make_err_response('用户权限错误')
+
+        return decorator
+
+    return wrapper
 
 
 @app.route('/api/manage/login', methods=['POST'])
@@ -64,11 +81,11 @@ def logout():
 
 @app.route('/api/manage/get_register_list', methods=['GET'])
 @jwt_required()
+@admin_required()
 def get_register_list():
     """
         :return:获取用户审核列表
     """
-    operator = get_jwt_identity()
     page = request.args.get('page', default=1, type=int)
     page_size = request.args.get('page_size', default=10, type=int)
     name = request.args.get('name', default='', type=str)
@@ -89,11 +106,11 @@ def get_register_list():
 
 @app.route('/api/manage/get_user_list', methods=['GET'])
 @jwt_required()
+@admin_required()
 def get_success_user_list():
     """
         :return:获取已审核用户列表
     """
-    operator = get_jwt_identity()
     page = request.args.get('page', default=1, type=int)
     page_size = request.args.get('page_size', default=10, type=int)
     name = request.args.get('name', default='', type=str)
@@ -106,11 +123,11 @@ def get_success_user_list():
 
 @app.route('/api/manage/edit_user', methods=['post'])
 @jwt_required()
+@admin_required()
 def edit_user():
     """
         :return:编辑用户
         """
-    operator = get_jwt_identity()
     params = request.get_json()
     user = User.query.filter_by(id=params.get('id')).first()
     user.name = params.get('name')
@@ -125,11 +142,11 @@ def edit_user():
 
 @app.route('/api/manage/delete_user', methods=['post'])
 @jwt_required()
+@admin_required()
 def delete_user():
     """
         :return:删除用户
         """
-    operator = get_jwt_identity()
     params = request.get_json()
     user = User.query.filter_by(id=params.get('id')).first()
     user.is_deleted = 1
@@ -139,11 +156,11 @@ def delete_user():
 
 @app.route('/api/manage/review_register', methods=['post'])
 @jwt_required()
+@admin_required()
 def review_register():
     """
         :return:审核用户注册
         """
-    operator = get_jwt_identity()
     params = request.get_json()
     opt = params.get('opt')
     reason = params.get('reason', "")
@@ -163,7 +180,6 @@ def add_guest():
     """
         :return:新增嘉宾用户
         """
-    operator = get_jwt_identity()
     forum = get_jwt().get("forum", "")
     params = request.get_json()
     user = User()
@@ -189,7 +205,6 @@ def edit_guest():
     """
         :return:编辑嘉宾用户
         """
-    operator = get_jwt_identity()
     params = request.get_json()
     user = User.query.filter_by(id=params.get('id')).first()
     user.name = params.get('name')
@@ -210,7 +225,6 @@ def delete_guest():
     """
         :return:删除嘉宾用户
         """
-    operator = get_jwt_identity()
     params = request.get_json()
     user = User.query.filter_by(id=params.get('id')).first()
     user.is_deleted = 1
@@ -249,7 +263,6 @@ def upload_img():
     """
         :return:上传图片
         """
-    operator = get_jwt_identity()
     file = request.files['file']
     if file:  # 这里可以加入文件类型判断等逻辑
         format = valid_image(file.stream)
@@ -358,7 +371,6 @@ def add_hall_schedule():
         :return:新增日程
         """
     forum = get_jwt().get("forum")
-    operator = get_jwt_identity()
     params = request.get_json()
     schedule = ConferenceSchedule()
     schedule.title = params.get('title')
@@ -400,7 +412,6 @@ def edit_hall_schedule():
     """
         :return:编辑日程
         """
-    operator = get_jwt_identity()
     params = request.get_json()
     schedule = ConferenceSchedule.query.filter_by(id=params.get('id')).first()
     schedule.title = params.get('title')
@@ -441,7 +452,6 @@ def delete_hall_schedule():
     """
         :return:删除日程
         """
-    operator = get_jwt_identity()
     params = request.get_json()
     schedule = ConferenceSchedule.query.filter_by(id=params.get('id')).first()
     schedule.is_deleted = 1
@@ -508,7 +518,6 @@ def edit_cooperater():
     """
         :return:编辑合作伙伴
         """
-    operator = get_jwt_identity()
     params = request.get_json()
     cooperater = ConferenCoopearter.query.filter_by(id=params.get('id')).first()
     cooperater.name = params.get('name')
@@ -526,7 +535,6 @@ def delete_cooperater():
     """
         :return:删除合作伙伴
         """
-    operator = get_jwt_identity()
     params = request.get_json()
     cooperater = ConferenCoopearter.query.filter_by(id=params.get('id')).first()
     cooperater.is_deleted = 1
@@ -541,7 +549,6 @@ def review_conference_sign_up():
     """
         :return:审核用户报名会议
         """
-    operator = get_jwt_identity()
     params = request.get_json()
     opt = params.get('opt')
     signuplist = params.get('signuplist')
@@ -572,6 +579,7 @@ def get_conference_sign_up():
 
 @app.route('/api/manage/add_media', methods=['post'])
 @jwt_required()
+@admin_required()
 def add_media():
     """
         :return:创建门户介质
@@ -600,6 +608,7 @@ def add_media():
 
 @app.route('/api/manage/edit_media', methods=['post'])
 @jwt_required()
+@admin_required()
 def edit_media():
     """
         :return:编辑门户介质
@@ -628,6 +637,7 @@ def edit_media():
 
 @app.route('/api/manage/delete_media', methods=['post'])
 @jwt_required()
+@admin_required()
 def delete_media():
     """
         :return:删除门户介质
@@ -642,6 +652,7 @@ def delete_media():
 
 @app.route('/api/manage/get_media', methods=['GET'])
 @jwt_required()
+@admin_required()
 def get_media():
     """
         :return:获取门户介质
@@ -659,6 +670,7 @@ def get_media():
 
 @app.route('/api/manage/get_information_list', methods=['GET'])
 @jwt_required()
+@admin_required()
 def manage_get_information_list():
     """
         :return:大会资讯列表
@@ -676,6 +688,7 @@ def manage_get_information_list():
 
 @app.route('/api/manage/add_information_list', methods=['post'])
 @jwt_required()
+@admin_required()
 def manage_add_information_list():
     """
         :return:添加大会资讯
@@ -695,6 +708,7 @@ def manage_add_information_list():
 
 @app.route('/api/manage/edit_information_list', methods=['post'])
 @jwt_required()
+@admin_required()
 def manage_edit_information_list():
     """
         :return:编辑大会资讯
@@ -714,6 +728,7 @@ def manage_edit_information_list():
 
 @app.route('/api/manage/delete_information_list', methods=['post'])
 @jwt_required()
+@admin_required()
 def manage_delete_information_list():
     """
         :return:删除大会资讯
@@ -729,6 +744,7 @@ def manage_delete_information_list():
 
 @app.route('/api/manage/download_user_list', methods=['GET'])
 @jwt_required()
+@admin_required()
 def download_user_list():
     """
         :return:下载已审核用户列表
@@ -767,6 +783,7 @@ def generate_urllink():
 
 @app.route('/api/manage/get_cooperater_show', methods=['GET'])
 @jwt_required()
+@admin_required()
 def get_cooperater_show():
     result = ConferenceCooperatorShow.query.filter(ConferenceCooperatorShow.is_show == True)
     return make_succ_response([data.id for data in result], code=200)
@@ -774,11 +791,12 @@ def get_cooperater_show():
 
 @app.route('/api/manage/edit_cooperater_show', methods=['POST'])
 @jwt_required()
+@admin_required()
 def edit_cooperater_show():
     params = request.get_json()
     cooperaterShow = ConferenceCooperatorShow.query.filter(ConferenceCooperatorShow.id.in_(params.get('id'))).all()
     for show in cooperaterShow:
-        show.is_show=True
+        show.is_show = True
         insert_user(show)
     cooperaterShow = ConferenceCooperatorShow.query.filter(ConferenceCooperatorShow.id.notin_(params.get('id'))).all()
     for show in cooperaterShow:
