@@ -802,4 +802,5 @@ def edit_cooperater_show():
     for show in cooperaterShow:
         show.is_show = False
         insert_user(show)
+    refresh_cooperater()
     return make_succ_response(params.get('id'), code=200)

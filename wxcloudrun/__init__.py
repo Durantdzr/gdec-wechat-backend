@@ -4,6 +4,7 @@ import pymysql
 import config
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
+from flask_apscheduler import APScheduler
 
 # 因MySQLDB不支持Python3，使用pymysql扩展库代替MySQLDB库
 pymysql.install_as_MySQLdb()
@@ -21,6 +22,15 @@ jwt = JWTManager(app)
 CORS(app, resources={r"/api/manage/*": {"origins": config.CORS_ORIGINS}},supports_credentials=True)
 # 初始化DB操作对象
 db = SQLAlchemy(app)
+
+scheduler = APScheduler()
+scheduler.init_app(app)
+scheduler.start()
+
+from wxcloudrun.cronjob import send_begin_msg
+@scheduler.task('interval', id='send_begin_msg', hours=1, misfire_grace_time=900)
+def job1():
+    send_begin_msg()
 
 # 加载控制器
 from wxcloudrun import views, mangerviews
