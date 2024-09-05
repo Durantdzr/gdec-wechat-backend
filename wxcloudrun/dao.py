@@ -365,12 +365,6 @@ def refresh_cooperater():
 def refresh_guest():
     data = get_guests_list()
     uploadwebfile(data, file='get_guest_list.json')
-    data = get_open_guests_list()
-    uploadwebfile(data, file='get_open_guest_list.json')
-    data = get_main_hall_guests_list()
-    uploadwebfile(data, file='get_main_hall_guest_list.json')
-    data = get_other_hall_guests_list()
-    uploadwebfile(data, file='get_other_hall_guest_list.json')
 
 
 def refresh_guest_info(userid):
