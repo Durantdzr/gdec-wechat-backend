@@ -297,8 +297,8 @@ def get_hall_schedule_byid(id):
     schedule['coorganizer_info'] = []
     for num in range(len(schedule.get('agenda', []))):
         schedule['agenda'][num]['guest_info'] =[]
-        if len(['agenda'][num].get('guest_id', [])) > 0:
-            for guest in ['agenda'][num].get('guest_id', []):
+        if len(schedule['agenda'][num].get('guest_id', [])) > 0:
+            for guest in schedule['agenda'][num].get('guest_id', []):
                 user = User.query.filter_by(id=guest, is_deleted=0).first()
                 if user is None:
                     continue
