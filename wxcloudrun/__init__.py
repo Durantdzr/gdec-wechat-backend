@@ -14,8 +14,8 @@ app = Flask(__name__, instance_relative_config=True)
 app.config['DEBUG'] = config.DEBUG
 
 # 设定数据库链接
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://{}:{}@{}/GDEC'.format(config.username, config.password,
-                                                                       config.db_address)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://{}:{}@{}/{}'.format(config.username, config.password,
+                                                                       config.db_address,config.database)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = config.JWT_SECRET_KEY
 jwt = JWTManager(app)
