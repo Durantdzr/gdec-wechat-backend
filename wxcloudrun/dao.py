@@ -396,7 +396,6 @@ def refresh_schedule_info():
 
 def get_operat_list(page, page_size):
     result = db.session.query(OperaterLog, OperaterRule).join(OperaterRule,
-                                                              OperaterLog.event == OperaterRule.rule).paginate(page,
-                                                                                                               per_page=page_size,
-                                                                                                               error_out=False)
+                                                              OperaterLog.event == OperaterRule.rule).order_by(
+        OperaterLog.create_time.desc()).paginate(page, per_page=page_size, error_out=False)
     return result
