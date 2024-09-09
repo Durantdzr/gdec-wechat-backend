@@ -295,3 +295,12 @@ class OperaterLog(db.Model):
     data = db.Column('data', db.TEXT)
     create_time = db.Column('create_time', db.TIMESTAMP, nullable=False, default=datetime.now)
 
+
+class OperaterRule(db.Model):
+    # 设置结构体表格名称
+    __tablename__ = 't_operate_rule'
+
+    # 设定结构体对应表格的字段
+    id = db.Column(db.Integer, primary_key=True)
+    rule = db.Column('operator', db.String(100), nullable=True)
+    name = db.Column('event', db.String(100), nullable=True)

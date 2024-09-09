@@ -13,7 +13,7 @@ from flask import request, send_file
 from run import app
 from wxcloudrun.dao import update_user_statusbyid, insert_user, get_review_conference_list, update_schedule_statusbyid, \
     refresh_cooperater, refresh_guest, refresh_guest_info, get_hall_schedule_bydate, get_live_data, \
-    refresh_conference_info, get_hall_schedule_byid
+    refresh_conference_info, get_hall_schedule_byid, get_operat_list
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, ConferenCoopearter, Media, \
     ConferenceCooperatorShow
 from wxcloudrun.response import make_succ_page_response, make_succ_response, make_err_response
@@ -29,8 +29,6 @@ import pandas as pd
 import os
 from functools import wraps
 from wxcloudrun.logger import operatr_log
-
-
 
 
 def admin_required():
@@ -60,7 +58,7 @@ def login():
     pwdhash = params.get('pwdhash')
     user = User.query.filter_by(name=username, type='管理员').first()
     if not user:
-        operatr_log(username,request.url_rule.rule,'不存在该用户',request.remote_addr)
+        operatr_log(username, request.url_rule.rule, '不存在该用户', request.remote_addr)
         return make_err_response('不存在该用户')
     if pwdhash != vaild_password(user.password):
         operatr_log(username, request.url_rule.rule, '密码错误', request.remote_addr)
@@ -831,6 +829,21 @@ def edit_cooperater_show():
     refresh_cooperater()
     operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     return make_succ_response(params.get('id'), code=200)
+
+
+@app.route('/api/manage/get_operate_list', methods=['GET'])
+@jwt_required()
+@admin_required()
+def get_operate_list():
+    """
+        :return:获取管理员操作记录列表
+    """
+    page = request.args.get('page', default=1, type=int)
+    page_size = request.args.get('page_size', default=10, type=int)
+    result = get_operat_list(page, page_size)
+    return make_succ_page_response([{"id": log.id, "operator": log.operator, "event": rule.name,
+                                     "data": log.data, "create_time": log.create_time, "ip": log.ip} for log, rule in
+                                    result.items], code=200, total=result.total)
 
 # @app.before_request
 # def before_request():
