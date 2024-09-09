@@ -28,5 +28,5 @@ logger.setLevel(logging.INFO)
 
 def operatr_log(operator, event, data, ip):
     if type(data) == dict:
-        data = json.dumps(data)
+        data = json.dumps(data, ensure_ascii=False)
     logger.info(msg={"operator": operator, "event": event, "data": data, "ip": ip})
