@@ -842,7 +842,7 @@ def get_operate_list():
     page_size = request.args.get('page_size', default=10, type=int)
     result = get_operat_list(page, page_size)
     return make_succ_page_response([{"id": log.id, "operator": log.operator, "event": rule.name,
-                                     "data": log.data, "create_time": log.create_time, "ip": log.ip} for log, rule in
+                                     "data": log.data, "create_time": log.create_time.strftime('%Y-%m-%d %H:%M:%S' ), "ip": log.ip} for log, rule in
                                     result.items], code=200, total=result.total)
 
 # @app.before_request
