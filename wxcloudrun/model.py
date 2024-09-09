@@ -5,7 +5,6 @@ from wxcloudrun import db
 import config
 
 
-# 计数表
 class ConferenceInfo(db.Model):
     # 设置结构体表格名称
     __tablename__ = 'conference_information'
@@ -282,3 +281,17 @@ class ConferenceCooperatorShow(db.Model):
     name = db.Column('name', db.String(20))
     type = db.Column('type', db.String(20))
     is_show = db.Column('is_show', db.BOOLEAN, default=True)
+
+
+class OperaterLog(db.Model):
+    # 设置结构体表格名称
+    __tablename__ = 't_operate_log'
+
+    # 设定结构体对应表格的字段
+    id = db.Column(db.Integer, primary_key=True)
+    operator = db.Column('operator', db.String(50), nullable=True)
+    event = db.Column('event', db.String(100), nullable=True)
+    ip = db.Column('ip', db.String(20), nullable=True)
+    data = db.Column('data', db.TEXT)
+    create_time = db.Column('create_time', db.TIMESTAMP, nullable=False, default=datetime.now)
+

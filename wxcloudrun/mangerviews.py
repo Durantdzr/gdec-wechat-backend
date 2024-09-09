@@ -28,6 +28,9 @@ import base64
 import pandas as pd
 import os
 from functools import wraps
+from wxcloudrun.logger import operatr_log
+
+
 
 
 def admin_required():
@@ -39,6 +42,7 @@ def admin_required():
             if claims["forum"] == "":
                 return fn(*args, **kwargs)
             else:
+                operatr_log(get_jwt_identity(), request.url_rule.rule, '用户权限错误', request.remote_addr)
                 return make_err_response('用户权限错误')
 
         return decorator
@@ -56,8 +60,10 @@ def login():
     pwdhash = params.get('pwdhash')
     user = User.query.filter_by(name=username, type='管理员').first()
     if not user:
+        operatr_log(username,request.url_rule.rule,'不存在该用户',request.remote_addr)
         return make_err_response('不存在该用户')
     if pwdhash != vaild_password(user.password):
+        operatr_log(username, request.url_rule.rule, '密码错误', request.remote_addr)
         return make_err_response('密码错误')
     additional_claims = {"forum": user.forum}
     access_token = create_access_token(identity=username, expires_delta=timedelta(days=1),
@@ -66,6 +72,7 @@ def login():
         branch = 0
     else:
         branch = 1
+    operatr_log(username, request.url_rule.rule, '登录成功', request.remote_addr)
     return make_succ_response({"access_token": access_token, "branch": branch}, code=200)
 
 
@@ -76,6 +83,7 @@ def logout():
         :return:用户登出
         """
     forum = get_jwt().get("forum", "")
+    operatr_log(get_jwt_identity(), request.url_rule.rule, '登出成功', request.remote_addr)
     return make_succ_response('用户已登出', code=200)
 
 
@@ -137,6 +145,7 @@ def edit_user():
     user.img_url = params.get('cdn_param')
     user.type = params.get('type')
     insert_user(user)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     return make_succ_response(user.id, code=200)
 
 
@@ -151,6 +160,7 @@ def delete_user():
     user = User.query.filter_by(id=params.get('id')).first()
     user.is_deleted = 1
     insert_user(user)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     return make_succ_response(user.id, code=200)
 
 
@@ -171,6 +181,7 @@ def review_register():
         update_user_statusbyid(userlist, 1, reason)
     else:
         return make_err_response('无该操作方法')
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     return make_succ_response('操作成功', code=200)
 
 
@@ -196,6 +207,7 @@ def add_guest():
     insert_user(user)
     refresh_guest()
     refresh_guest_info(user.id)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     return make_succ_response(user.id, code=200)
 
 
@@ -203,7 +215,7 @@ def add_guest():
 @jwt_required()
 def edit_guest():
     """
-        :return:编辑嘉宾用户
+        :return:编辑嘉宾
         """
     params = request.get_json()
     user = User.query.filter_by(id=params.get('id')).first()
@@ -216,6 +228,7 @@ def edit_guest():
     insert_user(user)
     refresh_guest()
     refresh_guest_info(user.id)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     return make_succ_response(user.id, code=200)
 
 
@@ -223,13 +236,14 @@ def edit_guest():
 @jwt_required()
 def delete_guest():
     """
-        :return:删除嘉宾用户
+        :return:删除嘉宾
         """
     params = request.get_json()
     user = User.query.filter_by(id=params.get('id')).first()
     user.is_deleted = 1
     insert_user(user)
     refresh_guest()
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     return make_succ_response(user.id, code=200)
 
 
@@ -270,6 +284,7 @@ def upload_img():
         filename = 'guest/' + str(u) + format
         file.save(filename)
         uploadfile(filename)
+        operatr_log(get_jwt_identity(), request.url_rule.rule, filename, request.remote_addr)
         return make_succ_response(
             {'img_url': 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, filename), "cdn_param": filename},
             code=200)
@@ -292,6 +307,7 @@ def upload_base64img():
     with open(filename, 'wb') as file_to_save:
         file_to_save.write(image_data)
     uploadfile(filename)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     return make_succ_response(
         {'img_url': 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, filename), "cdn_param": filename})
 
@@ -403,6 +419,7 @@ def add_hall_schedule():
     uploadwebfile(data, file='get_hall_schedule' + params.get('conference_date') + '.json')
     data = get_hall_schedule_byid(schedule.id)
     uploadwebfile(data, file='get_schedule_by_id' + str(schedule.id) + '.json')
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     return make_succ_response(schedule.id, code=200)
 
 
@@ -443,6 +460,7 @@ def edit_hall_schedule():
     uploadwebfile(data, file='get_hall_schedule' + params.get('conference_date') + '.json')
     data = get_hall_schedule_byid(schedule.id)
     uploadwebfile(data, file='get_schedule_by_id' + str(schedule.id) + '.json')
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     return make_succ_response(schedule.id, code=200)
 
 
@@ -462,6 +480,7 @@ def delete_hall_schedule():
     uploadwebfile(data, file='get_live_list.json')
     data = get_hall_schedule_bydate(schedule.conference_date.strftime('%Y-%m-%d'))
     uploadwebfile(data, file='get_hall_schedule' + schedule.conference_date.strftime('%Y-%m-%d') + '.json')
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     return make_succ_response(schedule.id, code=200)
 
 
@@ -509,6 +528,7 @@ def add_cooperater():
     cooperater.type = params.get('type')
     insert_user(cooperater)
     refresh_cooperater()
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     return make_succ_response(cooperater.id, code=200)
 
 
@@ -526,6 +546,7 @@ def edit_cooperater():
     cooperater.type = params.get('type')
     insert_user(cooperater)
     refresh_cooperater()
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     return make_succ_response(cooperater.id, code=200)
 
 
@@ -540,6 +561,7 @@ def delete_cooperater():
     cooperater.is_deleted = 1
     insert_user(cooperater)
     refresh_cooperater()
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     return make_succ_response(cooperater.id, code=200)
 
 
@@ -558,6 +580,7 @@ def review_conference_sign_up():
         update_schedule_statusbyid(signuplist, 1)
     else:
         return make_err_response('无该操作方法')
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     return make_succ_response('操作成功', code=200)
 
 
@@ -584,7 +607,6 @@ def add_media():
     """
         :return:创建门户介质
         """
-    operator = get_jwt_identity()
     media = Media()
     params = request.get_json()
     media.name = params.get('name')
@@ -603,6 +625,7 @@ def add_media():
         with open(filename, 'wb') as f:
             f.write(img)
         uploadfile(filename)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     return make_succ_response(media.id, code=200)
 
 
@@ -613,7 +636,6 @@ def edit_media():
     """
         :return:编辑门户介质
         """
-    operator = get_jwt_identity()
     params = request.get_json()
     media = Media.query.filter(Media.id == params.get('id')).first()
     media.name = params.get('name')
@@ -632,6 +654,7 @@ def edit_media():
         with open(filename, 'wb') as f:
             f.write(img)
         uploadfile(filename)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     return make_succ_response(media.id, code=200)
 
 
@@ -642,11 +665,11 @@ def delete_media():
     """
         :return:删除门户介质
         """
-    operator = get_jwt_identity()
     params = request.get_json()
     media = Media.query.filter(Media.id == params.get('id')).first()
     media.is_deleted = 1
     insert_user(media)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     return make_succ_response(media.id, code=200)
 
 
@@ -657,7 +680,6 @@ def get_media():
     """
         :return:获取门户介质
         """
-    operator = get_jwt_identity()
     name = request.args.get('name', '')
     page = request.args.get('page', default=1, type=int)
     page_size = request.args.get('page_size', default=10, type=int)
@@ -703,6 +725,7 @@ def manage_add_information_list():
     conferenceinfo.link_url = params.get('link_url')
     insert_user(conferenceinfo)
     refresh_conference_info()
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     return make_succ_response(conferenceinfo.id, code=200)
 
 
@@ -723,6 +746,7 @@ def manage_edit_information_list():
     conferenceinfo.link_url = params.get('link_url')
     insert_user(conferenceinfo)
     refresh_conference_info()
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     return make_succ_response(conferenceinfo.id, code=200)
 
 
@@ -739,6 +763,7 @@ def manage_delete_information_list():
     conferenceinfo.is_deleted = 1
     insert_user(conferenceinfo)
     refresh_conference_info()
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     return make_succ_response(conferenceinfo.id, code=200)
 
 
@@ -762,9 +787,10 @@ def download_user_list():
         df = df.append({"序号": user.id, "员工编号": user.id, "姓名": user.name, "性别": "男", "电话号码": user.phone,
                         "证件类型": "身份证" if user.code is None or len(user.code) == 18 else '普通护照',
                         "证件号码": user.code,
-                        "照片路径(相对路径)": '/'+user.img_url}, ignore_index=True)
+                        "照片路径(相对路径)": '/' + user.img_url}, ignore_index=True)
     df.to_excel('{}/人员信息表.xlsx'.format(now), index=False)
     zip_folder(now, '数商大会人员信息导出{}.zip'.format(now))
+    operatr_log(get_jwt_identity(), request.url_rule.rule, '下载成功', request.remote_addr)
     return send_file('../数商大会人员信息导出{}.zip'.format(now),
                      download_name='数商大会人员信息导出{}.zip'.format(now))
 
@@ -803,4 +829,16 @@ def edit_cooperater_show():
         show.is_show = False
         insert_user(show)
     refresh_cooperater()
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     return make_succ_response(params.get('id'), code=200)
+
+# @app.before_request
+# def before_request():
+#     try:
+#         operator = get_jwt_identity()
+#     except Exception as e:
+#         print(e)
+#         operator = request.headers.get('X-WX-OPENID', '')
+#     ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
+#     if '/api/manage' in request.url and '/api/manage/login' not in request.url:
+#         print(operator, request.url, request.get_json(), ip_address)

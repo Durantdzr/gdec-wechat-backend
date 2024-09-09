@@ -7,7 +7,6 @@ DEBUG = False
 username = os.environ.get("MYSQL_USERNAME", '')
 password = os.environ.get("MYSQL_PASSWORD", '')
 db_address = os.environ.get("MYSQL_ADDRESS", '')
-
 database = os.environ.get("MYSQL_database", 'GDEC')
 ENV = os.environ.get("ENV", '')
 COS_BUCKET = os.environ.get("COS_BUCKET", '')
