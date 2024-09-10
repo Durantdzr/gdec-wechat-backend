@@ -394,8 +394,18 @@ def refresh_schedule_info():
                       file='get_schedule_by_id' + str(schedule.id) + '.json')
 
 
-def get_operat_list(page, page_size):
-    result = db.session.query(OperaterLog, OperaterRule).join(OperaterRule,
-                                                              OperaterLog.event == OperaterRule.rule).order_by(
-        OperaterLog.create_time.desc()).paginate(page, per_page=page_size, error_out=False)
+def get_operat_list(page, page_size, operator, event, begin_time, end_time):
+    if begin_time and end_time:
+        result = (db.session.query(OperaterLog, OperaterRule).join(OperaterRule,
+                                                                   OperaterLog.event == OperaterRule.rule)
+                  .filter(OperaterLog.operator.like('%' + operator + '%'),
+                          OperaterRule.name.like('%' + event + '%'), OperaterLog.create_time >= begin_time,
+                          OperaterLog.create_time <= end_time).order_by(
+            OperaterLog.create_time.desc()).paginate(page, per_page=page_size, error_out=False))
+    else:
+        result = (db.session.query(OperaterLog, OperaterRule).join(OperaterRule,
+                                                                   OperaterLog.event == OperaterRule.rule)
+                  .filter(OperaterLog.operator.like('%' + operator + '%'),
+                          OperaterRule.name.like('%' + event + '%')).order_by(
+            OperaterLog.create_time.desc()).paginate(page, per_page=page_size, error_out=False))
     return result

@@ -15,7 +15,7 @@ from wxcloudrun.dao import update_user_statusbyid, insert_user, get_review_confe
     refresh_cooperater, refresh_guest, refresh_guest_info, get_hall_schedule_bydate, get_live_data, \
     refresh_conference_info, get_hall_schedule_byid, get_operat_list
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, ConferenCoopearter, Media, \
-    ConferenceCooperatorShow
+    ConferenceCooperatorShow,OperaterRule
 from wxcloudrun.response import make_succ_page_response, make_succ_response, make_err_response
 from wxcloudrun.utils import uploadfile, valid_image, vaild_password, uploadwebfile, download_cdn_file, zip_folder, \
     get_ticket, get_urllink
@@ -840,10 +840,25 @@ def get_operate_list():
     """
     page = request.args.get('page', default=1, type=int)
     page_size = request.args.get('page_size', default=10, type=int)
-    result = get_operat_list(page, page_size)
+    operator = request.args.get('operator', default='', type=str)
+    event = request.args.get('event', default='', type=str)
+    begin_time = request.args.get('begin_time', default=None, type=str)
+    end_time = request.args.get('end_time', default=None, type=str)
+    result = get_operat_list(page, page_size,operator,event,begin_time,end_time)
     return make_succ_page_response([{"id": log.id, "operator": log.operator, "event": rule.name,
                                      "data": log.data, "create_time": log.create_time.strftime('%Y-%m-%d %H:%M:%S' ), "ip": log.ip} for log, rule in
                                     result.items], code=200, total=result.total)
+
+@app.route('/api/manage/get_operate_event', methods=['GET'])
+@jwt_required()
+@admin_required()
+def get_operate_event():
+    """
+        :return:获取管理员操作方法
+    """
+    result = OperaterRule.query.all()
+    return make_succ_response([rule.name for rule in result], code=200)
+
 
 # @app.before_request
 # def before_request():
