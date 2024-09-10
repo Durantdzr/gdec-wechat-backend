@@ -255,7 +255,7 @@ def get_user_schedule_num_by_id(userid):
 
 def find_user_schedule_tobegin():
     result = db.session.query(ConferenceSignUp, ConferenceSchedule, User).join(
-        ConferenceSchedule, ConferenceSignUp.schedule_id == ConferenceSchedule.id,
+        ConferenceSchedule, ConferenceSignUp.schedule_id == ConferenceSchedule.id).join(User,
                             ConferenceSignUp.user_id == User.id).filter(
         ConferenceSchedule.is_deleted == 0).all()
     data = []
