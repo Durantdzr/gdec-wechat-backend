@@ -5,7 +5,7 @@ from sqlalchemy.exc import OperationalError
 
 from wxcloudrun import db
 from wxcloudrun.model import ConferenceInfo, RelationFriend, User, ConferenceSignUp, ConferenceSchedule, \
-    ConferenCoopearter, ConferenceCooperatorShow
+    ConferenCoopearter, ConferenceCooperatorShow, OperaterLog, OperaterRule
 from sqlalchemy import or_
 from wxcloudrun.utils import uploadwebfile, send_check_msg
 import config
@@ -295,6 +295,15 @@ def get_hall_schedule_byid(id):
     schedule['supported_info'] = []
     schedule['organizer_info'] = []
     schedule['coorganizer_info'] = []
+    for num in range(len(schedule.get('agenda', []))):
+        schedule['agenda'][num]['guest_info'] = []
+        if len(schedule['agenda'][num].get('guest_id', [])) > 0:
+            for guest in schedule['agenda'][num].get('guest_id', []):
+                user = User.query.filter_by(id=guest, is_deleted=0).first()
+                if user is None:
+                    continue
+                schedule['agenda'][num]['guest_info'].append(user.get())
+
     if len(schedule.get('guest_id', [])) > 0:
         for guest in schedule.get('guest_id', []):
             user = User.query.filter_by(id=guest, is_deleted=0).first()
@@ -383,3 +392,20 @@ def refresh_schedule_info():
     for schedule in schedules:
         uploadwebfile(schedule.get_schedule_view_simple(),
                       file='get_schedule_by_id' + str(schedule.id) + '.json')
+
+
+def get_operat_list(page, page_size, operator, event, begin_time, end_time):
+    if begin_time and end_time:
+        result = (db.session.query(OperaterLog, OperaterRule).join(OperaterRule,
+                                                                   OperaterLog.event == OperaterRule.rule)
+                  .filter(OperaterLog.operator.like('%' + operator + '%'),
+                          OperaterRule.name.like('%' + event + '%'), OperaterLog.create_time >= begin_time,
+                          OperaterLog.create_time <= end_time).order_by(
+            OperaterLog.create_time.desc()).paginate(page, per_page=page_size, error_out=False))
+    else:
+        result = (db.session.query(OperaterLog, OperaterRule).join(OperaterRule,
+                                                                   OperaterLog.event == OperaterRule.rule)
+                  .filter(OperaterLog.operator.like('%' + operator + '%'),
+                          OperaterRule.name.like('%' + event + '%')).order_by(
+            OperaterLog.create_time.desc()).paginate(page, per_page=page_size, error_out=False))
+    return result

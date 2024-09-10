@@ -66,9 +66,9 @@ def vaild_password(password):
 
 def uploadwebfile(data, file, openid='omf5s7V9tfLS25ZxIXE0TtJCaZ3w'):
     data = {'code': 0, 'data': data}
-    with open(file, 'w') as f:
+    with open(config.VERSION+file, 'w') as f:
         json.dump(data, f)
-    uploadfile(openid=openid, file=file)
+    uploadfile(openid=openid, file=config.VERSION+file)
 
 
 def send_to_begin_msg(openid, title, location, begin_time):
