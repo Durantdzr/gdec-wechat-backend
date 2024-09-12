@@ -16,7 +16,7 @@ import zipfile
 import os
 import random
 import time
-
+import io
 
 def batchdownloadfile(openid, filelist):
     data = {
@@ -33,6 +33,17 @@ def batchdownloadfile(openid, filelist):
                            json=data)
     result = result.json()
     return result
+
+
+def getqrcodeimg(path="page/index/index", openid='omf5s7V9tfLS25ZxIXE0TtJCaZ3w'):
+    data = {
+        "path": path,
+        "width": 430
+    }
+
+    result = requests.post('http://api.weixin.qq.com/cgi-bin/wxaapp/createwxaqrcode', params={"openid": openid},
+                           json=data)
+    return io.BytesIO(result.content)
 
 
 def uploadfile(file, openid='omf5s7V9tfLS25ZxIXE0TtJCaZ3w'):
@@ -66,9 +77,9 @@ def vaild_password(password):
 
 def uploadwebfile(data, file, openid='omf5s7V9tfLS25ZxIXE0TtJCaZ3w'):
     data = {'code': 0, 'data': data}
-    with open(config.VERSION+file, 'w') as f:
+    with open(config.VERSION + file, 'w') as f:
         json.dump(data, f)
-    uploadfile(openid=openid, file=config.VERSION+file)
+    uploadfile(openid=openid, file=config.VERSION + file)
 
 
 def send_to_begin_msg(openid, title, location, begin_time):
@@ -129,8 +140,8 @@ def send_check_msg(openid, meetingname, content, reason, phrase3, date):
 
 
 def get_urllink(openid='omf5s7V9tfLS25ZxIXE0TtJCaZ3w'):
-    data={"expire_type":1,"expire_interval":15,"env_version":"trial"}
-    result = requests.post('http://api.weixin.qq.com/wxa/generate_urllink', params={"openid": openid},json=data)
+    data = {"expire_type": 1, "expire_interval": 15, "env_version": "trial"}
+    result = requests.post('http://api.weixin.qq.com/wxa/generate_urllink', params={"openid": openid}, json=data)
     return result.json()
 
 
