@@ -291,7 +291,7 @@ class OperaterLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     operator = db.Column('operator', db.String(50), nullable=True)
     event = db.Column('event', db.String(100), nullable=True)
-    ip = db.Column('ip', db.String(20), nullable=True)
+    ip = db.Column('ip', db.String(100), nullable=True)
     data = db.Column('data', db.TEXT)
     create_time = db.Column('create_time', db.TIMESTAMP, nullable=False, default=datetime.now)
 
