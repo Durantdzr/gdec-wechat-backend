@@ -794,6 +794,46 @@ def download_user_list():
                      download_name='数商大会人员信息导出{}.zip'.format(now))
 
 
+@app.route('/api/manage/download_user_list', methods=['GET'])
+@jwt_required()
+@admin_required()
+def download_user_list():
+    """
+        :return:下载已审核用户列表
+    """
+    name = request.args.get('name', default='', type=str)
+    users = User.query.filter(User.name.like('%' + name + '%'), User.status == 2, User.is_deleted == 0,
+                              User.type.notin_(['管理员', '嘉宾'])).all()
+    df = pd.read_excel('template.xlsx')
+    now = datetime.datetime.now().strftime('%Y-%m-%d%H:%M:%S')
+    os.mkdir(now)
+    os.mkdir('{}/guest'.format(now))
+    for user in users:
+        if user.img_url is not None:
+            download_cdn_file(user.img_url, '{}/{}'.format(now, user.img_url))
+        df = df.append({"序号": user.id, "员工编号": user.id, "姓名": user.name, "性别": "男", "电话号码": user.phone,
+                        "证件类型": "身份证" if user.code is None or len(user.code) == 18 else '普通护照',
+                        "证件号码": user.code,
+                        "照片路径(相对路径)": '/' + user.img_url}, ignore_index=True)
+    df.to_excel('{}/人员信息表.xlsx'.format(now), index=False)
+    zip_folder(now, '数商大会人员信息导出{}.zip'.format(now))
+    operatr_log(get_jwt_identity(), request.url_rule.rule, '下载成功', request.remote_addr)
+    return send_file('../数商大会人员信息导出{}.zip'.format(now),
+                     download_name='数商大会人员信息导出{}.zip'.format(now))
+
+@app.route('/api/manage/download_schedule_qrcode', methods=['GET'])
+@jwt_required()
+def download_schedule_qrcode():
+    """
+        :return:下载日程小程序码
+    """
+    id = request.args.get('id', default='', type=str)
+    download_cdn_file(config.VERSION + 'qrcode_schedule_' + str(id) + '.jpg', 'qrcode_schedule_' + str(id) + '.jpg')
+    operatr_log(get_jwt_identity(), request.url_rule.rule, '下载成功', request.remote_addr)
+    return send_file('../'+'qrcode_schedule_' + str(id) + '.jpg',
+                     download_name='qrcode_schedule_' + str(id) + '.jpg')
+
+
 @app.route('/api/manage/get-signature', methods=['GET'])
 def get_signature():
     url = request.args.get('url', default='', type=str)
