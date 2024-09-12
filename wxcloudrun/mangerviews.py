@@ -15,10 +15,10 @@ from wxcloudrun.dao import update_user_statusbyid, insert_user, get_review_confe
     refresh_cooperater, refresh_guest, refresh_guest_info, get_hall_schedule_bydate, get_live_data, \
     refresh_conference_info, get_hall_schedule_byid, get_operat_list
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, ConferenCoopearter, Media, \
-    ConferenceCooperatorShow,OperaterRule
+    ConferenceCooperatorShow, OperaterRule
 from wxcloudrun.response import make_succ_page_response, make_succ_response, make_err_response
 from wxcloudrun.utils import uploadfile, valid_image, vaild_password, uploadwebfile, download_cdn_file, zip_folder, \
-    get_ticket, get_urllink,getscheduleqrcode
+    get_ticket, get_urllink, getscheduleqrcode
 from datetime import timedelta
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, get_jwt, verify_jwt_in_request
 import uuid
@@ -70,7 +70,8 @@ def login():
         branch = 0
     else:
         branch = 1
-    operatr_log(username, request.url_rule.rule, '登录成功', request.headers.get("X-Forwarded-For",request.remote_addr))
+    operatr_log(username, request.url_rule.rule, '登录成功',
+                request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response({"access_token": access_token, "branch": branch}, code=200)
 
 
@@ -794,33 +795,6 @@ def download_user_list():
                      download_name='数商大会人员信息导出{}.zip'.format(now))
 
 
-@app.route('/api/manage/download_user_list', methods=['GET'])
-@jwt_required()
-@admin_required()
-def download_user_list():
-    """
-        :return:下载已审核用户列表
-    """
-    name = request.args.get('name', default='', type=str)
-    users = User.query.filter(User.name.like('%' + name + '%'), User.status == 2, User.is_deleted == 0,
-                              User.type.notin_(['管理员', '嘉宾'])).all()
-    df = pd.read_excel('template.xlsx')
-    now = datetime.datetime.now().strftime('%Y-%m-%d%H:%M:%S')
-    os.mkdir(now)
-    os.mkdir('{}/guest'.format(now))
-    for user in users:
-        if user.img_url is not None:
-            download_cdn_file(user.img_url, '{}/{}'.format(now, user.img_url))
-        df = df.append({"序号": user.id, "员工编号": user.id, "姓名": user.name, "性别": "男", "电话号码": user.phone,
-                        "证件类型": "身份证" if user.code is None or len(user.code) == 18 else '普通护照',
-                        "证件号码": user.code,
-                        "照片路径(相对路径)": '/' + user.img_url}, ignore_index=True)
-    df.to_excel('{}/人员信息表.xlsx'.format(now), index=False)
-    zip_folder(now, '数商大会人员信息导出{}.zip'.format(now))
-    operatr_log(get_jwt_identity(), request.url_rule.rule, '下载成功', request.remote_addr)
-    return send_file('../数商大会人员信息导出{}.zip'.format(now),
-                     download_name='数商大会人员信息导出{}.zip'.format(now))
-
 @app.route('/api/manage/download_schedule_qrcode', methods=['GET'])
 @jwt_required()
 def download_schedule_qrcode():
@@ -830,7 +804,7 @@ def download_schedule_qrcode():
     id = request.args.get('id', default='', type=str)
     download_cdn_file(config.VERSION + 'qrcode_schedule_' + str(id) + '.jpg', 'qrcode_schedule_' + str(id) + '.jpg')
     operatr_log(get_jwt_identity(), request.url_rule.rule, '下载成功', request.remote_addr)
-    return send_file('../'+'qrcode_schedule_' + str(id) + '.jpg',
+    return send_file('../' + 'qrcode_schedule_' + str(id) + '.jpg',
                      download_name='qrcode_schedule_' + str(id) + '.jpg')
 
 
@@ -885,10 +859,12 @@ def get_operate_list():
     event = request.args.get('event', default='', type=str)
     begin_time = request.args.get('begin_time', default=None, type=str)
     end_time = request.args.get('end_time', default=None, type=str)
-    result = get_operat_list(page, page_size,operator,event,begin_time,end_time)
+    result = get_operat_list(page, page_size, operator, event, begin_time, end_time)
     return make_succ_page_response([{"id": log.id, "operator": log.operator, "event": rule.name,
-                                     "data": log.data, "create_time": log.create_time.strftime('%Y-%m-%d %H:%M:%S' ), "ip": log.ip} for log, rule in
+                                     "data": log.data, "create_time": log.create_time.strftime('%Y-%m-%d %H:%M:%S'),
+                                     "ip": log.ip} for log, rule in
                                     result.items], code=200, total=result.total)
+
 
 @app.route('/api/manage/get_operate_event', methods=['GET'])
 @jwt_required()
@@ -899,7 +875,6 @@ def get_operate_event():
     """
     result = OperaterRule.query.all()
     return make_succ_response([rule.name for rule in result], code=200)
-
 
 # @app.before_request
 # def before_request():
