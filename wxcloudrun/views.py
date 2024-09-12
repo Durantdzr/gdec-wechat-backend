@@ -311,8 +311,8 @@ def uploadfile_json():
     return make_succ_response(uploadfile('data.json', wxopenid))
 
 
-@app.route('/api/uploadfile/json', methods=['POST'])
-def uploadfile_json():
+@app.route('/api/getqrcodeimg', methods=['POST'])
+def getqrcodeimg():
     """
     :return:获取嘉宾列表
     """
