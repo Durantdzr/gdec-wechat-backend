@@ -17,6 +17,7 @@ import os
 import random
 import time
 import io
+from PIL import Image
 
 def batchdownloadfile(openid, filelist):
     data = {
@@ -44,6 +45,12 @@ def getqrcodeimg(path="page/index/index", openid='omf5s7V9tfLS25ZxIXE0TtJCaZ3w')
     result = requests.post('http://api.weixin.qq.com/cgi-bin/wxaapp/createwxaqrcode', params={"openid": openid},
                            json=data)
     return io.BytesIO(result.content)
+
+def getscheduleqrcode(id):
+    imgBuffer=getqrcodeimg(path="page/index/index")
+    img=Image.open(imgBuffer)
+    img.save(config.VERSION + 'qrcode_schedule_' + str(id) + '.jpg', 'JPEG')
+    uploadfile(config.VERSION + 'qrcode_schedule_' + str(id) + 'jpg')
 
 
 def uploadfile(file, openid='omf5s7V9tfLS25ZxIXE0TtJCaZ3w'):
