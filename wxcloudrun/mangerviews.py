@@ -70,7 +70,7 @@ def login():
         branch = 0
     else:
         branch = 1
-    operatr_log(username, request.url_rule.rule, '登录成功', request.remote_addr)
+    operatr_log(username, request.url_rule.rule, '登录成功', request.headers.get("X-Forwarded-For",request.remote_addr))
     return make_succ_response({"access_token": access_token, "branch": branch}, code=200)
 
 
