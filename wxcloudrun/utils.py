@@ -50,7 +50,7 @@ def getscheduleqrcode(id):
     imgBuffer=getqrcodeimg(path="page/index/index")
     img=Image.open(imgBuffer)
     img.save(config.VERSION + 'qrcode_schedule_' + str(id) + '.jpg', 'JPEG')
-    uploadfile(config.VERSION + 'qrcode_schedule_' + str(id) + 'jpg')
+    uploadfile(config.VERSION + 'qrcode_schedule_' + str(id) + '.jpg')
 
 
 def uploadfile(file, openid='omf5s7V9tfLS25ZxIXE0TtJCaZ3w'):
