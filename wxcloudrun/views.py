@@ -312,7 +312,7 @@ def uploadfile_json():
 
 
 @app.route('/api/getqrcodeimg', methods=['POST'])
-def getqrcodeimg():
+def getqrcodeimg1():
     """
     :return:获取嘉宾列表
     """
