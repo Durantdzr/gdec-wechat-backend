@@ -6,7 +6,7 @@ from wxcloudrun.dao import insert_user, search_friends_byopenid, insert_realtion
     get_user_schedule_num_by_id, refresh_schedule_info, get_hall_schedule_byid
 from wxcloudrun.model import ConferenceInfo, User, ConferenceHall, RelationFriend, ConferenceSignUp
 from wxcloudrun.response import make_succ_response, make_err_response
-from wxcloudrun.utils import batchdownloadfile, uploadfile, uploadwebfile, getqrcodeimg, \
+from wxcloudrun.utils import batchdownloadfile, uploadfile, uploadwebfile, getscheduleqrcode, \
     send_check_msg
 import config
 import requests
@@ -317,9 +317,7 @@ def getqrcodeimg1():
     :return:获取嘉宾列表
     """
     # 获取请求体参数
-    wxopenid = request.headers['X-WX-OPENID']
-    data = request.get_json()
-    return make_succ_response(getqrcodeimg())
+    return make_succ_response(getscheduleqrcode('test'))
 @app.route('/api/downloadfile/json', methods=['GET'])
 def downloadfile_json():
     """
