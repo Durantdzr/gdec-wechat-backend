@@ -96,7 +96,7 @@ class ConferenceSchedule(db.Model):
                 "agenda": [] if (self.agenda is None or self.agenda == '') else json.loads(self.agenda),
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url),
                 'cdn_param': self.img_url, "sponsor": sponsor, "supported": supported, "organizer": organizer,
-                "coorganizer": coorganizer, "background": self.background}
+                "coorganizer": coorganizer, "background": self.background,"qrcode_cdn":'https://{}.tcb.qcloud.la/{}qrcode_schedule_{}.jpg'.format(config.COS_BUCKET,config.VERSION, self.id)}
 
     def get_schedule_view(self):
         status_ENUM = {0: '我要报名', 1: '正在直播' if self.live_status == 1 else '会议进行中',

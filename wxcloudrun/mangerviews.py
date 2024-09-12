@@ -18,7 +18,7 @@ from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, Conferenc
     ConferenceCooperatorShow,OperaterRule
 from wxcloudrun.response import make_succ_page_response, make_succ_response, make_err_response
 from wxcloudrun.utils import uploadfile, valid_image, vaild_password, uploadwebfile, download_cdn_file, zip_folder, \
-    get_ticket, get_urllink
+    get_ticket, get_urllink,getscheduleqrcode
 from datetime import timedelta
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, get_jwt, verify_jwt_in_request
 import uuid
@@ -418,6 +418,7 @@ def add_hall_schedule():
     data = get_hall_schedule_byid(schedule.id)
     uploadwebfile(data, file='get_schedule_by_id' + str(schedule.id) + '.json')
     operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    getscheduleqrcode(schedule.id)
     return make_succ_response(schedule.id, code=200)
 
 

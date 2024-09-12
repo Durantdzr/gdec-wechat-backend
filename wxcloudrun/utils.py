@@ -39,15 +39,16 @@ def batchdownloadfile(openid, filelist):
 def getqrcodeimg(path="page/index/index", openid='omf5s7V9tfLS25ZxIXE0TtJCaZ3w'):
     data = {
         "path": path,
-        "width": 430
+        "width": 430,
+        "env_version":"develop" if config.VERSION=='test/' else "release"
     }
 
-    result = requests.post('http://api.weixin.qq.com/cgi-bin/wxaapp/createwxaqrcode', params={"openid": openid},
+    result = requests.post('http://api.weixin.qq.com/wxa/getwxacode', params={"openid": openid},
                            json=data)
     return io.BytesIO(result.content)
 
 def getscheduleqrcode(id):
-    imgBuffer=getqrcodeimg(path="page/index/index")
+    imgBuffer=getqrcodeimg(path="myHome/agenda/index?id={}".format(id))
     img=Image.open(imgBuffer)
     img.save(config.VERSION + 'qrcode_schedule_' + str(id) + '.jpg', 'JPEG')
     uploadfile(config.VERSION + 'qrcode_schedule_' + str(id) + '.jpg')
