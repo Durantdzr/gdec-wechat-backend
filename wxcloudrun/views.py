@@ -99,12 +99,14 @@ def get_user_phone():
         json_data = json_data.get('data', {})
         phoneNumber = json_data.get('phoneNumber', '')
         user.phone = phoneNumber
+        user.savephoneEncrypted(phoneNumber)
         insert_user(user)
     if user is not None and data.get('errmsg') == 'ok':
         data_list = data.get('data_list', [{}])[0]
         json_data = json.loads(data_list.get('json', ''))
         json_data = json_data.get('data', {})
         phoneNumber = json_data.get('phoneNumber', '')
+        user.savephoneEncrypted(phoneNumber)
         user.openid = str(uuid.uuid4())
         insert_user(user)
         user = User.query.filter(User.phone == phoneNumber).first()
@@ -121,6 +123,8 @@ def get_user_phone():
             user.socail = 0
             user.status = 0
             user.img_url = None
+            user.phoneEncrypted=None
+            user.codeEncrypted=None
         user.openid = request.headers['X-WX-OPENID']
         insert_user(user)
     return make_succ_response(data)
@@ -147,7 +151,9 @@ def upload_user_info():
         return make_err_response('无法提交用户数据')
     user.name = params.get("name")
     user.phone = params.get("phone")
+    user.savephoneEncrypted(params.get("phone"))
     user.code = params.get("code")
+    user.savecodeEncrypted(params.get("code"))
     user.company = params.get("company")
     user.title = params.get("title")
     user.type = params.get("type")
