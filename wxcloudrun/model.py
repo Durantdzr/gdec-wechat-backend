@@ -69,7 +69,7 @@ class ConferenceSchedule(db.Model):
 
     def get_schedule(self):
         status_ENUM = {0: '我要报名', 1: '正在直播', 2: '会议结束'}
-        if self.guest is None:
+        if self.guest is None or self.guest == '':
             guest_id = []
         else:
             guest_id = list(map(int, self.guest.split(',')))
@@ -104,7 +104,7 @@ class ConferenceSchedule(db.Model):
         status_ENUM = {0: '我要报名', 1: '正在直播' if self.live_status == 1 else '会议进行中',
                        2: '查看回放' if self.live_status == 2 else '会议结束'}
         live_status_ENUM = {1: '未开始', 2: '直播中', 3: "回放中"}
-        if self.guest is None:
+        if self.guest is None or self.guest == '':
             guest_id = []
         else:
             guest_id = list(map(int, self.guest.split(',')))
@@ -130,7 +130,7 @@ class ConferenceSchedule(db.Model):
             ext = '主论坛'
         else:
             ext = ''
-        if self.guest is None:
+        if self.guest is None or self.guest == '':
             guest_id = []
         else:
             guest_id = list(map(int, self.guest.split(',')))
@@ -211,7 +211,8 @@ class User(db.Model):
     def get_full(self):
         return {"id": self.id, "name": self.name, "company": self.company, "title": self.title,
                 "phone": decrypt(self.phoneEncrypted) if self.phoneEncrypted else None,
-                "code": decrypt(self.codeEncrypted) if self.codeEncrypted else None, "type": self.type, "socail": self.socail,
+                "code": decrypt(self.codeEncrypted) if self.codeEncrypted else None, "type": self.type,
+                "socail": self.socail,
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET,
                                                                 self.img_url) if self.img_url is not None else None,
                 'cdn_param': self.img_url, "status": self.status, "reason": self.reason}
