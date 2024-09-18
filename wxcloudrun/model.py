@@ -211,7 +211,7 @@ class User(db.Model):
     def get_full(self):
         return {"id": self.id, "name": self.name, "company": self.company, "title": self.title,
                 "phone": decrypt(self.phoneEncrypted) if self.phoneEncrypted else None,
-                "code": self.code, "type": self.type, "socail": self.socail,
+                "code": decrypt(self.codeEncrypted) if self.codeEncrypted else None, "type": self.type, "socail": self.socail,
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET,
                                                                 self.img_url) if self.img_url is not None else None,
                 'cdn_param': self.img_url, "status": self.status, "reason": self.reason}
