@@ -59,10 +59,10 @@ def login():
     user = User.query.filter_by(name=username, type='管理员').first()
     if not user:
         operatr_log(username, request.url_rule.rule, '不存在该用户', request.remote_addr)
-        return make_err_response('不存在该用户')
+        return make_err_response('认证失败')
     if pwdhash != vaild_password(user.password):
         operatr_log(username, request.url_rule.rule, '密码错误', request.remote_addr)
-        return make_err_response('密码错误')
+        return make_err_response('认证失败')
     additional_claims = {"forum": user.forum}
     access_token = create_access_token(identity=username, expires_delta=timedelta(days=1),
                                        additional_claims=additional_claims)
@@ -875,14 +875,3 @@ def get_operate_event():
     """
     result = OperaterRule.query.all()
     return make_succ_response([rule.name for rule in result], code=200)
-
-# @app.before_request
-# def before_request():
-#     try:
-#         operator = get_jwt_identity()
-#     except Exception as e:
-#         print(e)
-#         operator = request.headers.get('X-WX-OPENID', '')
-#     ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
-#     if '/api/manage' in request.url and '/api/manage/login' not in request.url:
-#         print(operator, request.url, request.get_json(), ip_address)
