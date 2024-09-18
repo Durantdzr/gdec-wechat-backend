@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-
+from wxcloudrun.utils import encrypt, decrypt
 from wxcloudrun import db
 import config
 
@@ -96,7 +96,9 @@ class ConferenceSchedule(db.Model):
                 "agenda": [] if (self.agenda is None or self.agenda == '') else json.loads(self.agenda),
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url),
                 'cdn_param': self.img_url, "sponsor": sponsor, "supported": supported, "organizer": organizer,
-                "coorganizer": coorganizer, "background": self.background,"qrcode_cdn":'https://{}.tcb.qcloud.la/{}qrcode_schedule_{}.jpg'.format(config.COS_BUCKET,config.VERSION, self.id)}
+                "coorganizer": coorganizer, "background": self.background,
+                "qrcode_cdn": 'https://{}.tcb.qcloud.la/{}qrcode_schedule_{}.jpg'.format(config.COS_BUCKET,
+                                                                                         config.VERSION, self.id)}
 
     def get_schedule_view(self):
         status_ENUM = {0: '我要报名', 1: '正在直播' if self.live_status == 1 else '会议进行中',
@@ -189,10 +191,18 @@ class User(db.Model):
     order = db.Column('order', db.Integer, default=0)
     forum = db.Column('forum', db.String)
     reason = db.Column('reason', db.String(100))
+    codeEncrypted = db.Column('code_encrypted', db.BINARY)
+    phoneEncrypted = db.Column('phone_encrypted', db.BINARY)
 
     def get_status(self):
         status_ENUM = {1: '审核未通过', 2: '审核已通过', 0: '未审核', 3: '待审核'}
         return status_ENUM.get(self.status, '审核未通过')
+
+    def savecodeEncrypted(self, data):
+        self.codeEncrypted = encrypt(data)
+
+    def savephoneEncrypted(self, data):
+        self.phoneEncrypted = encrypt(data)
 
     def get(self):
         return {"id": self.id, "name": self.name, "company": self.company, "title": self.title,

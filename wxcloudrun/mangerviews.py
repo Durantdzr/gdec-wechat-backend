@@ -143,6 +143,7 @@ def edit_user():
     user.phone = params.get('phone')
     user.img_url = params.get('cdn_param')
     user.type = params.get('type')
+    user.savephoneEncrypted(params.get('phone'))
     insert_user(user)
     operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     return make_succ_response(user.id, code=200)

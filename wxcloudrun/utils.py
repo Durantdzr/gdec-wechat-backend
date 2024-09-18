@@ -18,7 +18,8 @@ import random
 import time
 import io
 from PIL import Image
-
+from cryptography.fernet import Fernet
+cipher_suite = Fernet(config.FERNET_KEY)
 def batchdownloadfile(openid, filelist):
     data = {
         "env": config.ENV,
@@ -183,3 +184,12 @@ def download_cdn_file(cdn_param, output_file):
     response = requests.get('https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, cdn_param))
     with open(output_file, "wb") as file:
         file.write(response.content)
+
+
+def encrypt(message):
+    encrypted = cipher_suite.encrypt(message.encode('utf-8'))
+    return encrypted
+
+def decrypt(encrypted):
+    decrypted = cipher_suite.decrypt(encrypted)
+    return decrypted.decode('utf-8')
