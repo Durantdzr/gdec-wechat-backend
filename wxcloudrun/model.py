@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-
+from wxcloudrun.utils import encrypt, decrypt
 from wxcloudrun import db
 import config
 
@@ -69,7 +69,7 @@ class ConferenceSchedule(db.Model):
 
     def get_schedule(self):
         status_ENUM = {0: '我要报名', 1: '正在直播', 2: '会议结束'}
-        if self.guest is None:
+        if self.guest is None or self.guest == '':
             guest_id = []
         else:
             guest_id = list(map(int, self.guest.split(',')))
@@ -96,13 +96,15 @@ class ConferenceSchedule(db.Model):
                 "agenda": [] if (self.agenda is None or self.agenda == '') else json.loads(self.agenda),
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url),
                 'cdn_param': self.img_url, "sponsor": sponsor, "supported": supported, "organizer": organizer,
-                "coorganizer": coorganizer, "background": self.background}
+                "coorganizer": coorganizer, "background": self.background,
+                "qrcode_cdn": 'https://{}.tcb.qcloud.la/{}qrcode_schedule_{}.jpg'.format(config.COS_BUCKET,
+                                                                                         config.VERSION, self.id)}
 
     def get_schedule_view(self):
         status_ENUM = {0: '我要报名', 1: '正在直播' if self.live_status == 1 else '会议进行中',
                        2: '查看回放' if self.live_status == 2 else '会议结束'}
         live_status_ENUM = {1: '未开始', 2: '直播中', 3: "回放中"}
-        if self.guest is None:
+        if self.guest is None or self.guest == '':
             guest_id = []
         else:
             guest_id = list(map(int, self.guest.split(',')))
@@ -128,7 +130,7 @@ class ConferenceSchedule(db.Model):
             ext = '主论坛'
         else:
             ext = ''
-        if self.guest is None:
+        if self.guest is None or self.guest == '':
             guest_id = []
         else:
             guest_id = list(map(int, self.guest.split(',')))
@@ -189,18 +191,28 @@ class User(db.Model):
     order = db.Column('order', db.Integer, default=0)
     forum = db.Column('forum', db.String)
     reason = db.Column('reason', db.String(100))
+    codeEncrypted = db.Column('code_encrypted', db.BINARY)
+    phoneEncrypted = db.Column('phone_encrypted', db.BINARY)
 
     def get_status(self):
         status_ENUM = {1: '审核未通过', 2: '审核已通过', 0: '未审核', 3: '待审核'}
         return status_ENUM.get(self.status, '审核未通过')
+
+    def savecodeEncrypted(self, data):
+        self.codeEncrypted = encrypt(data)
+
+    def savephoneEncrypted(self, data):
+        self.phoneEncrypted = encrypt(data)
 
     def get(self):
         return {"id": self.id, "name": self.name, "company": self.company, "title": self.title,
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url)}
 
     def get_full(self):
-        return {"id": self.id, "name": self.name, "company": self.company, "title": self.title, "phone": self.phone,
-                "code": self.code, "type": self.type, "socail": self.socail,
+        return {"id": self.id, "name": self.name, "company": self.company, "title": self.title,
+                "phone": decrypt(self.phoneEncrypted) if self.phoneEncrypted else None,
+                "code": decrypt(self.codeEncrypted) if self.codeEncrypted else None, "type": self.type,
+                "socail": self.socail,
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET,
                                                                 self.img_url) if self.img_url is not None else None,
                 'cdn_param': self.img_url, "status": self.status, "reason": self.reason}
@@ -291,7 +303,7 @@ class OperaterLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     operator = db.Column('operator', db.String(50), nullable=True)
     event = db.Column('event', db.String(100), nullable=True)
-    ip = db.Column('ip', db.String(20), nullable=True)
+    ip = db.Column('ip', db.String(100), nullable=True)
     data = db.Column('data', db.TEXT)
     create_time = db.Column('create_time', db.TIMESTAMP, nullable=False, default=datetime.now)
 

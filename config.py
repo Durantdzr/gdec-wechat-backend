@@ -11,6 +11,7 @@ database = os.environ.get("MYSQL_database", 'GDEC')
 ENV = os.environ.get("ENV", '')
 COS_BUCKET = os.environ.get("COS_BUCKET", '')
 JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", 'your-secret-key')
+FERNET_KEY = os.environ.get("FERNET_KEY", '')
 
 CORS_ORIGINS = os.environ.get("CORS_ORIGINS", '*')
 

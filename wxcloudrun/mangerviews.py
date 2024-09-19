@@ -15,10 +15,10 @@ from wxcloudrun.dao import update_user_statusbyid, insert_user, get_review_confe
     refresh_cooperater, refresh_guest, refresh_guest_info, get_hall_schedule_bydate, get_live_data, \
     refresh_conference_info, get_hall_schedule_byid, get_operat_list
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, ConferenCoopearter, Media, \
-    ConferenceCooperatorShow,OperaterRule
+    ConferenceCooperatorShow, OperaterRule
 from wxcloudrun.response import make_succ_page_response, make_succ_response, make_err_response
 from wxcloudrun.utils import uploadfile, valid_image, vaild_password, uploadwebfile, download_cdn_file, zip_folder, \
-    get_ticket, get_urllink
+    get_ticket, get_urllink, getscheduleqrcode
 from datetime import timedelta
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, get_jwt, verify_jwt_in_request
 import uuid
@@ -59,10 +59,10 @@ def login():
     user = User.query.filter_by(name=username, type='管理员').first()
     if not user:
         operatr_log(username, request.url_rule.rule, '不存在该用户', request.remote_addr)
-        return make_err_response('不存在该用户')
+        return make_err_response('认证失败')
     if pwdhash != vaild_password(user.password):
         operatr_log(username, request.url_rule.rule, '密码错误', request.remote_addr)
-        return make_err_response('密码错误')
+        return make_err_response('认证失败')
     additional_claims = {"forum": user.forum}
     access_token = create_access_token(identity=username, expires_delta=timedelta(days=1),
                                        additional_claims=additional_claims)
@@ -70,7 +70,8 @@ def login():
         branch = 0
     else:
         branch = 1
-    operatr_log(username, request.url_rule.rule, '登录成功', request.remote_addr)
+    operatr_log(username, request.url_rule.rule, '登录成功',
+                request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response({"access_token": access_token, "branch": branch}, code=200)
 
 
@@ -142,6 +143,9 @@ def edit_user():
     user.phone = params.get('phone')
     user.img_url = params.get('cdn_param')
     user.type = params.get('type')
+    user.code = params.get('code')
+    user.savephoneEncrypted(params.get('phone'))
+    user.savecodeEncrypted(params.get('code'))
     insert_user(user)
     operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     return make_succ_response(user.id, code=200)
@@ -418,6 +422,7 @@ def add_hall_schedule():
     data = get_hall_schedule_byid(schedule.id)
     uploadwebfile(data, file='get_schedule_by_id' + str(schedule.id) + '.json')
     operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    getscheduleqrcode(schedule.id)
     return make_succ_response(schedule.id, code=200)
 
 
@@ -793,6 +798,19 @@ def download_user_list():
                      download_name='数商大会人员信息导出{}.zip'.format(now))
 
 
+@app.route('/api/manage/download_schedule_qrcode', methods=['GET'])
+@jwt_required()
+def download_schedule_qrcode():
+    """
+        :return:下载日程小程序码
+    """
+    id = request.args.get('id', default='', type=str)
+    download_cdn_file(config.VERSION + 'qrcode_schedule_' + str(id) + '.jpg', 'qrcode_schedule_' + str(id) + '.jpg')
+    operatr_log(get_jwt_identity(), request.url_rule.rule, '下载成功', request.remote_addr)
+    return send_file('../' + 'qrcode_schedule_' + str(id) + '.jpg',
+                     download_name='qrcode_schedule_' + str(id) + '.jpg')
+
+
 @app.route('/api/manage/get-signature', methods=['GET'])
 def get_signature():
     url = request.args.get('url', default='', type=str)
@@ -844,10 +862,12 @@ def get_operate_list():
     event = request.args.get('event', default='', type=str)
     begin_time = request.args.get('begin_time', default=None, type=str)
     end_time = request.args.get('end_time', default=None, type=str)
-    result = get_operat_list(page, page_size,operator,event,begin_time,end_time)
+    result = get_operat_list(page, page_size, operator, event, begin_time, end_time)
     return make_succ_page_response([{"id": log.id, "operator": log.operator, "event": rule.name,
-                                     "data": log.data, "create_time": log.create_time.strftime('%Y-%m-%d %H:%M:%S' ), "ip": log.ip} for log, rule in
+                                     "data": log.data, "create_time": log.create_time.strftime('%Y-%m-%d %H:%M:%S'),
+                                     "ip": log.ip} for log, rule in
                                     result.items], code=200, total=result.total)
+
 
 @app.route('/api/manage/get_operate_event', methods=['GET'])
 @jwt_required()
@@ -858,15 +878,3 @@ def get_operate_event():
     """
     result = OperaterRule.query.all()
     return make_succ_response([rule.name for rule in result], code=200)
-
-
-# @app.before_request
-# def before_request():
-#     try:
-#         operator = get_jwt_identity()
-#     except Exception as e:
-#         print(e)
-#         operator = request.headers.get('X-WX-OPENID', '')
-#     ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
-#     if '/api/manage' in request.url and '/api/manage/login' not in request.url:
-#         print(operator, request.url, request.get_json(), ip_address)
