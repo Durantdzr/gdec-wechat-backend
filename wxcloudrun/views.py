@@ -323,7 +323,8 @@ def getqrcodeimg1():
     :return:获取嘉宾列表
     """
     # 获取请求体参数
-    return make_succ_response(getscheduleqrcode('test'))
+    params = request.get_json()
+    return make_succ_response(getscheduleqrcode(params.get('id')))
 @app.route('/api/downloadfile/json', methods=['GET'])
 def downloadfile_json():
     """
