@@ -3,11 +3,12 @@ from run import app
 from wxcloudrun.dao import insert_user, search_friends_byopenid, insert_realtion_friend, get_friend_list, \
     save_realtion_friendbyid, is_invited_user, get_guests_list, get_conference_schedule_by_id, get_open_guests_list, \
     get_main_hall_guests_list, get_other_hall_guests_list, get_cooperater_list, get_hall_schedule_bydate, get_live_data, \
-    get_user_schedule_num_by_id, refresh_schedule_info, get_hall_schedule_byid
+    get_user_schedule_num_by_id, refresh_schedule_info, get_hall_schedule_byid, get_hall_exhibition_bydate, \
+    get_hall_exhibition_byid
 from wxcloudrun.model import ConferenceInfo, User, ConferenceHall, RelationFriend, ConferenceSignUp
 from wxcloudrun.response import make_succ_response, make_err_response
 from wxcloudrun.utils import batchdownloadfile, uploadfile, uploadwebfile, getscheduleqrcode, \
-    send_check_msg,makeqrcode
+    send_check_msg, makeqrcode
 import config
 import requests
 import json
@@ -57,6 +58,31 @@ def get_hall_schedule():
     wxOpenid = request.headers['X-WX-OPENID']
     data = get_hall_schedule_bydate(date)
     uploadwebfile(data, file='get_hall_schedule' + date + '.json')
+    return make_succ_response(data)
+
+
+@app.route('/api/conference/get_hall_exhibition', methods=['GET'])
+def get_hall_exhibition():
+    """
+        :return:大会展会
+    """
+    # 获取请求体参数
+    date = request.args.get('date')
+    wxOpenid = request.headers['X-WX-OPENID']
+    data = get_hall_exhibition_bydate(date)
+    uploadwebfile(data, file='get_hall_exhibition' + date + '.json')
+    return make_succ_response(data)
+
+
+@app.route('/api/conference/get_exhibition_by_id', methods=['GET'])
+def get_exhibition_by_id():
+    """
+    :return:获取某id的展会
+    """
+    # 获取请求体参数
+    wxopenid = request.headers['X-WX-OPENID']
+    data = get_hall_exhibition_byid(request.args.get('id'))
+    uploadwebfile(data, openid=wxopenid, file='get_exhibitio_by_id' + str(request.args.get('id')) + '.json')
     return make_succ_response(data)
 
 
@@ -123,8 +149,8 @@ def get_user_phone():
             user.socail = 0
             user.status = 0
             user.img_url = None
-            user.phoneEncrypted=None
-            user.codeEncrypted=None
+            user.phoneEncrypted = None
+            user.codeEncrypted = None
         user.openid = request.headers['X-WX-OPENID']
         insert_user(user)
     return make_succ_response(data)
@@ -300,7 +326,6 @@ def get_guest_list():
     # 获取请求体参数
     wxopenid = request.headers['X-WX-OPENID']
     data = get_guests_list()
-    # uploadwebfile(data, openid=wxopenid, file='get_guest_list.json')
     return make_succ_response(data)
 
 
@@ -326,6 +351,7 @@ def getqrcodeimg1():
     params = request.get_json()
     return make_succ_response(getscheduleqrcode(params.get('id')))
 
+
 @app.route('/api/makeqrcodeimg', methods=['POST'])
 def makeqrcodeimg():
     """
@@ -333,8 +359,10 @@ def makeqrcodeimg():
     """
     # 获取请求体参数
     params = request.get_json()
-    makeqrcode(params.get('url'),params.get('filename'))
+    makeqrcode(params.get('url'), params.get('filename'))
     return make_succ_response()
+
+
 @app.route('/api/downloadfile/json', methods=['GET'])
 def downloadfile_json():
     """

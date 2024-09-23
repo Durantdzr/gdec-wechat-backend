@@ -5,7 +5,7 @@ from sqlalchemy.exc import OperationalError
 
 from wxcloudrun import db
 from wxcloudrun.model import ConferenceInfo, RelationFriend, User, ConferenceSignUp, ConferenceSchedule, \
-    ConferenCoopearter, ConferenceCooperatorShow, OperaterLog, OperaterRule
+    ConferenCoopearter, ConferenceCooperatorShow, OperaterLog, OperaterRule, Exhibiton
 from sqlalchemy import or_
 from wxcloudrun.utils import uploadwebfile, send_check_msg
 import config
@@ -285,6 +285,57 @@ def get_hall_schedule_bydate(date):
                 schedule['guest_img'].append('https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, user.img_url))
         data.append(schedule)
     return data
+
+
+def get_hall_exhibition_bydate(date):
+    result = Exhibiton.query.filter(
+        Exhibiton.is_deleted == 0, Exhibiton.exhibition_date == date).order_by(
+        Exhibiton.begin_time.asc()).all()
+    data = [item.get() for item in result]
+    return data
+
+
+def get_hall_exhibition_byid(id):
+    result = Exhibiton.query.filter(Exhibiton.id == id).first()
+    exhibition = result.get_view_simple()
+    exhibition['guest_info'] = []
+    exhibition['sponsor_info'] = []
+    exhibition['supported_info'] = []
+    exhibition['organizer_info'] = []
+    exhibition['coorganizer_info'] = []
+    for num in range(len(exhibition.get('participating_unit', []))):
+        unit = ConferenCoopearter.query.filter(ConferenCoopearter.id == exhibition['participating_unit'][num]['unit'],
+                                               ConferenCoopearter.is_deleted == 0).first()
+        if unit is None:
+            exhibition['participating_unit'][num]['status'] = False
+        else:
+            exhibition['participating_unit'][num]['status'] = True
+            exhibition['participating_unit'][num].update(unit.get())
+    if len(exhibition.get('supported', [])) > 0:
+        supporteds = ConferenCoopearter.query.filter(ConferenCoopearter.id.in_(exhibition.get('supported', [])),
+                                                     ConferenCoopearter.is_deleted == 0).all()
+        if supporteds is not None:
+            for supported in supporteds:
+                exhibition['supported_info'].append(supported.get())
+    if len(exhibition.get('organizer', [])) > 0:
+        organizers = ConferenCoopearter.query.filter(ConferenCoopearter.id.in_(exhibition.get('organizer', [])),
+                                                     ConferenCoopearter.is_deleted == 0).all()
+        if organizers is not None:
+            for organizer in organizers:
+                exhibition['organizer_info'].append(organizer.get())
+    if len(exhibition.get('coorganizer', [])) > 0:
+        coorganizers = ConferenCoopearter.query.filter(ConferenCoopearter.id.in_(exhibition.get('coorganizer', [])),
+                                                       ConferenCoopearter.is_deleted == 0).all()
+        if coorganizers is not None:
+            for coorganizer in coorganizers:
+                exhibition['coorganizer_info'].append(coorganizer.get())
+    if len(exhibition.get('sponsor', [])) > 0:
+        sponsors = ConferenCoopearter.query.filter(ConferenCoopearter.id.in_(exhibition.get('sponsor', [])),
+                                                   ConferenCoopearter.is_deleted == 0).all()
+        if sponsors is not None:
+            for sponsor in sponsors:
+                exhibition['sponsor_info'].append(sponsor.get())
+    return exhibition
 
 
 def get_hall_schedule_byid(id):

@@ -102,7 +102,7 @@ class ConferenceSchedule(db.Model):
 
     def get_schedule_view(self):
         status_ENUM = {0: '我要报名', 1: '正在直播' if self.live_status == 1 else '会议进行中',
-                       2: '查看回放' if self.live_status == 2 else '会议结束'}
+                       2: '查看回放' if self.live_status == 2 else '会议结束', 3: "不可报名"}
         live_status_ENUM = {1: '未开始', 2: '直播中', 3: "回放中"}
         if self.guest is None or self.guest == '':
             guest_id = []
@@ -122,7 +122,7 @@ class ConferenceSchedule(db.Model):
 
     def get_schedule_view_simple(self):
         status_ENUM = {0: '我要报名', 1: '正在直播' if self.live_status == 1 else '会议进行中',
-                       2: '查看回放' if self.live_status == 2 else '会议结束'}
+                       2: '查看回放' if self.live_status == 2 else '会议结束', 3: "不可报名"}
         live_status_ENUM = {1: '未开始', 2: '直播中', 3: "回放中"}
         if '开幕式' in self.title:
             ext = '开幕式'
@@ -363,7 +363,35 @@ class Exhibiton(db.Model):
                 'exhibition_date': self.exhibition_date.strftime('%Y-%m-%d'), 'status': self.status,
                 "begin_time": self.begin_time, "end_time": self.end_time,
                 "participating_unit": [] if (
-                            self.participating_unit is None or self.participating_unit == '') else json.loads(
+                        self.participating_unit is None or self.participating_unit == '') else json.loads(
+                    self.participating_unit),
+                "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url),
+                'cdn_param': self.img_url, "sponsor": sponsor, "supported": supported, "organizer": organizer,
+                "coorganizer": coorganizer, "info": self.info}
+
+    def get_view_simple(self):
+        status_ENUM = {0: '我要报名', 1: '会议进行中', 2: '会议结束', 3: "不可报名"}
+        if self.sponsor is None or self.sponsor == '':
+            sponsor = []
+        else:
+            sponsor = list(map(int, self.sponsor.split(',')))
+        if self.supported is None or self.supported == '':
+            supported = []
+        else:
+            supported = list(map(int, self.supported.split(',')))
+        if self.organizer is None or self.organizer == '':
+            organizer = []
+        else:
+            organizer = list(map(int, self.organizer.split(',')))
+        if self.coorganizer is None or self.coorganizer == '':
+            coorganizer = []
+        else:
+            coorganizer = list(map(int, self.coorganizer.split(',')))
+        return {'id': self.id, 'title': self.title, 'location': self.location, "hall": self.hall,
+                'exhibition_date': self.exhibition_date.strftime('%Y-%m-%d'), 'status': status_ENUM.get(self.status),
+                "begin_time": self.begin_time, "end_time": self.end_time,
+                "participating_unit": [] if (
+                        self.participating_unit is None or self.participating_unit == '') else json.loads(
                     self.participating_unit),
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url),
                 'cdn_param': self.img_url, "sponsor": sponsor, "supported": supported, "organizer": organizer,
