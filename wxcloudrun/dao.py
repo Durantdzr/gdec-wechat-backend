@@ -418,11 +418,11 @@ def get_cooperater():
         for item in type:
             if item == 'participating_unit':
                 cooperater_id.extend([unit.get("unit") for unit in result.get(item,[])])
-            cooperater_id.extend(result.get(item))
+            else:
+                cooperater_id.extend(result.get(item))
     result = ConferenCoopearter.query.filter(ConferenCoopearter.is_deleted == 0,
                                              ConferenCoopearter.id.in_(cooperater_id)).all()
     return [item.get() for item in result]
-
 
 def refresh_cooperater():
     data = get_cooperater()
