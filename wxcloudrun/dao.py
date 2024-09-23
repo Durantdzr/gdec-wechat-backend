@@ -409,6 +409,15 @@ def get_cooperater():
     for schedule in schedules:
         result = schedule.get_schedule()
         for item in type:
+            if item =='participating_unit':
+                continue
+            cooperater_id.extend(result.get(item))
+    exhibitions=Exhibiton.query.filter(Exhibiton.is_deleted == 0).all()
+    for exhibition in exhibitions:
+        result = exhibition.get()
+        for item in type:
+            if item == 'participating_unit':
+                cooperater_id.extend([unit.get("unit") for unit in result.get(item,[])])
             cooperater_id.extend(result.get(item))
     result = ConferenCoopearter.query.filter(ConferenCoopearter.is_deleted == 0,
                                              ConferenCoopearter.id.in_(cooperater_id)).all()
