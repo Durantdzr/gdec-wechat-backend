@@ -251,7 +251,7 @@ class ConferenCoopearter(db.Model):
     forum = db.Column('forum', db.String)
 
     def get(self):
-        return {"id": self.id, "name": self.name, "cdn_param": self.img_url, "type": self.type,
+        return {"id": self.id, "name": self.name, "cdn_param": self.img_url, "type": self.type,"info":self.info,
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url), "url": self.url}
 
 
