@@ -7,7 +7,7 @@ from wxcloudrun.dao import insert_user, search_friends_byopenid, insert_realtion
 from wxcloudrun.model import ConferenceInfo, User, ConferenceHall, RelationFriend, ConferenceSignUp
 from wxcloudrun.response import make_succ_response, make_err_response
 from wxcloudrun.utils import batchdownloadfile, uploadfile, uploadwebfile, getscheduleqrcode, \
-    send_check_msg
+    send_check_msg,makeqrcode
 import config
 import requests
 import json
@@ -325,6 +325,16 @@ def getqrcodeimg1():
     # 获取请求体参数
     params = request.get_json()
     return make_succ_response(getscheduleqrcode(params.get('id')))
+
+@app.route('/api/makeqrcodeimg', methods=['POST'])
+def makeqrcodeimg():
+    """
+    :return:获取嘉宾列表
+    """
+    # 获取请求体参数
+    params = request.get_json()
+    makeqrcode(params.get('url'),params.get('filename'))
+    return make_succ_response()
 @app.route('/api/downloadfile/json', methods=['GET'])
 def downloadfile_json():
     """
