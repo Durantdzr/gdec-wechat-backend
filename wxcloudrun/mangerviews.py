@@ -15,7 +15,7 @@ from wxcloudrun.dao import update_user_statusbyid, insert_user, get_review_confe
     refresh_cooperater, refresh_guest, refresh_guest_info, get_hall_schedule_bydate, get_live_data, \
     refresh_conference_info, get_hall_schedule_byid, get_operat_list
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, ConferenCoopearter, Media, \
-    ConferenceCooperatorShow, OperaterRule
+    ConferenceCooperatorShow, OperaterRule, Exhibiton
 from wxcloudrun.response import make_succ_page_response, make_succ_response, make_err_response
 from wxcloudrun.utils import uploadfile, valid_image, vaild_password, uploadwebfile, download_cdn_file, zip_folder, \
     get_ticket, get_urllink, getscheduleqrcode
@@ -880,3 +880,126 @@ def get_operate_event():
     """
     result = OperaterRule.query.all()
     return make_succ_response([rule.name for rule in result], code=200)
+
+
+@app.route('/api/manage/add_exhibiton', methods=['post'])
+# @jwt_required()
+def add_exhibiton():
+    """
+        :return:新增展会信息
+        """
+    forum = get_jwt().get("forum")
+    params = request.get_json()
+    exhibiton = Exhibiton()
+    exhibiton.title = params.get('title')
+    exhibiton.hall = params.get('hall')
+    exhibiton.location = params.get('location')
+    exhibiton.exhibition_date = params.get('exhibition_date')
+    exhibiton.begin_time = params.get('begin_time')
+    exhibiton.end_time = params.get('end_time')
+    exhibiton.status = params.get('status')
+    exhibiton.participating_unit = json.dumps(params.get('participating_unit', ''))
+    exhibiton.img_url = params.get('cdn_param')
+    exhibiton.forum = forum
+    exhibiton.sponsor = ','.join([str(item) for item in params.get('sponsor', [])])
+    exhibiton.supported = ','.join([str(item) for item in params.get('supported', [])])
+    exhibiton.organizer = ','.join([str(item) for item in params.get('organizer', [])])
+    exhibiton.coorganizer = ','.join([str(item) for item in params.get('coorganizer', [])])
+    exhibiton.info = params.get('info')
+    insert_user(exhibiton)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    return make_succ_response(exhibiton.id, code=200)
+
+
+@app.route('/api/manage/edit_exhibtion', methods=['post'])
+@jwt_required()
+def edit_exhibtion():
+    """
+        :return:编辑展会信息
+        """
+    forum = get_jwt().get("forum")
+    params = request.get_json()
+    exhibiton = Exhibiton.query.filter_by(id=params.get('id')).first()
+    exhibiton.title = params.get('title')
+    exhibiton.hall = params.get('hall')
+    exhibiton.location = params.get('location')
+    exhibiton.exhibition_date = params.get('exhibition_date')
+    exhibiton.begin_time = params.get('begin_time')
+    exhibiton.end_time = params.get('end_time')
+    exhibiton.status = params.get('status')
+    exhibiton.participating_unit = json.dumps(params.get('participating_unit', ''))
+    exhibiton.img_url = params.get('cdn_param')
+    exhibiton.forum = forum
+    exhibiton.sponsor = ','.join([str(item) for item in params.get('sponsor', [])])
+    exhibiton.supported = ','.join([str(item) for item in params.get('supported', [])])
+    exhibiton.organizer = ','.join([str(item) for item in params.get('organizer', [])])
+    exhibiton.coorganizer = ','.join([str(item) for item in params.get('coorganizer', [])])
+    exhibiton.info = params.get('info')
+    insert_user(exhibiton)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    return make_succ_response(exhibiton.id, code=200)
+
+
+@app.route('/api/manage/delete_exhibtion', methods=['post'])
+@jwt_required()
+def delete_exhibtion():
+    """
+        :return:删除展会信息
+        """
+    params = request.get_json()
+    exhibiton = Exhibiton.query.filter_by(id=params.get('id')).first()
+    exhibiton.is_deleted = 1
+    insert_user(exhibiton)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    return make_succ_response(exhibiton.id, code=200)
+
+
+@app.route('/api/manage/get_exhibtion', methods=['GET'])
+# @jwt_required()
+def get_exhibtion():
+    """
+        :return:展会信息
+    """
+    # 获取请求体参数
+    title = request.args.get('title', '')
+    page = request.args.get('page', default=1, type=int)
+    page_size = request.args.get('page_size', default=10, type=int)
+    # forum = get_jwt().get("forum", "")
+    forum = ''
+    result = Exhibiton.query.filter(Exhibiton.is_deleted == 0, Exhibiton.title.like('%' + title + '%'),
+                                    Exhibiton.forum.like('%' + forum + '%')).paginate(page,
+                                                                                      per_page=page_size,
+                                                                                      error_out=False)
+    data = []
+    for item in result.items:
+        exhibition = item.get()
+        exhibition['sponsor_info'] = []
+        exhibition['supported_info'] = []
+        exhibition['organizer_info'] = []
+        exhibition['coorganizer_info'] = []
+        if len(exhibition.get('supported', [])) > 0:
+            supporteds = ConferenCoopearter.query.filter(ConferenCoopearter.id.in_(exhibition.get('supported', [])),
+                                                         ConferenCoopearter.is_deleted == 0).all()
+            if supporteds is not None:
+                for supported in supporteds:
+                    exhibition['supported_info'].append(supported.get())
+        if len(exhibition.get('organizer', [])) > 0:
+            organizers = ConferenCoopearter.query.filter(ConferenCoopearter.id.in_(exhibition.get('organizer', [])),
+                                                         ConferenCoopearter.is_deleted == 0).all()
+            if organizers is not None:
+                for organizer in organizers:
+                    exhibition['organizer_info'].append(organizer.get())
+        if len(exhibition.get('coorganizer', [])) > 0:
+            coorganizers = ConferenCoopearter.query.filter(ConferenCoopearter.id.in_(exhibition.get('coorganizer', [])),
+                                                           ConferenCoopearter.is_deleted == 0).all()
+            if coorganizers is not None:
+                for coorganizer in coorganizers:
+                    exhibition['coorganizer_info'].append(coorganizer.get())
+        if len(exhibition.get('sponsor', [])) > 0:
+            sponsors = ConferenCoopearter.query.filter(ConferenCoopearter.id.in_(exhibition.get('sponsor', [])),
+                                                       ConferenCoopearter.is_deleted == 0).all()
+            if sponsors is not None:
+                for sponsor in sponsors:
+                    exhibition['sponsor_info'].append(sponsor.get())
+        data.append(exhibition)
+    return make_succ_page_response(data, code=200, total=result.total)

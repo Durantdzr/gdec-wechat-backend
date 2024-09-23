@@ -251,7 +251,7 @@ class ConferenCoopearter(db.Model):
     forum = db.Column('forum', db.String)
 
     def get(self):
-        return {"id": self.id, "name": self.name, "cdn_param": self.img_url, "type": self.type,"info":self.info,
+        return {"id": self.id, "name": self.name, "cdn_param": self.img_url, "type": self.type, "info": self.info,
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url), "url": self.url}
 
 
@@ -317,3 +317,54 @@ class OperaterRule(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     rule = db.Column('rule', db.String(100), nullable=True)
     name = db.Column('name', db.String(100), nullable=True)
+
+
+class Exhibiton(db.Model):
+    # 设置结构体表格名称
+    __tablename__ = 'exhibition'
+
+    # 设定结构体对应表格的字段
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column('title', db.String(100), nullable=True)
+    hall = db.Column('hall', db.String(50), nullable=True)
+    location = db.Column('location', db.String(50), nullable=True)
+    exhibition_date = db.Column('exhibition_date', db.TIMESTAMP, nullable=True)
+    status = db.Column('status', db.INT, default=0)
+    begin_time = db.Column('begin_time', db.String(10), nullable=True)
+    end_time = db.Column('end_time', db.String(10), nullable=True)
+    is_deleted = db.Column('is_deleted', db.INT, default=0)
+    participating_unit = db.Column('participating_unit', db.TEXT)
+    img_url = db.Column('img_url', db.String(100))
+    forum = db.Column('forum', db.String(50), default='')
+    sponsor = db.Column('sponsor', db.String(100), default='')
+    supported = db.Column('supported', db.String(100), default='')
+    organizer = db.Column('organizer', db.String(100), default='')
+    coorganizer = db.Column('co-organizer', db.String(100), default='')
+    info = db.Column('info', db.TEXT)
+
+    def get(self):
+        if self.sponsor is None or self.sponsor == '':
+            sponsor = []
+        else:
+            sponsor = list(map(int, self.sponsor.split(',')))
+        if self.supported is None or self.supported == '':
+            supported = []
+        else:
+            supported = list(map(int, self.supported.split(',')))
+        if self.organizer is None or self.organizer == '':
+            organizer = []
+        else:
+            organizer = list(map(int, self.organizer.split(',')))
+        if self.coorganizer is None or self.coorganizer == '':
+            coorganizer = []
+        else:
+            coorganizer = list(map(int, self.coorganizer.split(',')))
+        return {'id': self.id, 'title': self.title, 'location': self.location, "hall": self.hall,
+                'exhibition_date': self.exhibition_date.strftime('%Y-%m-%d'), 'status': self.status,
+                "begin_time": self.begin_time, "end_time": self.end_time,
+                "participating_unit": [] if (
+                            self.participating_unit is None or self.participating_unit == '') else json.loads(
+                    self.participating_unit),
+                "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url),
+                'cdn_param': self.img_url, "sponsor": sponsor, "supported": supported, "organizer": organizer,
+                "coorganizer": coorganizer, "info": self.info}
