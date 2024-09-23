@@ -883,7 +883,7 @@ def get_operate_event():
 
 
 @app.route('/api/manage/add_exhibiton', methods=['post'])
-# @jwt_required()
+@jwt_required()
 def add_exhibiton():
     """
         :return:新增展会信息
@@ -955,7 +955,7 @@ def delete_exhibtion():
 
 
 @app.route('/api/manage/get_exhibtion', methods=['GET'])
-# @jwt_required()
+@jwt_required()
 def get_exhibtion():
     """
         :return:展会信息
@@ -964,8 +964,7 @@ def get_exhibtion():
     title = request.args.get('title', '')
     page = request.args.get('page', default=1, type=int)
     page_size = request.args.get('page_size', default=10, type=int)
-    # forum = get_jwt().get("forum", "")
-    forum = ''
+    forum = get_jwt().get("forum", "")
     result = Exhibiton.query.filter(Exhibiton.is_deleted == 0, Exhibiton.title.like('%' + title + '%'),
                                     Exhibiton.forum.like('%' + forum + '%')).paginate(page,
                                                                                       per_page=page_size,
