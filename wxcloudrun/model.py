@@ -246,6 +246,7 @@ class ConferenCoopearter(db.Model):
     img_url = db.Column('img_url', db.String(100), nullable=True)
     url = db.Column('url', db.String(50), nullable=True)
     type = db.Column('type', db.String(10), nullable=True)
+    info = db.Column('info', db.String(255), nullable=True)
     is_deleted = db.Column('is_deleted', db.INT, default=0)
     forum = db.Column('forum', db.String)
 
