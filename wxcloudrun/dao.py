@@ -218,8 +218,8 @@ def get_review_conference_list(name, page, page_size, forum, status):
                                                                        error_out=False)
     return [{"id": signup.id, "user_name": user.name, "schedule_name": schedule.title,
              "schedule_date": schedule.conference_date.strftime('%Y-%m-%d'), "begin_time": schedule.begin_time,
-             "end_time": schedule.end_time, "phone": user.phone, "status": signup.status} for signup, user, schedule in
-            result.items], result.total
+             "end_time": schedule.end_time, "phone": user.phone, "status": signup.status, "company": user.company,
+             "title": user.title} for signup, user, schedule in result.items], result.total
 
 
 def get_conference_schedule_by_id(userid):
@@ -256,7 +256,7 @@ def get_user_schedule_num_by_id(userid):
 def find_user_schedule_tobegin():
     result = db.session.query(ConferenceSignUp, ConferenceSchedule, User).join(
         ConferenceSchedule, ConferenceSignUp.schedule_id == ConferenceSchedule.id).join(User,
-                            ConferenceSignUp.user_id == User.id).filter(
+                                                                                        ConferenceSignUp.user_id == User.id).filter(
         ConferenceSchedule.is_deleted == 0).all()
     data = []
     for signup, schedule, user in result:
