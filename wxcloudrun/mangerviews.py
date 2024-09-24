@@ -176,7 +176,7 @@ def review_register():
         """
     params = request.get_json()
     opt = params.get('opt')
-    reason = params.get('reason', "")
+    reason = params.get('reason', "审核通过")
     userlist = params.get('userlist', '')
     if opt == 'agree':
         update_user_statusbyid(userlist, 2, reason)
