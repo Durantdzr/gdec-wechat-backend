@@ -55,6 +55,7 @@ class ConferenceSchedule(db.Model):
     organizer = db.Column('organizer', db.String(100), default='')
     coorganizer = db.Column('co-organizer', db.String(100), default='')
     background = db.Column('background', db.TEXT)
+    label = db.Column('label', db.String(30), nullable=True)
 
     def get_live(self):
         status_ENUM = {1: '即将直播', 2: '正在直播', 3: '查看回放'}
@@ -96,7 +97,7 @@ class ConferenceSchedule(db.Model):
                 "agenda": [] if (self.agenda is None or self.agenda == '') else json.loads(self.agenda),
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url),
                 'cdn_param': self.img_url, "sponsor": sponsor, "supported": supported, "organizer": organizer,
-                "coorganizer": coorganizer, "background": self.background,
+                "coorganizer": coorganizer, "background": self.background,"label":self.label,
                 "qrcode_cdn": 'https://{}.tcb.qcloud.la/{}qrcode_schedule_{}.jpg'.format(config.COS_BUCKET,
                                                                                          config.VERSION, self.id)}
 
@@ -108,28 +109,28 @@ class ConferenceSchedule(db.Model):
             guest_id = []
         else:
             guest_id = list(map(int, self.guest.split(',')))
-        if '开幕式' in self.title:
-            ext = '开幕式'
-        elif '主会场' in self.hall:
-            ext = '主论坛'
-        else:
-            ext = ''
+        # if '开幕式' in self.title:
+        #     ext = '开幕式'
+        # elif '主会场' in self.hall:
+        #     ext = '主论坛'
+        # else:
+        #     ext = ''
         return {'id': self.id, 'title': self.title, 'location': self.location, "hall": self.hall,
                 'conference_date': self.conference_date.strftime('%Y-%m-%d'), 'status': status_ENUM.get(self.status),
                 "begin_time": self.begin_time, "end_time": self.end_time, 'live_url': self.live_url,
-                "record_url": self.record_url, 'guest_id': guest_id, 'ext': ext,
+                "record_url": self.record_url, 'guest_id': guest_id, 'ext': self.label,
                 'live_status': live_status_ENUM.get(self.live_status, '')}
 
     def get_schedule_view_simple(self):
         status_ENUM = {0: '我要报名', 1: '正在直播' if self.live_status == 1 else '会议进行中',
                        2: '查看回放' if self.live_status == 2 else '会议结束', 3: "不可报名"}
         live_status_ENUM = {1: '未开始', 2: '直播中', 3: "回放中"}
-        if '开幕式' in self.title:
-            ext = '开幕式'
-        elif '主会场' in self.hall:
-            ext = '主论坛'
-        else:
-            ext = ''
+        # if '开幕式' in self.title:
+        #     ext = '开幕式'
+        # elif '主会场' in self.hall:
+        #     ext = '主论坛'
+        # else:
+        #     ext = ''
         if self.guest is None or self.guest == '':
             guest_id = []
         else:
@@ -153,7 +154,7 @@ class ConferenceSchedule(db.Model):
         return {'id': self.id, 'title': self.title, 'location': self.location,
                 'conference_date': self.conference_date.strftime('%Y-%m-%d'),
                 "begin_time": self.begin_time, "end_time": self.end_time, 'live_url': self.live_url,
-                "record_url": self.record_url, 'ext': ext,
+                "record_url": self.record_url, 'ext': self.label,
                 "agenda": [] if (self.agenda is None or self.agenda == '') else json.loads(self.agenda),
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url), "guest_id": guest_id,
                 'status': status_ENUM.get(self.status), 'live_status': live_status_ENUM.get(self.live_status, ''),
@@ -341,6 +342,7 @@ class Exhibiton(db.Model):
     organizer = db.Column('organizer', db.String(100), default='')
     coorganizer = db.Column('co-organizer', db.String(100), default='')
     info = db.Column('info', db.TEXT)
+    label = db.Column('label', db.String(30), nullable=True)
 
     def get(self):
         if self.sponsor is None or self.sponsor == '':
@@ -367,7 +369,7 @@ class Exhibiton(db.Model):
                     self.participating_unit),
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url),
                 'cdn_param': self.img_url, "sponsor": sponsor, "supported": supported, "organizer": organizer,
-                "coorganizer": coorganizer, "info": self.info}
+                "coorganizer": coorganizer, "info": self.info, "label": self.label}
 
     def get_view_simple(self):
         status_ENUM = {0: '我要报名', 1: '会议进行中', 2: '会议结束', 3: "不可报名"}
@@ -395,4 +397,4 @@ class Exhibiton(db.Model):
                     self.participating_unit),
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url),
                 'cdn_param': self.img_url, "sponsor": sponsor, "supported": supported, "organizer": organizer,
-                "coorganizer": coorganizer, "info": self.info}
+                "coorganizer": coorganizer, "info": self.info, "label": self.label}

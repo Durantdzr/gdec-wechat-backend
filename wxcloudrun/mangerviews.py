@@ -13,7 +13,7 @@ from flask import request, send_file
 from run import app
 from wxcloudrun.dao import update_user_statusbyid, insert_user, get_review_conference_list, update_schedule_statusbyid, \
     refresh_cooperater, refresh_guest, refresh_guest_info, get_hall_schedule_bydate, get_live_data, \
-    refresh_conference_info, get_hall_schedule_byid, get_operat_list,get_hall_exhibition_byid, \
+    refresh_conference_info, get_hall_schedule_byid, get_operat_list, get_hall_exhibition_byid, \
     get_hall_exhibition_bydate
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, ConferenCoopearter, Media, \
     ConferenceCooperatorShow, OperaterRule, Exhibiton
@@ -412,6 +412,7 @@ def add_hall_schedule():
     schedule.organizer = ','.join([str(item) for item in params.get('organizer', [])])
     schedule.coorganizer = ','.join([str(item) for item in params.get('coorganizer', [])])
     schedule.background = params.get('background')
+    schedule.label = params.get('label')
     insert_user(schedule)
     refresh_guest()
     refresh_cooperater()
@@ -454,6 +455,7 @@ def edit_hall_schedule():
     schedule.organizer = ','.join([str(item) for item in params.get('organizer', [])])
     schedule.coorganizer = ','.join([str(item) for item in params.get('coorganizer', [])])
     schedule.background = params.get('background')
+    schedule.label = params.get('label')
     insert_user(schedule)
     refresh_guest()
     refresh_cooperater()
@@ -907,6 +909,7 @@ def add_exhibiton():
     exhibiton.organizer = ','.join([str(item) for item in params.get('organizer', [])])
     exhibiton.coorganizer = ','.join([str(item) for item in params.get('coorganizer', [])])
     exhibiton.info = params.get('info')
+    exhibiton.label = params.get('label')
     insert_user(exhibiton)
     operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     refresh_cooperater()
@@ -941,6 +944,7 @@ def edit_exhibtion():
     exhibiton.organizer = ','.join([str(item) for item in params.get('organizer', [])])
     exhibiton.coorganizer = ','.join([str(item) for item in params.get('coorganizer', [])])
     exhibiton.info = params.get('info')
+    exhibiton.label = params.get('label')
     insert_user(exhibiton)
     operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     refresh_cooperater()
