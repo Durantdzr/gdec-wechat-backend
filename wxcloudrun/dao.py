@@ -312,29 +312,13 @@ def get_hall_exhibition_byid(id):
             exhibition['participating_unit'][num]['status'] = True
             exhibition['participating_unit'][num].update(unit.get())
     if len(exhibition.get('supported', [])) > 0:
-        supporteds = ConferenCoopearter.query.filter(ConferenCoopearter.id.in_(exhibition.get('supported', [])),
-                                                     ConferenCoopearter.is_deleted == 0).all()
-        if supporteds is not None:
-            for supported in supporteds:
-                exhibition['supported_info'].append(supported.get())
+        exhibition['supported_info'].extend(get_coopearter_by_list(exhibition.get('supported', [])))
     if len(exhibition.get('organizer', [])) > 0:
-        organizers = ConferenCoopearter.query.filter(ConferenCoopearter.id.in_(exhibition.get('organizer', [])),
-                                                     ConferenCoopearter.is_deleted == 0).all()
-        if organizers is not None:
-            for organizer in organizers:
-                exhibition['organizer_info'].append(organizer.get())
+        exhibition['organizer_info'].extend(get_coopearter_by_list(exhibition.get('organizer', [])))
     if len(exhibition.get('coorganizer', [])) > 0:
-        coorganizers = ConferenCoopearter.query.filter(ConferenCoopearter.id.in_(exhibition.get('coorganizer', [])),
-                                                       ConferenCoopearter.is_deleted == 0).all()
-        if coorganizers is not None:
-            for coorganizer in coorganizers:
-                exhibition['coorganizer_info'].append(coorganizer.get())
+        exhibition['coorganizer_info'].extend(get_coopearter_by_list(exhibition.get('coorganizer', [])))
     if len(exhibition.get('sponsor', [])) > 0:
-        sponsors = ConferenCoopearter.query.filter(ConferenCoopearter.id.in_(exhibition.get('sponsor', [])),
-                                                   ConferenCoopearter.is_deleted == 0).all()
-        if sponsors is not None:
-            for sponsor in sponsors:
-                exhibition['sponsor_info'].append(sponsor.get())
+        exhibition['sponsor_info'].extend(get_coopearter_by_list(exhibition.get('sponsor', [])))
     return exhibition
 
 
@@ -362,31 +346,25 @@ def get_hall_schedule_byid(id):
                 continue
             schedule['guest_info'].append(user.get())
     if len(schedule.get('supported', [])) > 0:
-        supporteds = ConferenCoopearter.query.filter(ConferenCoopearter.id.in_(schedule.get('supported', [])),
-                                                     ConferenCoopearter.is_deleted == 0).all()
-        if supporteds is not None:
-            for supported in supporteds:
-                schedule['supported_info'].append(supported.get())
+        schedule['supported_info'].extend(get_coopearter_by_list(schedule.get('supported', [])))
     if len(schedule.get('organizer', [])) > 0:
-        organizers = ConferenCoopearter.query.filter(ConferenCoopearter.id.in_(schedule.get('organizer', [])),
-                                                     ConferenCoopearter.is_deleted == 0).all()
-        if organizers is not None:
-            for organizer in organizers:
-                schedule['organizer_info'].append(organizer.get())
+        schedule['organizer_info'].extend(get_coopearter_by_list(schedule.get('organizer', [])))
     if len(schedule.get('coorganizer', [])) > 0:
-        coorganizers = ConferenCoopearter.query.filter(ConferenCoopearter.id.in_(schedule.get('coorganizer', [])),
-                                                       ConferenCoopearter.is_deleted == 0).all()
-        if coorganizers is not None:
-            for coorganizer in coorganizers:
-                schedule['coorganizer_info'].append(coorganizer.get())
+        schedule['coorganizer_info'].extend(get_coopearter_by_list(schedule.get('coorganizer', [])))
     if len(schedule.get('sponsor', [])) > 0:
-        sponsors = ConferenCoopearter.query.filter(ConferenCoopearter.id.in_(schedule.get('sponsor', [])),
-                                                   ConferenCoopearter.is_deleted == 0).all()
-        if sponsors is not None:
-            for sponsor in sponsors:
-                schedule['sponsor_info'].append(sponsor.get())
+        schedule['sponsor_info'].extend(get_coopearter_by_list(schedule.get('sponsor', [])))
     return schedule
 
+
+def get_coopearter_by_list(coopearter_ids):
+    operaters = ConferenCoopearter.query.filter(ConferenCoopearter.id.in_(coopearter_ids),
+                                               ConferenCoopearter.is_deleted == 0).all()
+    data=[]
+    if operaters is not None:
+        operaters.sort(key=lambda x: coopearter_ids.index(x.id))
+        for operater in operaters:
+            data.append(operater.get())
+    return data
 
 def get_cooperater_list(type):
     result = ConferenCoopearter.query.filter(ConferenCoopearter.type == type,
