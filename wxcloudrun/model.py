@@ -55,6 +55,7 @@ class ConferenceSchedule(db.Model):
     organizer = db.Column('organizer', db.String(100), default='')
     coorganizer = db.Column('co-organizer', db.String(100), default='')
     background = db.Column('background', db.TEXT)
+    label = db.Column('label', db.String(30), nullable=True)
 
     def get_live(self):
         status_ENUM = {1: '即将直播', 2: '正在直播', 3: '查看回放'}
@@ -96,40 +97,40 @@ class ConferenceSchedule(db.Model):
                 "agenda": [] if (self.agenda is None or self.agenda == '') else json.loads(self.agenda),
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url),
                 'cdn_param': self.img_url, "sponsor": sponsor, "supported": supported, "organizer": organizer,
-                "coorganizer": coorganizer, "background": self.background,
+                "coorganizer": coorganizer, "background": self.background, "label": self.label,
                 "qrcode_cdn": 'https://{}.tcb.qcloud.la/{}qrcode_schedule_{}.jpg'.format(config.COS_BUCKET,
                                                                                          config.VERSION, self.id)}
 
     def get_schedule_view(self):
         status_ENUM = {0: '我要报名', 1: '正在直播' if self.live_status == 1 else '会议进行中',
-                       2: '查看回放' if self.live_status == 2 else '会议结束'}
+                       2: '查看回放' if self.live_status == 2 else '会议结束', 3: "不可报名"}
         live_status_ENUM = {1: '未开始', 2: '直播中', 3: "回放中"}
         if self.guest is None or self.guest == '':
             guest_id = []
         else:
             guest_id = list(map(int, self.guest.split(',')))
-        if '开幕式' in self.title:
-            ext = '开幕式'
-        elif '主会场' in self.hall:
-            ext = '主论坛'
-        else:
-            ext = ''
+        # if '开幕式' in self.title:
+        #     ext = '开幕式'
+        # elif '主会场' in self.hall:
+        #     ext = '主论坛'
+        # else:
+        #     ext = ''
         return {'id': self.id, 'title': self.title, 'location': self.location, "hall": self.hall,
                 'conference_date': self.conference_date.strftime('%Y-%m-%d'), 'status': status_ENUM.get(self.status),
                 "begin_time": self.begin_time, "end_time": self.end_time, 'live_url': self.live_url,
-                "record_url": self.record_url, 'guest_id': guest_id, 'ext': ext,
+                "record_url": self.record_url, 'guest_id': guest_id, 'ext': self.label,
                 'live_status': live_status_ENUM.get(self.live_status, '')}
 
     def get_schedule_view_simple(self):
         status_ENUM = {0: '我要报名', 1: '正在直播' if self.live_status == 1 else '会议进行中',
-                       2: '查看回放' if self.live_status == 2 else '会议结束'}
+                       2: '查看回放' if self.live_status == 2 else '会议结束', 3: "不可报名"}
         live_status_ENUM = {1: '未开始', 2: '直播中', 3: "回放中"}
-        if '开幕式' in self.title:
-            ext = '开幕式'
-        elif '主会场' in self.hall:
-            ext = '主论坛'
-        else:
-            ext = ''
+        # if '开幕式' in self.title:
+        #     ext = '开幕式'
+        # elif '主会场' in self.hall:
+        #     ext = '主论坛'
+        # else:
+        #     ext = ''
         if self.guest is None or self.guest == '':
             guest_id = []
         else:
@@ -153,7 +154,7 @@ class ConferenceSchedule(db.Model):
         return {'id': self.id, 'title': self.title, 'location': self.location,
                 'conference_date': self.conference_date.strftime('%Y-%m-%d'),
                 "begin_time": self.begin_time, "end_time": self.end_time, 'live_url': self.live_url,
-                "record_url": self.record_url, 'ext': ext,
+                "record_url": self.record_url, 'ext': self.label,
                 "agenda": [] if (self.agenda is None or self.agenda == '') else json.loads(self.agenda),
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url), "guest_id": guest_id,
                 'status': status_ENUM.get(self.status), 'live_status': live_status_ENUM.get(self.live_status, ''),
@@ -251,7 +252,7 @@ class ConferenCoopearter(db.Model):
     forum = db.Column('forum', db.String)
 
     def get(self):
-        return {"id": self.id, "name": self.name, "cdn_param": self.img_url, "type": self.type,"info":self.info,
+        return {"id": self.id, "name": self.name, "cdn_param": self.img_url, "type": self.type, "info": self.info,
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url), "url": self.url}
 
 
@@ -317,3 +318,102 @@ class OperaterRule(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     rule = db.Column('rule', db.String(100), nullable=True)
     name = db.Column('name', db.String(100), nullable=True)
+
+
+class Exhibiton(db.Model):
+    # 设置结构体表格名称
+    __tablename__ = 'exhibition'
+
+    # 设定结构体对应表格的字段
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column('title', db.String(100), nullable=True)
+    hall = db.Column('hall', db.String(50), nullable=True)
+    location = db.Column('location', db.String(50), nullable=True)
+    exhibition_date = db.Column('exhibition_date', db.TIMESTAMP, nullable=True)
+    status = db.Column('status', db.INT, default=0)
+    begin_time = db.Column('begin_time', db.String(10), nullable=True)
+    end_time = db.Column('end_time', db.String(10), nullable=True)
+    is_deleted = db.Column('is_deleted', db.INT, default=0)
+    participating_unit = db.Column('participating_unit', db.TEXT)
+    img_url = db.Column('img_url', db.String(100))
+    forum = db.Column('forum', db.String(50), default='')
+    sponsor = db.Column('sponsor', db.String(100), default='')
+    supported = db.Column('supported', db.String(100), default='')
+    organizer = db.Column('organizer', db.String(100), default='')
+    coorganizer = db.Column('co-organizer', db.String(100), default='')
+    info = db.Column('info', db.TEXT)
+    label = db.Column('label', db.String(30), nullable=True)
+
+    def get(self):
+        if self.sponsor is None or self.sponsor == '':
+            sponsor = []
+        else:
+            sponsor = list(map(int, self.sponsor.split(',')))
+        if self.supported is None or self.supported == '':
+            supported = []
+        else:
+            supported = list(map(int, self.supported.split(',')))
+        if self.organizer is None or self.organizer == '':
+            organizer = []
+        else:
+            organizer = list(map(int, self.organizer.split(',')))
+        if self.coorganizer is None or self.coorganizer == '':
+            coorganizer = []
+        else:
+            coorganizer = list(map(int, self.coorganizer.split(',')))
+        return {'id': self.id, 'title': self.title, 'location': self.location, "hall": self.hall,
+                'exhibition_date': self.exhibition_date.strftime('%Y-%m-%d'), 'status': self.status,
+                "begin_time": self.begin_time, "end_time": self.end_time,
+                "participating_unit": [] if (
+                        self.participating_unit is None or self.participating_unit == '') else json.loads(
+                    self.participating_unit),
+                "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url),
+                'cdn_param': self.img_url, "sponsor": sponsor, "supported": supported, "organizer": organizer,
+                "coorganizer": coorganizer, "info": self.info, "label": self.label}
+
+    def get_view_simple(self):
+        status_ENUM = {0: '我要报名', 1: '会议进行中', 2: '会议结束', 3: "不可报名"}
+        if self.sponsor is None or self.sponsor == '':
+            sponsor = []
+        else:
+            sponsor = list(map(int, self.sponsor.split(',')))
+        if self.supported is None or self.supported == '':
+            supported = []
+        else:
+            supported = list(map(int, self.supported.split(',')))
+        if self.organizer is None or self.organizer == '':
+            organizer = []
+        else:
+            organizer = list(map(int, self.organizer.split(',')))
+        if self.coorganizer is None or self.coorganizer == '':
+            coorganizer = []
+        else:
+            coorganizer = list(map(int, self.coorganizer.split(',')))
+        return {'id': self.id, 'title': self.title, 'location': self.location, "hall": self.hall,
+                'exhibition_date': self.exhibition_date.strftime('%Y-%m-%d'), 'status': status_ENUM.get(self.status),
+                "begin_time": self.begin_time, "end_time": self.end_time,
+                "participating_unit": [] if (
+                        self.participating_unit is None or self.participating_unit == '') else json.loads(
+                    self.participating_unit),
+                "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url),
+                'cdn_param': self.img_url, "sponsor": sponsor, "supported": supported, "organizer": organizer,
+                "coorganizer": coorganizer, "info": self.info, "label": self.label}
+
+
+class DigitalCityWeek(db.Model):
+    # 设置结构体表格名称
+    __tablename__ = 'digital_city_week'
+
+    # 设定结构体对应表格的字段
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column('title', db.String(100), nullable=True)
+    dept = db.Column('dept', db.String(30), nullable=True)
+    location = db.Column('location', db.String(255), nullable=True)
+    activity_time = db.Column('activity_time', db.TEXT, nullable=True)
+    contact = db.Column('contact', db.String(255), nullable=True)
+    info = db.Column('info', db.TEXT, nullable=True)
+    url = db.Column('url', db.String(255), nullable=True)
+
+    def get(self):
+        return {"title": self.title, "dept": self.dept, "location": self.location, "activity_time": self.activity_time,
+                "contact": self.contact, "info": self.info, "url": self.url}
