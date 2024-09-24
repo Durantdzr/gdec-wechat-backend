@@ -97,7 +97,7 @@ class ConferenceSchedule(db.Model):
                 "agenda": [] if (self.agenda is None or self.agenda == '') else json.loads(self.agenda),
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url),
                 'cdn_param': self.img_url, "sponsor": sponsor, "supported": supported, "organizer": organizer,
-                "coorganizer": coorganizer, "background": self.background,"label":self.label,
+                "coorganizer": coorganizer, "background": self.background, "label": self.label,
                 "qrcode_cdn": 'https://{}.tcb.qcloud.la/{}qrcode_schedule_{}.jpg'.format(config.COS_BUCKET,
                                                                                          config.VERSION, self.id)}
 
@@ -398,3 +398,22 @@ class Exhibiton(db.Model):
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url),
                 'cdn_param': self.img_url, "sponsor": sponsor, "supported": supported, "organizer": organizer,
                 "coorganizer": coorganizer, "info": self.info, "label": self.label}
+
+
+class DigitalCityWeek(db.Model):
+    # 设置结构体表格名称
+    __tablename__ = 'digital_city_week'
+
+    # 设定结构体对应表格的字段
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column('title', db.String(100), nullable=True)
+    dept = db.Column('dept', db.String(30), nullable=True)
+    location = db.Column('location', db.String(255), nullable=True)
+    activity_time = db.Column('activity_time', db.TEXT, nullable=True)
+    contact = db.Column('contact', db.String(255), nullable=True)
+    info = db.Column('info', db.TEXT, nullable=True)
+    url = db.Column('url', db.String(255), nullable=True)
+
+    def get(self):
+        return {"title": self.title, "dept": self.dept, "location": self.location, "activity_time": self.activity_time,
+                "contact": self.contact, "info": self.info, "url": self.url}

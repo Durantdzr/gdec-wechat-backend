@@ -5,7 +5,7 @@ from wxcloudrun.dao import insert_user, search_friends_byopenid, insert_realtion
     get_main_hall_guests_list, get_other_hall_guests_list, get_cooperater_list, get_hall_schedule_bydate, get_live_data, \
     get_user_schedule_num_by_id, refresh_schedule_info, get_hall_schedule_byid, get_hall_exhibition_bydate, \
     get_hall_exhibition_byid
-from wxcloudrun.model import ConferenceInfo, User, ConferenceHall, RelationFriend, ConferenceSignUp
+from wxcloudrun.model import ConferenceInfo, User, ConferenceHall, RelationFriend, ConferenceSignUp,DigitalCityWeek
 from wxcloudrun.response import make_succ_response, make_err_response
 from wxcloudrun.utils import batchdownloadfile, uploadfile, uploadwebfile, getscheduleqrcode, \
     send_check_msg, makeqrcode
@@ -492,3 +492,16 @@ def send_msg():
     wxOpenid = request.headers['X-WX-OPENID']
     result = send_check_msg(params.get('openid'), 'ceshi', '浦东', '09:00', phrase3='成功', date='2024-08-23')
     return make_succ_response(result)
+
+
+@app.route('/api/conference/digital_city_week', methods=['GET'])
+def digital_city_week():
+    """
+    :return:数字体验周数据接口
+    """
+    # 获取请求体参数
+    wxopenid = request.headers['X-WX-OPENID']
+    result=DigitalCityWeek.query.order_by(DigitalCityWeek.dept.desc()).all()
+    data=[item.get() for item in result]
+    uploadwebfile(data, openid=wxopenid, file='digital_city_week.json')
+    return make_succ_response(data)
