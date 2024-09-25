@@ -415,7 +415,8 @@ class DigitalCityWeek(db.Model):
     contact = db.Column('contact', db.String(255), nullable=True)
     info = db.Column('info', db.TEXT, nullable=True)
     url = db.Column('url', db.String(255), nullable=True)
+    slogan = db.Column('slogan', db.String(255), nullable=True)
 
     def get(self):
         return {"title": self.title, "dept": self.dept, "location": self.location, "activity_time": self.activity_time,
-                "contact": self.contact, "info": self.info, "url": self.url}
+                "contact": self.contact, "info": self.info, "url": self.url,"slogan": self.slogan}
