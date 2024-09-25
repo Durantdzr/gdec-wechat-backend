@@ -967,8 +967,8 @@ def delete_exhibtion():
     insert_user(exhibiton)
     operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     refresh_cooperater()
-    data = get_hall_exhibition_bydistrict(params.get('district'))
-    uploadwebfile(data, file='get_hall_exhibition' + params.get('district') + '.json')
+    data = get_hall_exhibition_bydistrict(exhibiton.district)
+    uploadwebfile(data, file='get_hall_exhibition' + exhibiton.district + '.json')
     return make_succ_response(exhibiton.id, code=200)
 
 
