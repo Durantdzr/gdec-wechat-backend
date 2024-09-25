@@ -362,8 +362,9 @@ class Exhibiton(db.Model):
         else:
             coorganizer = list(map(int, self.coorganizer.split(',')))
         return {'id': self.id, 'title': self.title, 'location': self.location, "hall": self.hall,
-                'exhibition_date': self.exhibition_date.strftime('%Y-%m-%d'), 'status': self.status,
-                "begin_time": self.begin_time, "end_time": self.end_time,"district": self.district,
+                'status': self.status,
+                "begin_time": self.begin_time.strftime('%Y-%m-%d %H:%M'),
+                "end_time": self.end_time.strftime('%Y-%m-%d %H:%M'), "district": self.district,
                 "participating_unit": [] if (
                         self.participating_unit is None or self.participating_unit == '') else json.loads(
                     self.participating_unit),
@@ -390,8 +391,9 @@ class Exhibiton(db.Model):
         else:
             coorganizer = list(map(int, self.coorganizer.split(',')))
         return {'id': self.id, 'title': self.title, 'location': self.location, "hall": self.hall,
-                'status': status_ENUM.get(self.status),"district": self.district,
-                "begin_time": self.begin_time.strftime('%Y-%m-%d'), "end_time": self.end_time.strftime('%Y-%m-%d'),
+                'status': status_ENUM.get(self.status), "district": self.district,
+                "begin_time": self.begin_time.strftime('%Y-%m-%d %H:%M'),
+                "end_time": self.end_time.strftime('%Y-%m-%d %H:%M'),
                 "participating_unit": [] if (
                         self.participating_unit is None or self.participating_unit == '') else json.loads(
                     self.participating_unit),
