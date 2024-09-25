@@ -967,8 +967,8 @@ def delete_exhibtion():
     insert_user(exhibiton)
     operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     refresh_cooperater()
-    data = get_hall_exhibition_bydate(params.get('exhibition_date'))
-    uploadwebfile(data, file='get_hall_exhibition' + params.get('exhibition_date') + '.json')
+    data = get_hall_exhibition_bydate(exhibiton.exhibition_date.strftime('%Y-%m-%d'))
+    uploadwebfile(data, file='get_hall_exhibition' + exhibiton.exhibition_date.strftime('%Y-%m-%d') + '.json')
     return make_succ_response(exhibiton.id, code=200)
 
 
