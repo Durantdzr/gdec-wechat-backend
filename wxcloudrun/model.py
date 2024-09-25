@@ -329,10 +329,9 @@ class Exhibiton(db.Model):
     title = db.Column('title', db.String(100), nullable=True)
     hall = db.Column('hall', db.String(50), nullable=True)
     location = db.Column('location', db.String(50), nullable=True)
-    exhibition_date = db.Column('exhibition_date', db.TIMESTAMP, nullable=True)
     status = db.Column('status', db.INT, default=0)
-    begin_time = db.Column('begin_time', db.String(10), nullable=True)
-    end_time = db.Column('end_time', db.String(10), nullable=True)
+    begin_time = db.Column('begin_time', db.TIMESTAMP, nullable=True)
+    end_time = db.Column('end_time', db.TIMESTAMP, nullable=True)
     is_deleted = db.Column('is_deleted', db.INT, default=0)
     participating_unit = db.Column('participating_unit', db.TEXT)
     img_url = db.Column('img_url', db.String(100))
@@ -390,8 +389,8 @@ class Exhibiton(db.Model):
         else:
             coorganizer = list(map(int, self.coorganizer.split(',')))
         return {'id': self.id, 'title': self.title, 'location': self.location, "hall": self.hall,
-                'exhibition_date': self.exhibition_date.strftime('%Y-%m-%d'), 'status': status_ENUM.get(self.status),
-                "begin_time": self.begin_time, "end_time": self.end_time,
+                'status': status_ENUM.get(self.status),
+                "begin_time": self.begin_time.strftime('%Y-%m-%d'), "end_time": self.end_time.strftime('%Y-%m-%d'),
                 "participating_unit": [] if (
                         self.participating_unit is None or self.participating_unit == '') else json.loads(
                     self.participating_unit),
