@@ -289,7 +289,7 @@ def get_hall_schedule_bydate(date):
 
 def get_hall_exhibition_bydate(date):
     result = Exhibiton.query.filter(
-        Exhibiton.is_deleted == 0, Exhibiton.exhibition_date == date, Exhibiton.is_deleted == 0).order_by(
+        Exhibiton.is_deleted == 0, Exhibiton.exhibition_date == date).order_by(
         Exhibiton.begin_time.asc()).all()
     data = [item.get() for item in result]
     return data
@@ -297,11 +297,16 @@ def get_hall_exhibition_bydate(date):
 
 def get_hall_exhibition_bydistrict(district):
     result = Exhibiton.query.filter(
-        Exhibiton.is_deleted == 0, Exhibiton.district == district, Exhibiton.is_deleted == 0).order_by(
+        Exhibiton.is_deleted == 0, Exhibiton.district == district).order_by(
         Exhibiton.begin_time.asc()).all()
     data = [item.get() for item in result]
     return data
-
+def get_hall_exhibition():
+    result = Exhibiton.query.filter(
+        Exhibiton.is_deleted == 0).order_by(
+        Exhibiton.begin_time.asc()).all()
+    data = [item.get() for item in result]
+    return data
 
 def get_hall_exhibition_byid(id):
     result = Exhibiton.query.filter(Exhibiton.id == id).first()
