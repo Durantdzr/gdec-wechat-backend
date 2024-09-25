@@ -504,5 +504,6 @@ def digital_city_week():
     wxopenid = request.headers['X-WX-OPENID']
     result = DigitalCityWeek.query.order_by(DigitalCityWeek.dept.desc()).all()
     data = [item.get() for item in result]
+
     uploadwebfile(data, openid=wxopenid, file='digital_city_week.json')
     return make_succ_response(data)
