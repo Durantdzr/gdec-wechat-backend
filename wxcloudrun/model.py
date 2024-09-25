@@ -342,6 +342,7 @@ class Exhibiton(db.Model):
     coorganizer = db.Column('co-organizer', db.String(100), default='')
     info = db.Column('info', db.TEXT)
     label = db.Column('label', db.String(30), nullable=True)
+    district = db.Column('district', db.String(255), nullable=True)
 
     def get(self):
         if self.sponsor is None or self.sponsor == '':
@@ -362,7 +363,7 @@ class Exhibiton(db.Model):
             coorganizer = list(map(int, self.coorganizer.split(',')))
         return {'id': self.id, 'title': self.title, 'location': self.location, "hall": self.hall,
                 'exhibition_date': self.exhibition_date.strftime('%Y-%m-%d'), 'status': self.status,
-                "begin_time": self.begin_time, "end_time": self.end_time,
+                "begin_time": self.begin_time, "end_time": self.end_time,"district": self.district,
                 "participating_unit": [] if (
                         self.participating_unit is None or self.participating_unit == '') else json.loads(
                     self.participating_unit),
@@ -389,7 +390,7 @@ class Exhibiton(db.Model):
         else:
             coorganizer = list(map(int, self.coorganizer.split(',')))
         return {'id': self.id, 'title': self.title, 'location': self.location, "hall": self.hall,
-                'status': status_ENUM.get(self.status),
+                'status': status_ENUM.get(self.status),"district": self.district,
                 "begin_time": self.begin_time.strftime('%Y-%m-%d'), "end_time": self.end_time.strftime('%Y-%m-%d'),
                 "participating_unit": [] if (
                         self.participating_unit is None or self.participating_unit == '') else json.loads(

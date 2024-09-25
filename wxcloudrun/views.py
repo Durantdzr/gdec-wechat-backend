@@ -4,7 +4,7 @@ from wxcloudrun.dao import insert_user, search_friends_byopenid, insert_realtion
     save_realtion_friendbyid, is_invited_user, get_guests_list, get_conference_schedule_by_id, get_open_guests_list, \
     get_main_hall_guests_list, get_other_hall_guests_list, get_cooperater_list, get_hall_schedule_bydate, get_live_data, \
     get_user_schedule_num_by_id, refresh_schedule_info, get_hall_schedule_byid, get_hall_exhibition_bydate, \
-    get_hall_exhibition_byid
+    get_hall_exhibition_byid, get_hall_exhibition_bydistrict
 from wxcloudrun.model import ConferenceInfo, User, ConferenceHall, RelationFriend, ConferenceSignUp, DigitalCityWeek
 from wxcloudrun.response import make_succ_response, make_err_response
 from wxcloudrun.utils import batchdownloadfile, uploadfile, uploadwebfile, getscheduleqrcode, \
@@ -67,10 +67,13 @@ def get_hall_exhibition():
         :return:大会展会
     """
     # 获取请求体参数
-    date = request.args.get('date')
+    # date = request.args.get('date')
+    district = request.args.get('district')
     wxOpenid = request.headers['X-WX-OPENID']
-    data = get_hall_exhibition_bydate(date)
-    uploadwebfile(data, file='get_hall_exhibition' + date + '.json')
+    # data = get_hall_exhibition_bydate(date)
+    # uploadwebfile(data, file='get_hall_exhibition' + date + '.json')
+    data = get_hall_exhibition_bydistrict(district)
+    uploadwebfile(data, file='get_hall_exhibition' + district + '.json')
     return make_succ_response(data)
 
 
