@@ -151,7 +151,7 @@ class ConferenceSchedule(db.Model):
             coorganizer = []
         else:
             coorganizer = list(map(int, self.coorganizer.split(',')))
-        return {'id': self.id, 'title': self.title, 'location': self.location,
+        return {'id': self.id, 'title': self.title, 'location': self.location, "hall": self.hall,
                 'conference_date': self.conference_date.strftime('%Y-%m-%d'),
                 "begin_time": self.begin_time, "end_time": self.end_time, 'live_url': self.live_url,
                 "record_url": self.record_url, 'ext': self.label,
