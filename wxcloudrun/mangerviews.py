@@ -14,7 +14,7 @@ from run import app
 from wxcloudrun.dao import update_user_statusbyid, insert_user, get_review_conference_list, update_schedule_statusbyid, \
     refresh_cooperater, refresh_guest, refresh_guest_info, get_hall_schedule_bydate, get_live_data, \
     refresh_conference_info, get_hall_schedule_byid, get_operat_list, get_hall_exhibition_byid, \
-    get_hall_exhibition_bydate
+    get_hall_exhibition
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, ConferenCoopearter, Media, \
     ConferenceCooperatorShow, OperaterRule, Exhibiton
 from wxcloudrun.response import make_succ_page_response, make_succ_response, make_err_response
@@ -897,7 +897,7 @@ def add_exhibiton():
     exhibiton.title = params.get('title')
     exhibiton.hall = params.get('hall')
     exhibiton.location = params.get('location')
-    exhibiton.exhibition_date = params.get('exhibition_date')
+    exhibiton.district = params.get('district')
     exhibiton.begin_time = params.get('begin_time')
     exhibiton.end_time = params.get('end_time')
     exhibiton.status = params.get('status')
@@ -913,8 +913,8 @@ def add_exhibiton():
     insert_user(exhibiton)
     operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     refresh_cooperater()
-    data = get_hall_exhibition_bydate(params.get('exhibition_date'))
-    uploadwebfile(data, file='get_hall_exhibition' + params.get('exhibition_date') + '.json')
+    data = get_hall_exhibition()
+    uploadwebfile(data, file='get_hall_exhibition.json')
     data = get_hall_exhibition_byid(exhibiton.id)
     uploadwebfile(data, file='get_exhibition_by_id' + str(exhibiton.id) + '.json')
     return make_succ_response(exhibiton.id, code=200)
@@ -932,7 +932,7 @@ def edit_exhibtion():
     exhibiton.title = params.get('title')
     exhibiton.hall = params.get('hall')
     exhibiton.location = params.get('location')
-    exhibiton.exhibition_date = params.get('exhibition_date')
+    exhibiton.district = params.get('district')
     exhibiton.begin_time = params.get('begin_time')
     exhibiton.end_time = params.get('end_time')
     exhibiton.status = params.get('status')
@@ -948,8 +948,8 @@ def edit_exhibtion():
     insert_user(exhibiton)
     operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     refresh_cooperater()
-    data = get_hall_exhibition_bydate(params.get('exhibition_date'))
-    uploadwebfile(data, file='get_hall_exhibition' + params.get('exhibition_date') + '.json')
+    data = get_hall_exhibition()
+    uploadwebfile(data, file='get_hall_exhibition.json')
     data = get_hall_exhibition_byid(exhibiton.id)
     uploadwebfile(data, file='get_exhibition_by_id' + str(exhibiton.id) + '.json')
     return make_succ_response(exhibiton.id, code=200)
@@ -967,8 +967,8 @@ def delete_exhibtion():
     insert_user(exhibiton)
     operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     refresh_cooperater()
-    data = get_hall_exhibition_bydate(exhibiton.exhibition_date.strftime('%Y-%m-%d'))
-    uploadwebfile(data, file='get_hall_exhibition' + exhibiton.exhibition_date.strftime('%Y-%m-%d') + '.json')
+    data = get_hall_exhibition()
+    uploadwebfile(data, file='get_hall_exhibition.json')
     return make_succ_response(exhibiton.id, code=200)
 
 

@@ -295,6 +295,19 @@ def get_hall_exhibition_bydate(date):
     return data
 
 
+def get_hall_exhibition_bydistrict(district):
+    result = Exhibiton.query.filter(
+        Exhibiton.is_deleted == 0, Exhibiton.district == district).order_by(
+        Exhibiton.begin_time.asc()).all()
+    data = [item.get() for item in result]
+    return data
+def get_hall_exhibition():
+    result = Exhibiton.query.filter(
+        Exhibiton.is_deleted == 0).order_by(
+        Exhibiton.begin_time.asc()).all()
+    data = [item.get() for item in result]
+    return data
+
 def get_hall_exhibition_byid(id):
     result = Exhibiton.query.filter(Exhibiton.id == id).first()
     exhibition = result.get_view_simple()
@@ -358,13 +371,14 @@ def get_hall_schedule_byid(id):
 
 def get_coopearter_by_list(coopearter_ids):
     operaters = ConferenCoopearter.query.filter(ConferenCoopearter.id.in_(coopearter_ids),
-                                               ConferenCoopearter.is_deleted == 0).all()
-    data=[]
+                                                ConferenCoopearter.is_deleted == 0).all()
+    data = []
     if operaters is not None:
         operaters.sort(key=lambda x: coopearter_ids.index(x.id))
         for operater in operaters:
             data.append(operater.get())
     return data
+
 
 def get_cooperater_list(type):
     result = ConferenCoopearter.query.filter(ConferenCoopearter.type == type,
@@ -387,20 +401,21 @@ def get_cooperater():
     for schedule in schedules:
         result = schedule.get_schedule()
         for item in type:
-            if item =='participating_unit':
+            if item == 'participating_unit':
                 continue
             cooperater_id.extend(result.get(item))
-    exhibitions=Exhibiton.query.filter(Exhibiton.is_deleted == 0).all()
+    exhibitions = Exhibiton.query.filter(Exhibiton.is_deleted == 0).all()
     for exhibition in exhibitions:
         result = exhibition.get()
         for item in type:
             if item == 'participating_unit':
-                cooperater_id.extend([unit.get("unit") for unit in result.get(item,[])])
+                cooperater_id.extend([unit.get("unit") for unit in result.get(item, [])])
             else:
                 cooperater_id.extend(result.get(item))
     result = ConferenCoopearter.query.filter(ConferenCoopearter.is_deleted == 0,
                                              ConferenCoopearter.id.in_(cooperater_id)).all()
     return [item.get() for item in result]
+
 
 def refresh_cooperater():
     data = get_cooperater()

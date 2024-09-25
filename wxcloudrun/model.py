@@ -151,7 +151,7 @@ class ConferenceSchedule(db.Model):
             coorganizer = []
         else:
             coorganizer = list(map(int, self.coorganizer.split(',')))
-        return {'id': self.id, 'title': self.title, 'location': self.location,
+        return {'id': self.id, 'title': self.title, 'location': self.location, "hall": self.hall,
                 'conference_date': self.conference_date.strftime('%Y-%m-%d'),
                 "begin_time": self.begin_time, "end_time": self.end_time, 'live_url': self.live_url,
                 "record_url": self.record_url, 'ext': self.label,
@@ -329,10 +329,9 @@ class Exhibiton(db.Model):
     title = db.Column('title', db.String(100), nullable=True)
     hall = db.Column('hall', db.String(50), nullable=True)
     location = db.Column('location', db.String(50), nullable=True)
-    exhibition_date = db.Column('exhibition_date', db.TIMESTAMP, nullable=True)
     status = db.Column('status', db.INT, default=0)
-    begin_time = db.Column('begin_time', db.String(10), nullable=True)
-    end_time = db.Column('end_time', db.String(10), nullable=True)
+    begin_time = db.Column('begin_time', db.TIMESTAMP, nullable=True)
+    end_time = db.Column('end_time', db.TIMESTAMP, nullable=True)
     is_deleted = db.Column('is_deleted', db.INT, default=0)
     participating_unit = db.Column('participating_unit', db.TEXT)
     img_url = db.Column('img_url', db.String(100))
@@ -343,6 +342,7 @@ class Exhibiton(db.Model):
     coorganizer = db.Column('co-organizer', db.String(100), default='')
     info = db.Column('info', db.TEXT)
     label = db.Column('label', db.String(30), nullable=True)
+    district = db.Column('district', db.String(255), nullable=True)
 
     def get(self):
         if self.sponsor is None or self.sponsor == '':
@@ -362,8 +362,9 @@ class Exhibiton(db.Model):
         else:
             coorganizer = list(map(int, self.coorganizer.split(',')))
         return {'id': self.id, 'title': self.title, 'location': self.location, "hall": self.hall,
-                'exhibition_date': self.exhibition_date.strftime('%Y-%m-%d'), 'status': self.status,
-                "begin_time": self.begin_time, "end_time": self.end_time,
+                'status': self.status,
+                "begin_time": self.begin_time.strftime('%Y-%m-%d %H:%M'),
+                "end_time": self.end_time.strftime('%Y-%m-%d %H:%M'), "district": self.district,
                 "participating_unit": [] if (
                         self.participating_unit is None or self.participating_unit == '') else json.loads(
                     self.participating_unit),
@@ -390,8 +391,9 @@ class Exhibiton(db.Model):
         else:
             coorganizer = list(map(int, self.coorganizer.split(',')))
         return {'id': self.id, 'title': self.title, 'location': self.location, "hall": self.hall,
-                'exhibition_date': self.exhibition_date.strftime('%Y-%m-%d'), 'status': status_ENUM.get(self.status),
-                "begin_time": self.begin_time, "end_time": self.end_time,
+                'status': status_ENUM.get(self.status), "district": self.district,
+                "begin_time": self.begin_time.strftime('%Y-%m-%d %H:%M'),
+                "end_time": self.end_time.strftime('%Y-%m-%d %H:%M'),
                 "participating_unit": [] if (
                         self.participating_unit is None or self.participating_unit == '') else json.loads(
                     self.participating_unit),
@@ -413,7 +415,8 @@ class DigitalCityWeek(db.Model):
     contact = db.Column('contact', db.String(255), nullable=True)
     info = db.Column('info', db.TEXT, nullable=True)
     url = db.Column('url', db.String(255), nullable=True)
+    slogan = db.Column('slogan', db.String(255), nullable=True)
 
     def get(self):
         return {"title": self.title, "dept": self.dept, "location": self.location, "activity_time": self.activity_time,
-                "contact": self.contact, "info": self.info, "url": self.url}
+                "contact": self.contact, "info": self.info, "url": self.url,"slogan": self.slogan}
