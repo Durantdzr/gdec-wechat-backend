@@ -378,7 +378,7 @@ class Exhibiton(db.Model):
             coorganizer = []
         else:
             coorganizer = list(map(int, self.coorganizer.split(',')))
-        return {'id': self.id, 'title': self.title, 'location': self.location, "hall": self.hall,
+        return {'id': self.id, 'title': self.title, 'hall': self.location, "location": self.hall,
                 'status': status_ENUM.get(self.status), "district": self.district,
                 "begin_time": self.begin_time.strftime('%Y-%m-%d %H:%M'),
                 "end_time": self.end_time.strftime('%Y-%m-%d %H:%M'),

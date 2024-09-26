@@ -305,7 +305,7 @@ def get_hall_exhibition():
     result = Exhibiton.query.filter(
         Exhibiton.is_deleted == 0).order_by(
         Exhibiton.begin_time.asc()).all()
-    data = [item.get() for item in result]
+    data = [item.get_view_simple() for item in result]
     return data
 
 def get_hall_exhibition_byid(id):
