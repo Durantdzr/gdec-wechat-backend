@@ -404,6 +404,7 @@ class DigitalCityWeek(db.Model):
     info = db.Column('info', db.TEXT, nullable=True)
     url = db.Column('url', db.String(255), nullable=True)
     slogan = db.Column('slogan', db.String(255), nullable=True)
+    order = db.Column('order', db.Integer, nullable=True)
 
     def get(self):
         return {"title": self.title, "dept": self.dept, "location": self.location, "activity_time": self.activity_time,

@@ -502,7 +502,7 @@ def digital_city_week():
     """
     # 获取请求体参数
     wxopenid = request.headers['X-WX-OPENID']
-    result = DigitalCityWeek.query.order_by(DigitalCityWeek.dept.desc()).all()
+    result = DigitalCityWeek.query.order_by(DigitalCityWeek.order.desc()).all()
     data = [item.get() for item in result]
 
     uploadwebfile(data, openid=wxopenid, file='digital_city_week.json')
