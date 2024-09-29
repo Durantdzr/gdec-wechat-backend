@@ -215,7 +215,7 @@ def add_guest():
 
 
 @app.route('/api/manage/bind_guest', methods=['post'])
-# @jwt_required()
+@jwt_required()
 def bind_guest():
     """
         :return:绑定嘉宾用户
@@ -234,7 +234,7 @@ def bind_guest():
 
 
 @app.route('/api/manage/unbind_guest', methods=['post'])
-# @jwt_required()
+@jwt_required()
 def unbind_guest():
     """
         :return:解除绑定嘉宾用户
