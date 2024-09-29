@@ -244,10 +244,11 @@ def unbind_guest():
     guest = User.query.filter_by(id=user.origin_userid).first()
     user.origin_userid = None
     insert_user(user)
-    guest.socail = 0
-    insert_user(guest)
-    refresh_guest()
-    refresh_guest_info(guest.id)
+    if guest is not None:
+        guest.socail = 0
+        insert_user(guest)
+        refresh_guest()
+        refresh_guest_info(guest.id)
     operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     return make_succ_response(user.id, code=200)
 
