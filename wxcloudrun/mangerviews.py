@@ -982,7 +982,6 @@ def edit_exhibtion():
     exhibiton.status = params.get('status')
     exhibiton.participating_unit = json.dumps(params.get('participating_unit', ''))
     exhibiton.img_url = params.get('cdn_param')
-    exhibiton.forum = forum
     exhibiton.sponsor = ','.join([str(item) for item in params.get('sponsor', [])])
     exhibiton.supported = ','.join([str(item) for item in params.get('supported', [])])
     exhibiton.organizer = ','.join([str(item) for item in params.get('organizer', [])])
