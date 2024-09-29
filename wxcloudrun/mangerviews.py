@@ -222,6 +222,11 @@ def bind_guest():
         """
     params = request.get_json()
     user = User.query.filter_by(id=params.get('id')).first()
+    if user.origin_userid is not None:
+        old_guest= User.query.filter_by(id=user.origin_userid).first()
+        old_guest.socail=0
+        insert_user(old_guest)
+        refresh_guest_info(old_guest.id)
     user.origin_userid = params.get('guest_id')
     insert_user(user)
     guest = User.query.filter_by(id=params.get('guest_id')).first()
