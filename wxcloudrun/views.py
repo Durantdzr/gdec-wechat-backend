@@ -4,7 +4,7 @@ from wxcloudrun.dao import insert_user, search_friends_byopenid, insert_realtion
     save_realtion_friendbyid, is_invited_user, get_guests_list, get_conference_schedule_by_id, get_open_guests_list, \
     get_main_hall_guests_list, get_other_hall_guests_list, get_cooperater_list, get_hall_schedule_bydate, get_live_data, \
     get_user_schedule_num_by_id, refresh_schedule_info, get_hall_schedule_byid, get_hall_exhibition_bydate, \
-    get_hall_exhibition_byid, get_hall_exhibition,search_friends_random,refresh_guest,refresh_guest_info
+    get_hall_exhibition_byid, get_hall_exhibition, search_friends_random, refresh_guest, refresh_guest_info,is_friend
 from wxcloudrun.model import ConferenceInfo, User, ConferenceHall, RelationFriend, ConferenceSignUp, DigitalCityWeek
 from wxcloudrun.response import make_succ_response, make_err_response
 from wxcloudrun.utils import batchdownloadfile, uploadfile, uploadwebfile, getscheduleqrcode, \
@@ -14,6 +14,7 @@ import requests
 import json
 import uuid
 import base64
+
 
 
 @app.route('/api/conference/get_information_list', methods=['GET'])
@@ -172,7 +173,7 @@ def upload_user_info():
         user.socail = params.get("socail", 0)
         insert_user(user)
         if user.origin_userid is not None:
-            guest=User.query.filter(User.id == user.origin_userid).first()
+            guest = User.query.filter(User.id == user.origin_userid).first()
             guest.socail = params.get("socail", 0)
             insert_user(guest)
             refresh_guest()
@@ -289,14 +290,18 @@ def add_friend():
     wxopenid = request.headers['X-WX-OPENID']
     params = request.get_json()
     user = User.query.filter(User.openid == wxopenid).first()
-    inviter=User.query.filter(User.origin_userid == params.get('inviter_id')).first()
+    inviter = User.query.filter(User.origin_userid == params.get('inviter_id')).first()
     if inviter is None:
+        if is_friend(user.id,params.get('inviter_id')):
+            return make_err_response('已有好友关系')
         r_friend = RelationFriend()
         r_friend.operater_id = user.id
         r_friend.inviter_id = params.get('inviter_id')
         r_friend.meeting_date = params.get('meeting_date')
         r_friend.visit_info = params.get('visit_info')
     else:
+        if is_friend(user.id,inviter.id):
+            return make_err_response('已有好友关系')
         r_friend = RelationFriend()
         r_friend.operater_id = user.id
         r_friend.inviter_id = inviter.id

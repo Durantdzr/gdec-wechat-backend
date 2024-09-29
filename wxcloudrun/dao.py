@@ -7,7 +7,7 @@ from sqlalchemy import func
 from wxcloudrun import db
 from wxcloudrun.model import ConferenceInfo, RelationFriend, User, ConferenceSignUp, ConferenceSchedule, \
     ConferenCoopearter, ConferenceCooperatorShow, OperaterLog, OperaterRule, Exhibiton
-from sqlalchemy import or_
+from sqlalchemy import or_, and_
 from wxcloudrun.utils import uploadwebfile, send_check_msg
 import config
 
@@ -50,7 +50,7 @@ def search_friends_byopenid(openid, name):
         friend_list.append(friend.operater_id)
         friend_list.append(friend.inviter_id)
     socail_user = User.query.filter(or_(User.name.like('%' + name + '%'), User.company.like('%' + name + '%')),
-                                    User.status == 2, User.is_deleted == 0, ~User.type.in_(['嘉宾','管理员']),
+                                    User.status == 2, User.is_deleted == 0, ~User.type.in_(['嘉宾', '管理员']),
                                     User.socail == 1, ~User.id.in_(friend_list)).all()
     return socail_user
 
@@ -65,9 +65,19 @@ def search_friends_random(openid):
     for friend in friends:
         friend_list.append(friend.operater_id)
         friend_list.append(friend.inviter_id)
-    socail_user = User.query.filter(User.status == 2, User.is_deleted == 0, ~User.type.in_(['嘉宾','管理员']),
+    socail_user = User.query.filter(User.status == 2, User.is_deleted == 0, ~User.type.in_(['嘉宾', '管理员']),
                                     User.socail == 1, ~User.id.in_(friend_list)).order_by(func.random()).limit(5)
     return socail_user
+
+
+def is_friend(user_id, friend_id):
+    r_friend=RelationFriend.query.filter(RelationFriend.is_deleted==0,
+        or_(and_(RelationFriend.operater_id == user_id, RelationFriend.inviter_id == friend_id),
+            and_(RelationFriend.operater_id == friend_id, RelationFriend.inviter_id == user_id))).first()
+    if r_friend:
+        return True
+    else:
+        return False
 
 
 def get_friend_list(openid, name):
