@@ -4,7 +4,7 @@ from wxcloudrun.dao import insert_user, search_friends_byopenid, insert_realtion
     save_realtion_friendbyid, is_invited_user, get_guests_list, get_conference_schedule_by_id, get_open_guests_list, \
     get_main_hall_guests_list, get_other_hall_guests_list, get_cooperater_list, get_hall_schedule_bydate, get_live_data, \
     get_user_schedule_num_by_id, refresh_schedule_info, get_hall_schedule_byid, get_hall_exhibition_bydate, \
-    get_hall_exhibition_byid, get_hall_exhibition
+    get_hall_exhibition_byid, get_hall_exhibition,search_friends_random
 from wxcloudrun.model import ConferenceInfo, User, ConferenceHall, RelationFriend, ConferenceSignUp, DigitalCityWeek
 from wxcloudrun.response import make_succ_response, make_err_response
 from wxcloudrun.utils import batchdownloadfile, uploadfile, uploadwebfile, getscheduleqrcode, \
@@ -268,8 +268,9 @@ def search_friend():
     wxopenid = request.headers['X-WX-OPENID']
     name = request.args.get('name')
     if name is None or name == '':
-        return make_err_response('请输入姓名')
-    socail_users = search_friends_byopenid(wxopenid, name)
+        socail_users = search_friends_random(wxopenid)
+    else:
+        socail_users = search_friends_byopenid(wxopenid, name)
     return make_succ_response([user.get() for user in socail_users])
 
 

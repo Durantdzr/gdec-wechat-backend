@@ -2,6 +2,7 @@ import datetime
 import logging
 
 from sqlalchemy.exc import OperationalError
+from sqlalchemy import func
 
 from wxcloudrun import db
 from wxcloudrun.model import ConferenceInfo, RelationFriend, User, ConferenceSignUp, ConferenceSchedule, \
@@ -51,6 +52,21 @@ def search_friends_byopenid(openid, name):
     socail_user = User.query.filter(or_(User.name.like('%' + name + '%'), User.company.like('%' + name + '%')),
                                     User.status == 2, User.is_deleted == 0,
                                     User.socail == 1, ~User.id.in_(friend_list)).all()
+    return socail_user
+
+
+def search_friends_random(openid):
+    user = User.query.filter(User.openid == openid).first()
+    user_id = user.id
+    friends = RelationFriend.query.filter(
+        or_(RelationFriend.operater_id == user_id, RelationFriend.inviter_id == user_id),
+        RelationFriend.is_deleted == 0).all()
+    friend_list = [user_id]
+    for friend in friends:
+        friend_list.append(friend.operater_id)
+        friend_list.append(friend.inviter_id)
+    socail_user = User.query.filter(User.status == 2, User.is_deleted == 0,
+                                    User.socail == 1, ~User.id.in_(friend_list)).order_by(func.random()).limit(5)
     return socail_user
 
 
@@ -301,12 +317,15 @@ def get_hall_exhibition_bydistrict(district):
         Exhibiton.begin_time.asc()).all()
     data = [item.get() for item in result]
     return data
+
+
 def get_hall_exhibition():
     result = Exhibiton.query.filter(
         Exhibiton.is_deleted == 0).order_by(
         Exhibiton.begin_time.asc()).all()
     data = [item.get_view_simple() for item in result]
     return data
+
 
 def get_hall_exhibition_byid(id):
     result = Exhibiton.query.filter(Exhibiton.id == id).first()
