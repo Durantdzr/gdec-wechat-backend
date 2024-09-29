@@ -182,6 +182,7 @@ class User(db.Model):
     reason = db.Column('reason', db.String(100))
     codeEncrypted = db.Column('code_encrypted', db.BINARY)
     phoneEncrypted = db.Column('phone_encrypted', db.BINARY)
+    origin_userid = db.Column('origin_user_id', db.INT)
 
     def get_status(self):
         status_ENUM = {1: '审核未通过', 2: '审核已通过', 0: '未审核', 3: '待审核'}
@@ -195,12 +196,13 @@ class User(db.Model):
 
     def get(self):
         return {"id": self.id, "name": self.name, "company": self.company, "title": self.title,
-                "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url)}
+                "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url), "socail": self.socail}
 
     def get_full(self):
         return {"id": self.id, "name": self.name, "company": self.company, "title": self.title,
                 "phone": decrypt(self.phoneEncrypted) if self.phoneEncrypted else None,
-                "code": decrypt(self.codeEncrypted) if self.codeEncrypted else None, "type": self.type,
+                "code": decrypt(self.codeEncrypted) if self.codeEncrypted else None,
+                "type": '嘉宾' if self.origin_userid else self.type,
                 "socail": self.socail,
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET,
                                                                 self.img_url) if self.img_url is not None else None,
@@ -209,7 +211,7 @@ class User(db.Model):
     def get_guest(self):
         return {"id": self.id, "name": self.name, "company": self.company, "title": self.title, "info": self.guest_info,
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url),
-                'cdn_param': self.img_url, 'forum': self.forum, 'order': self.order}
+                'cdn_param': self.img_url, 'forum': self.forum, 'order': self.order, "socail": self.socail}
 
 
 class RelationFriend(db.Model):
@@ -408,4 +410,4 @@ class DigitalCityWeek(db.Model):
 
     def get(self):
         return {"title": self.title, "dept": self.dept, "location": self.location, "activity_time": self.activity_time,
-                "contact": self.contact, "info": self.info, "url": self.url,"slogan": self.slogan}
+                "contact": self.contact, "info": self.info, "url": self.url, "slogan": self.slogan}

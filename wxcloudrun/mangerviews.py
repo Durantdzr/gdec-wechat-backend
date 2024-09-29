@@ -214,6 +214,44 @@ def add_guest():
     return make_succ_response(user.id, code=200)
 
 
+@app.route('/api/manage/bind_guest', methods=['post'])
+# @jwt_required()
+def bind_guest():
+    """
+        :return:绑定嘉宾用户
+        """
+    params = request.get_json()
+    user = User.query.filter_by(id=params.get('id')).first()
+    user.origin_userid = params.get('guest_id')
+    insert_user(user)
+    guest = User.query.filter_by(id=params.get('guest_id')).first()
+    guest.socail = user.socail
+    insert_user(guest)
+    refresh_guest()
+    refresh_guest_info(guest.id)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    return make_succ_response(user.id, code=200)
+
+
+@app.route('/api/manage/unbind_guest', methods=['post'])
+# @jwt_required()
+def unbind_guest():
+    """
+        :return:解除绑定嘉宾用户
+        """
+    params = request.get_json()
+    user = User.query.filter_by(id=params.get('id')).first()
+    guest = User.query.filter_by(id=user.origin_userid).first()
+    user.origin_userid = None
+    insert_user(user)
+    guest.socail = 0
+    insert_user(guest)
+    refresh_guest()
+    refresh_guest_info(guest.id)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    return make_succ_response(user.id, code=200)
+
+
 @app.route('/api/manage/edit_guest', methods=['post'])
 @jwt_required()
 def edit_guest():

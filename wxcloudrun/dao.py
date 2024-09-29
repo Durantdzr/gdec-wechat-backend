@@ -50,7 +50,7 @@ def search_friends_byopenid(openid, name):
         friend_list.append(friend.operater_id)
         friend_list.append(friend.inviter_id)
     socail_user = User.query.filter(or_(User.name.like('%' + name + '%'), User.company.like('%' + name + '%')),
-                                    User.status == 2, User.is_deleted == 0,
+                                    User.status == 2, User.is_deleted == 0, ~User.type.in_(['嘉宾','管理员']),
                                     User.socail == 1, ~User.id.in_(friend_list)).all()
     return socail_user
 
@@ -65,7 +65,7 @@ def search_friends_random(openid):
     for friend in friends:
         friend_list.append(friend.operater_id)
         friend_list.append(friend.inviter_id)
-    socail_user = User.query.filter(User.status == 2, User.is_deleted == 0,
+    socail_user = User.query.filter(User.status == 2, User.is_deleted == 0, ~User.type.in_(['嘉宾','管理员']),
                                     User.socail == 1, ~User.id.in_(friend_list)).order_by(func.random()).limit(5)
     return socail_user
 
