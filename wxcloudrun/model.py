@@ -202,7 +202,7 @@ class User(db.Model):
         return {"id": self.id, "name": self.name, "company": self.company, "title": self.title,
                 "phone": decrypt(self.phoneEncrypted) if self.phoneEncrypted else None,
                 "code": decrypt(self.codeEncrypted) if self.codeEncrypted else None,
-                "type": '嘉宾' if self.origin_userid else self.type,
+                "type": self.type,
                 "socail": self.socail,
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET,
                                                                 self.img_url) if self.img_url is not None else None,
