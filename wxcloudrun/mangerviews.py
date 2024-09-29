@@ -223,7 +223,7 @@ def bind_guest():
     params = request.get_json()
     user = User.query.filter_by(origin_userid=params.get('guest_id')).first()
     if user is not None:
-        return make_err_response('该嘉宾已被绑定')
+        return make_err_response('该嘉宾已被关联')
     user = User.query.filter_by(id=params.get('id')).first()
     if user.origin_userid is not None:
         old_guest= User.query.filter_by(id=user.origin_userid).first()
