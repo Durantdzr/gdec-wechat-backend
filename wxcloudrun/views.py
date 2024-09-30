@@ -59,7 +59,7 @@ def get_hall_schedule():
     wxOpenid = request.headers['X-WX-OPENID']
     blockChain = request.args.get('blockChain')
     if blockChain:
-        data = get_hall_blockchain_schedule(date)
+        data = get_hall_blockchain_schedule()
     else:
         data = get_hall_schedule_bydate(date)
     return make_succ_response(data)

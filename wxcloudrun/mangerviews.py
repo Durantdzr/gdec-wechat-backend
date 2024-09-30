@@ -473,8 +473,8 @@ def add_hall_schedule():
     data = get_hall_schedule_byid(schedule.id)
     uploadwebfile(data, file='get_schedule_by_id' + str(schedule.id) + '.json')
     if '区块链' in schedule.title:
-        data = get_hall_blockchain_schedule(params.get('conference_date'))
-        uploadwebfile(data, file='get_hall_blockchain_schedule' + params.get('conference_date') + '.json')
+        data = get_hall_blockchain_schedule()
+        uploadwebfile(data, file='get_hall_blockchain_schedule.json')
     operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     getscheduleqrcode(schedule.id)
     return make_succ_response(schedule.id, code=200)
@@ -519,8 +519,8 @@ def edit_hall_schedule():
     data = get_hall_schedule_byid(schedule.id)
     uploadwebfile(data, file='get_schedule_by_id' + str(schedule.id) + '.json')
     if '区块链' in schedule.title:
-        data = get_hall_blockchain_schedule(params.get('conference_date'))
-        uploadwebfile(data, file='get_hall_blockchain_schedule' + params.get('conference_date') + '.json')
+        data = get_hall_blockchain_schedule()
+        uploadwebfile(data, file='get_hall_blockchain_schedule.json')
     operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     return make_succ_response(schedule.id, code=200)
 

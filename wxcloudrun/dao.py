@@ -312,9 +312,9 @@ def get_hall_schedule_bydate(date):
         data.append(schedule)
     return data
 
-def get_hall_blockchain_schedule(date):
+def get_hall_blockchain_schedule():
     result = ConferenceSchedule.query.filter(
-        ConferenceSchedule.is_deleted == 0, ConferenceSchedule.conference_date == date,ConferenceSchedule.title.like("%区块链%")).order_by(
+        ConferenceSchedule.is_deleted == 0,ConferenceSchedule.title.like("%区块链%")).order_by(
         ConferenceSchedule.begin_time.asc()).all()
     data = []
     for item in result:
