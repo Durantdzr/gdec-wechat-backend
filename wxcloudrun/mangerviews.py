@@ -14,7 +14,7 @@ from run import app
 from wxcloudrun.dao import update_user_statusbyid, insert_user, get_review_conference_list, update_schedule_statusbyid, \
     refresh_cooperater, refresh_guest, refresh_guest_info, get_hall_schedule_bydate, get_live_data, \
     refresh_conference_info, get_hall_schedule_byid, get_operat_list, get_hall_exhibition_byid, \
-    get_hall_exhibition
+    get_hall_exhibition,get_hall_blockchain_schedule
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, ConferenCoopearter, Media, \
     ConferenceCooperatorShow, OperaterRule, Exhibiton
 from wxcloudrun.response import make_succ_page_response, make_succ_response, make_err_response
@@ -472,6 +472,9 @@ def add_hall_schedule():
     uploadwebfile(data, file='get_hall_schedule' + params.get('conference_date') + '.json')
     data = get_hall_schedule_byid(schedule.id)
     uploadwebfile(data, file='get_schedule_by_id' + str(schedule.id) + '.json')
+    if '区块链' in schedule.title:
+        data = get_hall_blockchain_schedule(params.get('conference_date'))
+        uploadwebfile(data, file='get_hall_blockchain_schedule' + params.get('conference_date') + '.json')
     operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     getscheduleqrcode(schedule.id)
     return make_succ_response(schedule.id, code=200)
@@ -515,6 +518,9 @@ def edit_hall_schedule():
     uploadwebfile(data, file='get_hall_schedule' + params.get('conference_date') + '.json')
     data = get_hall_schedule_byid(schedule.id)
     uploadwebfile(data, file='get_schedule_by_id' + str(schedule.id) + '.json')
+    if '区块链' in schedule.title:
+        data = get_hall_blockchain_schedule(params.get('conference_date'))
+        uploadwebfile(data, file='get_hall_blockchain_schedule' + params.get('conference_date') + '.json')
     operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     return make_succ_response(schedule.id, code=200)
 
