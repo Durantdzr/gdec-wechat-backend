@@ -298,7 +298,7 @@ def find_user_schedule_tobegin():
 def get_hall_schedule_bydate(date):
     result = ConferenceSchedule.query.filter(
         ConferenceSchedule.is_deleted == 0, ConferenceSchedule.conference_date == date).order_by(
-        ConferenceSchedule.begin_time.asc()).all()
+        ConferenceSchedule.order.desc(), ConferenceSchedule.begin_time.asc()).all()
     data = []
     for item in result:
         schedule = item.get_schedule_view()
@@ -314,12 +314,13 @@ def get_hall_schedule_bydate(date):
 
 def get_hall_blockchain_schedule():
     result = ConferenceSchedule.query.filter(
-        ConferenceSchedule.is_deleted == 0,ConferenceSchedule.title.like("%区块链%")).order_by(
+        ConferenceSchedule.is_deleted == 0,or_(ConferenceSchedule.title.like("%链%"),ConferenceSchedule.label=='展示展览')).order_by(
         ConferenceSchedule.begin_time.asc()).all()
     data = []
     for item in result:
         schedule = item.get_schedule_view()
         schedule['guest_img'] = []
+        schedule['']=''
         if len(schedule.get('guest_id', [])) > 0:
             for guest in schedule.get('guest_id', []):
                 user = User.query.filter_by(id=guest, is_deleted=0).first()

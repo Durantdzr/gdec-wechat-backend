@@ -56,6 +56,7 @@ class ConferenceSchedule(db.Model):
     coorganizer = db.Column('co-organizer', db.String(100), default='')
     background = db.Column('background', db.TEXT)
     label = db.Column('label', db.String(30), nullable=True)
+    order = db.Column('order', db.Integer, default=0)
 
     def get_live(self):
         status_ENUM = {1: '即将直播', 2: '正在直播', 3: '查看回放'}

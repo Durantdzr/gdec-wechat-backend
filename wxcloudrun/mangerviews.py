@@ -462,6 +462,8 @@ def add_hall_schedule():
     schedule.coorganizer = ','.join([str(item) for item in params.get('coorganizer', [])])
     schedule.background = params.get('background')
     schedule.label = params.get('label')
+    if '链' in schedule.title:
+        schedule.order=1
     insert_user(schedule)
     refresh_guest()
     refresh_cooperater()
@@ -472,7 +474,7 @@ def add_hall_schedule():
     uploadwebfile(data, file='get_hall_schedule' + params.get('conference_date') + '.json')
     data = get_hall_schedule_byid(schedule.id)
     uploadwebfile(data, file='get_schedule_by_id' + str(schedule.id) + '.json')
-    if '区块链' in schedule.title:
+    if '链' in schedule.title:
         data = get_hall_blockchain_schedule()
         uploadwebfile(data, file='get_hall_blockchain_schedule.json')
     operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
@@ -508,6 +510,8 @@ def edit_hall_schedule():
     schedule.coorganizer = ','.join([str(item) for item in params.get('coorganizer', [])])
     schedule.background = params.get('background')
     schedule.label = params.get('label')
+    if '链' in schedule.title:
+        schedule.order=1
     insert_user(schedule)
     refresh_guest()
     refresh_cooperater()
@@ -518,7 +522,7 @@ def edit_hall_schedule():
     uploadwebfile(data, file='get_hall_schedule' + params.get('conference_date') + '.json')
     data = get_hall_schedule_byid(schedule.id)
     uploadwebfile(data, file='get_schedule_by_id' + str(schedule.id) + '.json')
-    if '区块链' in schedule.title:
+    if '链' in schedule.title:
         data = get_hall_blockchain_schedule()
         uploadwebfile(data, file='get_hall_blockchain_schedule.json')
     operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
