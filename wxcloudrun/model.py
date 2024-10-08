@@ -184,6 +184,7 @@ class User(db.Model):
     codeEncrypted = db.Column('code_encrypted', db.BINARY)
     phoneEncrypted = db.Column('phone_encrypted', db.BINARY)
     origin_userid = db.Column('origin_user_id', db.INT)
+    branch = db.Column('branch', db.INT)
 
     def get_status(self):
         status_ENUM = {1: '审核未通过', 2: '审核已通过', 0: '未审核', 3: '待审核'}
@@ -272,10 +273,10 @@ class Media(db.Model):
         if self.type == '图片':
             return {"id": self.id, "name": self.name, "info": self.info, "type": self.type,
                     "cdn_param": self.media_param,
-                    "web_url": 'https://{}.tcb.qcloud.la/web/{}'.format(config.COS_BUCKET, self.id)}
+                    "web_url": 'https://{}.tcb.qcloud.la{}/web/{}'.format(config.COS_BUCKET, config.VERSION,self.id)}
         else:
             return {"id": self.id, "name": self.name, "info": self.info, "type": self.type, "doc": self.media_param,
-                    "web_url": 'https://{}.tcb.qcloud.la/web/{}'.format(config.COS_BUCKET, self.id)}
+                    "web_url": 'https://{}.tcb.qcloud.la{}/web/{}'.format(config.COS_BUCKET, config.VERSION, self.id)}
 
 
 class ConferenceCooperatorShow(db.Model):
@@ -420,7 +421,7 @@ class Exhibiton(db.Model):
                     self.participating_unit),
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url),
                 'cdn_param': self.img_url, "sponsor": sponsor, "supported": supported, "organizer": organizer,
-                "coorganizer": coorganizer, "info": self.info, "label": self.label}
+                "coorganizer": coorganizer, "info": self.info, "label": self.label,"blockchain_ext":self.district}
 
 
 class DigitalCityWeek(db.Model):

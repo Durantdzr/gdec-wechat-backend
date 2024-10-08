@@ -70,7 +70,7 @@ def login():
     if user.forum == '':
         branch = 0
     else:
-        branch = 1
+        branch = user.branch
     operatr_log(username, request.url_rule.rule, '登录成功',
                 request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response({"access_token": access_token, "branch": branch}, code=200)
@@ -88,8 +88,8 @@ def logout():
 
 
 @app.route('/api/manage/get_register_list', methods=['GET'])
-@jwt_required()
-@admin_required()
+# @jwt_required()
+# @admin_required()
 def get_register_list():
     """
         :return:获取用户审核列表
@@ -98,14 +98,15 @@ def get_register_list():
     page_size = request.args.get('page_size', default=10, type=int)
     name = request.args.get('name', default='', type=str)
     status = request.args.get('status', type=int)
+    type = request.args.get('type', default='', type=str)
     if status is None:
-        users = User.query.filter(User.name.like('%' + name + '%'), User.status != 2, User.is_deleted == 0).paginate(
+        users = User.query.filter(User.name.like('%' + name + '%'), User.status != 2, User.is_deleted == 0,User.type.like('%' + type + '%')).paginate(
             page,
             per_page=page_size,
             error_out=False)
     else:
         users = User.query.filter(User.name.like('%' + name + '%'), User.status == status,
-                                  User.is_deleted == 0).paginate(
+                                  User.is_deleted == 0,User.type.like('%' + type + '%')).paginate(
             page,
             per_page=page_size,
             error_out=False)
@@ -122,7 +123,8 @@ def get_success_user_list():
     page = request.args.get('page', default=1, type=int)
     page_size = request.args.get('page_size', default=10, type=int)
     name = request.args.get('name', default='', type=str)
-    users = User.query.filter(User.name.like('%' + name + '%'), User.status == 2, User.is_deleted == 0,
+    type = request.args.get('type', default='', type=str)
+    users = User.query.filter(User.name.like('%' + name + '%'), User.status == 2, User.is_deleted == 0,User.type.like('%' + type + '%'),
                               User.type.notin_(['管理员', '嘉宾'])).paginate(page,
                                                                              per_page=page_size,
                                                                              error_out=False)
@@ -285,18 +287,25 @@ def edit_guest():
 
 
 @app.route('/api/manage/delete_guest', methods=['post'])
-@jwt_required()
+# @jwt_required()
 def delete_guest():
     """
         :return:删除嘉宾
         """
     params = request.get_json()
-    user = User.query.filter_by(id=params.get('id')).first()
-    user.is_deleted = 1
-    insert_user(user)
-    refresh_guest()
-    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
-    return make_succ_response(user.id, code=200)
+    schedule=ConferenceSchedule.query.filter(ConferenceSchedule.guest.like('%' + str(params.get('id')) + '%'),ConferenceSchedule.is_deleted==0).first()
+    if schedule is None:
+        user = User.query.filter_by(id=params.get('id')).first()
+        user.is_deleted = 1
+        insert_user(user)
+        refresh_guest()
+        operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+        return make_succ_response(user.id, code=200)
+    else:
+        return make_err_response('嘉宾在日程中存在，无法删除')
+    
+    
+    
 
 
 @app.route('/api/manage/get_guest_list', methods=['GET'])
@@ -684,7 +693,7 @@ def add_media():
     media.type = params.get('type')
     media.media_param = params.get('cdn_param', params.get('doc', ''))
     insert_user(media)
-    filename = 'web/' + str(media.id)
+    filename = config.VERSION+'web/' + str(media.id)
     if params.get('type') == '文字':
         with open(filename, 'w') as f:
             f.write(params.get('doc'))
@@ -713,7 +722,7 @@ def edit_media():
     media.type = params.get('type')
     media.media_param = params.get('cdn_param', params.get('doc', ''))
     insert_user(media)
-    filename = 'web/' + str(media.id)
+    filename = config.VERSION+'web/' + str(media.id)
     if params.get('type') == '文字':
         with open(filename, 'w') as f:
             f.write(params.get('doc'))
@@ -845,7 +854,8 @@ def download_user_list():
         :return:下载已审核用户列表
     """
     name = request.args.get('name', default='', type=str)
-    users = User.query.filter(User.name.like('%' + name + '%'), User.status == 2, User.is_deleted == 0,
+    type = request.args.get('type', default='', type=str)
+    users = User.query.filter(User.name.like('%' + name + '%'), User.status == 2, User.is_deleted == 0,User.type.like('%' + type + '%'),
                               User.type.notin_(['管理员', '嘉宾'])).all()
     df = pd.read_excel('template.xlsx')
     now = datetime.datetime.now().strftime('%Y-%m-%d%H:%M:%S')
@@ -856,7 +866,7 @@ def download_user_list():
             download_cdn_file(user.img_url, '{}/{}'.format(now, user.img_url))
         df = df.append({"序号": user.id, "员工编号": user.id, "姓名": user.name, "性别": "男", "电话号码": user.phone,
                         "证件类型": "身份证" if user.code is None or len(user.code) == 18 else '普通护照',
-                        "证件号码": user.code,
+                        "证件号码": user.code,"用户类型":user.type,
                         "照片路径(相对路径)": '/' + user.img_url}, ignore_index=True)
     df.to_excel('{}/人员信息表.xlsx'.format(now), index=False)
     zip_folder(now, '数商大会人员信息导出{}.zip'.format(now))
