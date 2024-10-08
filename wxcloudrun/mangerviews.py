@@ -293,7 +293,7 @@ def delete_guest():
         :return:删除嘉宾
         """
     params = request.get_json()
-    schedule=ConferenceSchedule.filter(ConferenceSchedule.guest.like('%' + str(params.get('id')) + '%')).all()
+    schedule=ConferenceSchedule.query.filter(ConferenceSchedule.guest.like('%' + str(params.get('id')) + '%')).all()
     if schedule is not None:
         make_err_response('嘉宾在日程中存在，无法删除')
     user = User.query.filter_by(id=params.get('id')).first()
