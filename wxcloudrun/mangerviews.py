@@ -294,7 +294,7 @@ def delete_guest():
         """
     params = request.get_json()
     schedule=ConferenceSchedule.query.filter(ConferenceSchedule.guest.like('%' + str(params.get('id')) + '%')).all()
-    if schedule is not None:
+    if schedule is None:
         make_err_response('嘉宾在日程中存在，无法删除')
     user = User.query.filter_by(id=params.get('id')).first()
 
