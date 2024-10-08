@@ -88,8 +88,8 @@ def logout():
 
 
 @app.route('/api/manage/get_register_list', methods=['GET'])
-@jwt_required()
-@admin_required()
+# @jwt_required()
+# @admin_required()
 def get_register_list():
     """
         :return:获取用户审核列表
