@@ -287,22 +287,25 @@ def edit_guest():
 
 
 @app.route('/api/manage/delete_guest', methods=['post'])
-@jwt_required()
+# @jwt_required()
 def delete_guest():
     """
         :return:删除嘉宾
         """
     params = request.get_json()
-    schedule=ConferenceSchedule.query.filter(ConferenceSchedule.guest.like('%' + str(params.get('id')) + '%')).all()
+    schedule=ConferenceSchedule.query.filter(ConferenceSchedule.guest.like('%' + str(params.get('id')) + '%'),ConferenceSchedule.is_deleted==0).first()
     if schedule is None:
-        make_err_response('嘉宾在日程中存在，无法删除')
-    user = User.query.filter_by(id=params.get('id')).first()
-
-    user.is_deleted = 1
-    insert_user(user)
-    refresh_guest()
-    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
-    return make_succ_response(user.id, code=200)
+        user = User.query.filter_by(id=params.get('id')).first()
+        user.is_deleted = 1
+        insert_user(user)
+        refresh_guest()
+        operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+        return make_succ_response(user.id, code=200)
+    else:
+        return make_err_response('嘉宾在日程中存在，无法删除')
+    
+    
+    
 
 
 @app.route('/api/manage/get_guest_list', methods=['GET'])
