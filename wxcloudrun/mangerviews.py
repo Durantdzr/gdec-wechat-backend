@@ -98,14 +98,15 @@ def get_register_list():
     page_size = request.args.get('page_size', default=10, type=int)
     name = request.args.get('name', default='', type=str)
     status = request.args.get('status', type=int)
+    type = request.args.get('type', default='', type=str)
     if status is None:
-        users = User.query.filter(User.name.like('%' + name + '%'), User.status != 2, User.is_deleted == 0).paginate(
+        users = User.query.filter(User.name.like('%' + name + '%'), User.status != 2, User.is_deleted == 0,User.type.like('%' + type + '%')).paginate(
             page,
             per_page=page_size,
             error_out=False)
     else:
         users = User.query.filter(User.name.like('%' + name + '%'), User.status == status,
-                                  User.is_deleted == 0).paginate(
+                                  User.is_deleted == 0,User.type.like('%' + type + '%')).paginate(
             page,
             per_page=page_size,
             error_out=False)
@@ -122,7 +123,8 @@ def get_success_user_list():
     page = request.args.get('page', default=1, type=int)
     page_size = request.args.get('page_size', default=10, type=int)
     name = request.args.get('name', default='', type=str)
-    users = User.query.filter(User.name.like('%' + name + '%'), User.status == 2, User.is_deleted == 0,
+    type = request.args.get('type', default='', type=str)
+    users = User.query.filter(User.name.like('%' + name + '%'), User.status == 2, User.is_deleted == 0,User.type.like('%' + type + '%'),
                               User.type.notin_(['管理员', '嘉宾'])).paginate(page,
                                                                              per_page=page_size,
                                                                              error_out=False)

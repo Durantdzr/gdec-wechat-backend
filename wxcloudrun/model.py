@@ -420,7 +420,7 @@ class Exhibiton(db.Model):
                     self.participating_unit),
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url),
                 'cdn_param': self.img_url, "sponsor": sponsor, "supported": supported, "organizer": organizer,
-                "coorganizer": coorganizer, "info": self.info, "label": self.label}
+                "coorganizer": coorganizer, "info": self.info, "label": self.label,"blockchain_ext":self.district}
 
 
 class DigitalCityWeek(db.Model):
