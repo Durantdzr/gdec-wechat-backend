@@ -291,7 +291,11 @@ def delete_guest():
         :return:删除嘉宾
         """
     params = request.get_json()
+    schedule=ConferenceSchedule.filter(ConferenceSchedule.guest.like('%' + str(params.get('id')) + '%')).all()
+    if schedule is not None:
+        make_err_response('嘉宾在日程中存在，无法删除')
     user = User.query.filter_by(id=params.get('id')).first()
+
     user.is_deleted = 1
     insert_user(user)
     refresh_guest()
@@ -845,7 +849,8 @@ def download_user_list():
         :return:下载已审核用户列表
     """
     name = request.args.get('name', default='', type=str)
-    users = User.query.filter(User.name.like('%' + name + '%'), User.status == 2, User.is_deleted == 0,
+    type = request.args.get('type', default='', type=str)
+    users = User.query.filter(User.name.like('%' + name + '%'), User.status == 2, User.is_deleted == 0,User.type.like('%' + type + '%'),
                               User.type.notin_(['管理员', '嘉宾'])).all()
     df = pd.read_excel('template.xlsx')
     now = datetime.datetime.now().strftime('%Y-%m-%d%H:%M:%S')
