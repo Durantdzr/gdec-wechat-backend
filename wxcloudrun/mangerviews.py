@@ -719,7 +719,7 @@ def edit_media():
     media.type = params.get('type')
     media.media_param = params.get('cdn_param', params.get('doc', ''))
     insert_user(media)
-    filename = 'web/' + str(media.id)
+    filename = config.VERSION+'web/' + str(media.id)
     if params.get('type') == '文字':
         with open(filename, 'w') as f:
             f.write(params.get('doc'))
