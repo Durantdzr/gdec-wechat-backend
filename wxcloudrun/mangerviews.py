@@ -545,6 +545,9 @@ def delete_hall_schedule():
     uploadwebfile(data, file='get_live_list.json')
     data = get_hall_schedule_bydate(schedule.conference_date.strftime('%Y-%m-%d'))
     uploadwebfile(data, file='get_hall_schedule' + schedule.conference_date.strftime('%Y-%m-%d') + '.json')
+    if '链' in schedule.title:
+        data = get_hall_blockchain_schedule()
+        uploadwebfile(data, file='get_hall_blockchain_schedule.json')
     operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     return make_succ_response(schedule.id, code=200)
 
@@ -976,6 +979,9 @@ def add_exhibiton():
     uploadwebfile(data, file='get_hall_exhibition.json')
     data = get_hall_exhibition_byid(exhibiton.id)
     uploadwebfile(data, file='get_exhibition_by_id' + str(exhibiton.id) + '.json')
+    if exhibiton.district=='展示展览':
+        data = get_hall_blockchain_schedule()
+        uploadwebfile(data, file='get_hall_blockchain_schedule.json')
     return make_succ_response(exhibiton.id, code=200)
 
 
@@ -1010,6 +1016,9 @@ def edit_exhibtion():
     uploadwebfile(data, file='get_hall_exhibition.json')
     data = get_hall_exhibition_byid(exhibiton.id)
     uploadwebfile(data, file='get_exhibition_by_id' + str(exhibiton.id) + '.json')
+    if exhibiton.district=='展示展览':
+        data = get_hall_blockchain_schedule()
+        uploadwebfile(data, file='get_hall_blockchain_schedule.json')
     return make_succ_response(exhibiton.id, code=200)
 
 
@@ -1027,6 +1036,9 @@ def delete_exhibtion():
     refresh_cooperater()
     data = get_hall_exhibition()
     uploadwebfile(data, file='get_hall_exhibition.json')
+    if exhibiton.district=='展示展览':
+        data = get_hall_blockchain_schedule()
+        uploadwebfile(data, file='get_hall_blockchain_schedule.json')
     return make_succ_response(exhibiton.id, code=200)
 
 
