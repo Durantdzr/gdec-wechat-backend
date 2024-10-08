@@ -287,7 +287,7 @@ def edit_guest():
 
 
 @app.route('/api/manage/delete_guest', methods=['post'])
-# @jwt_required()
+@jwt_required()
 def delete_guest():
     """
         :return:删除嘉宾
