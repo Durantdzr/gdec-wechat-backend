@@ -391,6 +391,36 @@ class Exhibiton(db.Model):
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url),
                 'cdn_param': self.img_url, "sponsor": sponsor, "supported": supported, "organizer": organizer,
                 "coorganizer": coorganizer, "info": self.info, "label": self.label}
+    
+    def get_blockview_simple(self):
+        status_ENUM = {0: '我要报名', 1: '会议进行中', 2: '会议结束', 3: "不可报名"}
+        if self.sponsor is None or self.sponsor == '':
+            sponsor = []
+        else:
+            sponsor = list(map(int, self.sponsor.split(',')))
+        if self.supported is None or self.supported == '':
+            supported = []
+        else:
+            supported = list(map(int, self.supported.split(',')))
+        if self.organizer is None or self.organizer == '':
+            organizer = []
+        else:
+            organizer = list(map(int, self.organizer.split(',')))
+        if self.coorganizer is None or self.coorganizer == '':
+            coorganizer = []
+        else:
+            coorganizer = list(map(int, self.coorganizer.split(',')))
+        return {'id': self.id, 'title': self.title, 'hall': self.location, "location": self.hall,
+                'status': status_ENUM.get(self.status), "district": self.district,
+                'conference_date':self.begin_time.strftime('%Y-%m-%d'),
+                "begin_time": self.begin_time.strftime('%H:%M'),
+                "end_time": self.end_time.strftime('%H:%M'),
+                "participating_unit": [] if (
+                        self.participating_unit is None or self.participating_unit == '') else json.loads(
+                    self.participating_unit),
+                "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url),
+                'cdn_param': self.img_url, "sponsor": sponsor, "supported": supported, "organizer": organizer,
+                "coorganizer": coorganizer, "info": self.info, "label": self.label}
 
 
 class DigitalCityWeek(db.Model):

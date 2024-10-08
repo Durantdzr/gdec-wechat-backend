@@ -316,11 +316,14 @@ def get_hall_blockchain_schedule():
     result = ConferenceSchedule.query.filter(
         ConferenceSchedule.is_deleted == 0,or_(ConferenceSchedule.title.like("%链%"),ConferenceSchedule.label=='展示展览')).order_by(
         ConferenceSchedule.begin_time.asc()).all()
+    Exhibitonresult = Exhibiton.query.filter(
+        Exhibiton.is_deleted ==0, Exhibiton.district=='展示展览').order_by(
+        Exhibiton.begin_time.asc()).all()
     data = []
     for item in result:
         schedule = item.get_schedule_view()
         schedule['guest_img'] = []
-        schedule['']=''
+        schedule['type']='schedule'
         if len(schedule.get('guest_id', [])) > 0:
             for guest in schedule.get('guest_id', []):
                 user = User.query.filter_by(id=guest, is_deleted=0).first()
@@ -328,6 +331,12 @@ def get_hall_blockchain_schedule():
                     continue
                 schedule['guest_img'].append('https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, user.img_url))
         data.append(schedule)
+    for item in Exhibitonresult:
+        exhibiton=item.get_blockview_simple()
+        exhibiton['type']='exhibition'
+        exhibiton['guest_img'] = []
+        data.append(exhibiton)
+    data.sort(key=lambda x: x['begin_time'])
     return data
 
 
