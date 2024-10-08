@@ -70,7 +70,7 @@ def login():
     if user.forum == '':
         branch = 0
     else:
-        branch = 1
+        branch = user.branch
     operatr_log(username, request.url_rule.rule, '登录成功',
                 request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response({"access_token": access_token, "branch": branch}, code=200)
@@ -690,7 +690,7 @@ def add_media():
     media.type = params.get('type')
     media.media_param = params.get('cdn_param', params.get('doc', ''))
     insert_user(media)
-    filename = 'web/' + str(media.id)
+    filename = config.VERSION+'web/' + str(media.id)
     if params.get('type') == '文字':
         with open(filename, 'w') as f:
             f.write(params.get('doc'))
