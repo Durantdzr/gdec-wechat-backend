@@ -863,7 +863,7 @@ def download_user_list():
             download_cdn_file(user.img_url, '{}/{}'.format(now, user.img_url))
         df = df.append({"序号": user.id, "员工编号": user.id, "姓名": user.name, "性别": "男", "电话号码": user.phone,
                         "证件类型": "身份证" if user.code is None or len(user.code) == 18 else '普通护照',
-                        "证件号码": user.code,
+                        "证件号码": user.code,"用户类型":user.type,
                         "照片路径(相对路径)": '/' + user.img_url}, ignore_index=True)
     df.to_excel('{}/人员信息表.xlsx'.format(now), index=False)
     zip_folder(now, '数商大会人员信息导出{}.zip'.format(now))
