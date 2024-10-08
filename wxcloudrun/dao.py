@@ -452,7 +452,7 @@ def get_live_data():
 def get_cooperater():
     showType = ConferenceCooperatorShow.query.filter(ConferenceCooperatorShow.is_show == True).all()
     type = [show.type for show in showType]
-    schedules = ConferenceSchedule.query.filter(ConferenCoopearter.is_deleted == 0).all()
+    schedules = ConferenceSchedule.query.filter(ConferenceSchedule.is_deleted == 0).all()
     cooperater_id = []
     for schedule in schedules:
         result = schedule.get_schedule()
