@@ -43,7 +43,7 @@ class ConferenceSchedule(db.Model):
     record_url = db.Column('record_url', db.String(128), nullable=True)
     begin_time = db.Column('begin_time', db.String(10), nullable=True)
     end_time = db.Column('end_time', db.String(10), nullable=True)
-    guest = db.Column('guest', db.String(100), nullable=True)
+    guest = db.Column('guest', db.TEXT, nullable=True)
     live_status = db.Column('live_status', db.INT, default=0)
     is_deleted = db.Column('is_deleted', db.INT, default=0)
     org = db.Column('org', db.String(100), nullable=True)
