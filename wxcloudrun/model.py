@@ -110,6 +110,10 @@ class ConferenceSchedule(db.Model):
             guest_id = []
         else:
             guest_id = list(map(int, self.guest.split(',')))
+        if self.sponsor is None or self.sponsor == '':
+            sponsor = []
+        else:
+            sponsor = list(map(int, self.sponsor.split(',')))
         return {'id': self.id, 'title': self.title, 'hall': self.location, "location": self.hall,
                 'conference_date': self.conference_date.strftime('%Y-%m-%d'), 'status': status_ENUM.get(self.status),
                 "begin_time": self.begin_time, "end_time": self.end_time, 'live_url': self.live_url,
