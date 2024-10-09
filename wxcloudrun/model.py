@@ -113,7 +113,7 @@ class ConferenceSchedule(db.Model):
         return {'id': self.id, 'title': self.title, 'hall': self.location, "location": self.hall,
                 'conference_date': self.conference_date.strftime('%Y-%m-%d'), 'status': status_ENUM.get(self.status),
                 "begin_time": self.begin_time, "end_time": self.end_time, 'live_url': self.live_url,
-                "record_url": self.record_url, 'guest_id': guest_id, 'ext': self.label,
+                "record_url": self.record_url, 'guest_id': guest_id, 'ext': self.label, "sponsor": sponsor,
                 'live_status': live_status_ENUM.get(self.live_status, ''),"blockchain_ext":"会议论坛" if self.label in ["开幕式","分论坛","分论坛（外场）"] else self.label}
 
     def get_schedule_view_simple(self):
