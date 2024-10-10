@@ -263,10 +263,11 @@ def get_all_review_conference_list(name,  forum, status):
                                               ConferenceSchedule.is_deleted == 0,
                                               ConferenceSignUp.status == status,
             ConferenceSchedule.forum.like('%' + forum + '%')).all()
+    signup_status_ENUM = {0: '等待审核', 1: '审核未通过', 2: '审核通过'}
     return [{"id": signup.id, "姓名": user.name, "预约会议名": schedule.title,
              "日期": schedule.conference_date.strftime('%Y-%m-%d'), "开始时间": schedule.begin_time,
-             "结束时间": schedule.end_time, "联系方式": user.phone, "状态": signup.status, "公司名称": user.company,
-             "职务": user.title} for signup, user, schedule in result.items]
+             "结束时间": schedule.end_time, "联系方式": user.phone, "状态": signup_status_ENUM.get(signup.status), "公司名称": user.company,
+             "职务": user.title} for signup, user, schedule in result]
 
 def get_conference_schedule_by_id(userid):
     signup_status_ENUM = {0: '等待审核', 1: '审核未通过', 2: '审核通过'}
