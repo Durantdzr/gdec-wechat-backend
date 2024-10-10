@@ -16,6 +16,12 @@ app.config['DEBUG'] = config.DEBUG
 # 设定数据库链接
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://{}:{}@{}/{}'.format(config.username, config.password,
                                                                        config.db_address,config.database)
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'pool_size': 10,       # 连接池大小
+    'max_overflow': 20,    # 最大溢出连接数
+    'pool_recycle': 3600,   # 连接回收时间（秒）
+    'pool_pre_ping': True  # 在获取连接前检查连接是否有效
+}
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = config.JWT_SECRET_KEY
 jwt = JWTManager(app)

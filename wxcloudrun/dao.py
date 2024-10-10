@@ -303,12 +303,15 @@ def get_hall_schedule_bydate(date):
     for item in result:
         schedule = item.get_schedule_view()
         schedule['guest_img'] = []
+        schedule['sponsor_info'] = []
         if len(schedule.get('guest_id', [])) > 0:
             for guest in schedule.get('guest_id', []):
                 user = User.query.filter_by(id=guest, is_deleted=0).first()
                 if user is None:
                     continue
                 schedule['guest_img'].append('https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, user.img_url))
+        if len(schedule.get('sponsor', [])) > 0:
+            schedule['sponsor_info'].extend(get_coopearter_by_list(schedule.get('sponsor', [])))
         data.append(schedule)
     return data
 
@@ -323,6 +326,7 @@ def get_hall_blockchain_schedule():
     for item in result:
         schedule = item.get_schedule_view()
         schedule['guest_img'] = []
+        schedule['sponsor_info'] = []
         schedule['type']='schedule'
         if len(schedule.get('guest_id', [])) > 0:
             for guest in schedule.get('guest_id', []):
@@ -330,11 +334,16 @@ def get_hall_blockchain_schedule():
                 if user is None:
                     continue
                 schedule['guest_img'].append('https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, user.img_url))
+        if len(schedule.get('sponsor', [])) > 0:
+            schedule['sponsor_info'].extend(get_coopearter_by_list(schedule.get('sponsor', [])))
         data.append(schedule)
     for item in Exhibitonresult:
         exhibiton=item.get_blockview_simple()
         exhibiton['type']='exhibition'
         exhibiton['guest_img'] = []
+        exhibiton['sponsor_info'] = []
+        if len(exhibiton.get('sponsor', [])) > 0:
+            exhibiton['sponsor_info'].extend(get_coopearter_by_list(exhibiton.get('sponsor', [])))
         data.append(exhibiton)
     data.sort(key=lambda x: x['begin_time'])
     return data
@@ -360,7 +369,23 @@ def get_hall_exhibition():
     result = Exhibiton.query.filter(
         Exhibiton.is_deleted == 0).order_by(
         Exhibiton.begin_time.asc()).all()
-    data = [item.get_view_simple() for item in result]
+    data=[]
+    for item in result:
+        exhibition=item.get_view_simple()
+        exhibition['guest_info'] = []
+        exhibition['sponsor_info'] = []
+        exhibition['supported_info'] = []
+        exhibition['organizer_info'] = []
+        exhibition['coorganizer_info'] = []
+        if len(exhibition.get('supported', [])) > 0:
+            exhibition['supported_info'].extend(get_coopearter_by_list(exhibition.get('supported', [])))
+        if len(exhibition.get('organizer', [])) > 0:
+            exhibition['organizer_info'].extend(get_coopearter_by_list(exhibition.get('organizer', [])))
+        if len(exhibition.get('coorganizer', [])) > 0:
+            exhibition['coorganizer_info'].extend(get_coopearter_by_list(exhibition.get('coorganizer', [])))
+        if len(exhibition.get('sponsor', [])) > 0:
+            exhibition['sponsor_info'].extend(get_coopearter_by_list(exhibition.get('sponsor', [])))
+        data.append(exhibition)
     return data
 
 

@@ -874,6 +874,38 @@ def download_user_list():
     return send_file('../数商大会人员信息导出{}.zip'.format(now),
                      download_name='数商大会人员信息导出{}.zip'.format(now))
 
+@app.route('/api/manage/download_register_user_list', methods=['GET'])
+@jwt_required()
+@admin_required()
+def download_register_user_list():
+    """
+        :return:下载已报名用户列表
+    """
+    name = request.args.get('name', default='', type=str)
+    status = request.args.get('status', type=int)
+    type = request.args.get('type', default='', type=str)
+    if status is None:
+        users = User.query.filter(User.name.like('%' + name + '%'), User.status != 2, User.is_deleted == 0,User.type.like('%' + type + '%')).all()
+    else:
+        users = User.query.filter(User.name.like('%' + name + '%'), User.status == status,
+                                  User.is_deleted == 0,User.type.like('%' + type + '%')).all()
+    df = pd.read_excel('template.xlsx')
+    now = datetime.datetime.now().strftime('%Y-%m-%d%H:%M:%S')
+    os.mkdir(now)
+    os.mkdir('{}/guest'.format(now))
+    for user in users:
+        if user.img_url is not None:
+            download_cdn_file(user.img_url, '{}/{}'.format(now, user.img_url))
+        df = df.append({"序号": user.id, "员工编号": user.id, "姓名": user.name, "性别": "男", "电话号码": user.phone,
+                        "证件类型": "身份证" if user.code is None or len(user.code) == 18 else '普通护照',
+                        "证件号码": user.code,"用户类型":user.type,"单位":user.company,"职务":user.title,
+                        "照片路径(相对路径)": '/' + user.img_url}, ignore_index=True)
+    df.to_excel('{}/人员信息表.xlsx'.format(now), index=False)
+    zip_folder(now, '数商大会人员信息导出{}.zip'.format(now))
+    operatr_log(get_jwt_identity(), request.url_rule.rule, '下载成功', request.remote_addr)
+    return send_file('../数商大会人员信息导出{}.zip'.format(now),
+                     download_name='数商大会人员信息导出{}.zip'.format(now))
+
 
 @app.route('/api/manage/download_schedule_qrcode', methods=['GET'])
 @jwt_required()
