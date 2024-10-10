@@ -247,6 +247,26 @@ def get_review_conference_list(name, page, page_size, forum, status):
              "end_time": schedule.end_time, "phone": user.phone, "status": signup.status, "company": user.company,
              "title": user.title} for signup, user, schedule in result.items], result.total
 
+def get_all_review_conference_list(name,  forum, status):
+    if status is None:
+        result = db.session.query(ConferenceSignUp, User, ConferenceSchedule).join(User,
+                                                                                   User.id == ConferenceSignUp.user_id).join(
+            ConferenceSchedule, ConferenceSignUp.schedule_id == ConferenceSchedule.id).filter(
+            User.name.like('%' + name + '%'), User.status == 2, User.is_deleted == 0,
+                                              ConferenceSchedule.is_deleted == 0,
+            ConferenceSchedule.forum.like('%' + forum + '%')).all()
+    else:
+        result = db.session.query(ConferenceSignUp, User, ConferenceSchedule).join(User,
+                                                                                   User.id == ConferenceSignUp.user_id).join(
+            ConferenceSchedule, ConferenceSignUp.schedule_id == ConferenceSchedule.id).filter(
+            User.name.like('%' + name + '%'), User.status == 2, User.is_deleted == 0,
+                                              ConferenceSchedule.is_deleted == 0,
+                                              ConferenceSignUp.status == status,
+            ConferenceSchedule.forum.like('%' + forum + '%')).all()
+    return [{"id": signup.id, "姓名": user.name, "预约会议名": schedule.title,
+             "日期": schedule.conference_date.strftime('%Y-%m-%d'), "开始时间": schedule.begin_time,
+             "结束时间": schedule.end_time, "联系方式": user.phone, "状态": signup.status, "公司名称": user.company,
+             "职务": user.title} for signup, user, schedule in result.items]
 
 def get_conference_schedule_by_id(userid):
     signup_status_ENUM = {0: '等待审核', 1: '审核未通过', 2: '审核通过'}
