@@ -471,8 +471,12 @@ def add_hall_schedule():
     schedule.coorganizer = ','.join([str(item) for item in params.get('coorganizer', [])])
     schedule.background = params.get('background')
     schedule.label = params.get('label')
-    if '链' in schedule.title:
-        schedule.order=1
+    if schedule.label=='分论坛':
+        schedule.order=5
+    if schedule.label=='分论坛（外场）':
+        schedule.order=4
+    if schedule.label=='路演对接':
+        schedule.order=3
     insert_user(schedule)
     refresh_guest()
     refresh_cooperater()
@@ -519,8 +523,12 @@ def edit_hall_schedule():
     schedule.coorganizer = ','.join([str(item) for item in params.get('coorganizer', [])])
     schedule.background = params.get('background')
     schedule.label = params.get('label')
-    if '链' in schedule.title:
-        schedule.order=1
+    if schedule.label=='分论坛':
+        schedule.order=5
+    if schedule.label=='分论坛（外场）':
+        schedule.order=4
+    if schedule.label=='路演对接':
+        schedule.order=3
     insert_user(schedule)
     refresh_guest()
     refresh_cooperater()
