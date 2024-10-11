@@ -317,7 +317,7 @@ def manage_get_guest_list():
     # 获取请求体参数
     name = request.args.get('name', '')
     page = request.args.get('page', default=1, type=int)
-    page_size = request.args.get('page_size', default=200, type=int)
+    page_size = request.args.get('page_size', default=1000, type=int)
     forum1 = request.args.get('forum', '')
     forum = get_jwt().get("forum", "")
     if forum1 != '' and forum == '':
