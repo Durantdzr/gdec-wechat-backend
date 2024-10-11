@@ -62,7 +62,7 @@ def search_friends_byopenid(openid, name):
         user_id.append(item.user_id)
     socail_user = User.query.filter(or_(User.name.like('%' + name + '%'), User.company.like('%' + name + '%'),User.origin_userid.in_(guest),User.id.in_(user_id)),
                                 User.status == 2, User.is_deleted == 0, ~User.type.in_(['嘉宾', '管理员']),
-                                User.socail == 1, ~User.id.in_(friend_list)).order_by(func.random()).limit(5)
+                                User.socail == 1, ~User.id.in_(friend_list)).all()
     return socail_user
 
 
