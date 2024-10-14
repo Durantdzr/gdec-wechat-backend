@@ -10,6 +10,7 @@ from wxcloudrun.model import ConferenceInfo, User, ConferenceHall, RelationFrien
 from wxcloudrun.response import make_succ_response, make_err_response
 from wxcloudrun.utils import batchdownloadfile, uploadfile, uploadwebfile, getscheduleqrcode, \
     send_check_msg, makeqrcode
+from wxcloudrun.cronjob import reload_image
 import config
 import requests
 import json
@@ -530,3 +531,12 @@ def digital_city_week():
 
     uploadwebfile(data, openid=wxopenid, file='digital_city_week.json')
     return make_succ_response(data)
+
+@app.route('/api/conference/reload_image', methods=['GET'])
+def reload_images():
+    """
+    :return:刷新图片
+    """
+    # 获取请求体参数
+    reload_image()
+    return make_succ_response()

@@ -16,7 +16,7 @@ from wxcloudrun.dao import update_user_statusbyid, insert_user, get_review_confe
     refresh_conference_info, get_hall_schedule_byid, get_operat_list, get_hall_exhibition_byid, \
     get_hall_exhibition,get_hall_blockchain_schedule,get_all_review_conference_list
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, ConferenCoopearter, Media, \
-    ConferenceCooperatorShow, OperaterRule, Exhibiton
+    ConferenceCooperatorShow, OperaterRule, Exhibiton,ConferenceSignUp
 from wxcloudrun.response import make_succ_page_response, make_succ_response, make_err_response
 from wxcloudrun.utils import uploadfile, valid_image, vaild_password, uploadwebfile, download_cdn_file, zip_folder, \
     get_ticket, get_urllink, getscheduleqrcode
@@ -1164,3 +1164,21 @@ def get_exhibtion():
                     exhibition['sponsor_info'].append(sponsor.get())
         data.append(exhibition)
     return make_succ_page_response(data, code=200, total=result.total)
+
+
+@app.route('/api/manage/get_statics_info', methods=['get'])
+def get_statics_info():
+    """
+        :return:获取统计信息
+            总用户注册数
+            总嘉宾数
+            总日程报名数
+            总交友递名片数
+            总递名片接受数
+        """
+    user_count = User.query.filter(User.is_deleted == 0).count()
+    guest_count = User.query.filter(User.is_deleted == 0, User.type == '嘉宾').count()
+    schedule_count = ConferenceSchedule.query.filter(ConferenceSchedule.is_deleted == 0).count()
+    card_count = ConferenceSignUp.query.count()
+    save_card_count = ConferenceSignUp.query.filter(ConferenceSignUp.status == 1).count()
+    return make_succ_response({"user_count":user_count,"guest_count":guest_count,"schedule_count":schedule_count,"card_count":card_count,"save_card_count":save_card_count}, code=200)
