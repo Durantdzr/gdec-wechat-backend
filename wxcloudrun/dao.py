@@ -311,6 +311,11 @@ def get_user_schedule_num_by_id(userid):
     return num
 
 
+def get_user_picture():
+    users=User.query.filter(User.is_deleted == 0).all()
+    return [user.img_url for user in users]
+
+
 def find_user_schedule_tobegin():
     result = db.session.query(ConferenceSignUp, ConferenceSchedule, User).join(
         ConferenceSchedule, ConferenceSignUp.schedule_id == ConferenceSchedule.id).join(User,

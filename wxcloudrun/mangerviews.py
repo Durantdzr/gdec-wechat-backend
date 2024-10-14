@@ -30,7 +30,7 @@ import pandas as pd
 import os
 from functools import wraps
 from wxcloudrun.logger import operatr_log
-
+import shutil
 
 def admin_required():
     def wrapper(fn):
@@ -889,7 +889,10 @@ def download_user_list():
     os.mkdir('{}/guest'.format(now))
     for user in users:
         if user.img_url is not None:
-            download_cdn_file(user.img_url, '{}/{}'.format(now, user.img_url))
+            if os.path.exists(user.img_url):
+                shutil.copy2(user.img_url, '{}/{}'.format(now, user.img_url))
+            else:
+                download_cdn_file(user.img_url, '{}/{}'.format(now, user.img_url))
         df = df.append({"序号": user.id, "员工编号": user.id, "姓名": user.name, "性别": "男", "电话号码": user.phone,
                         "证件类型": "身份证" if user.code is None or len(user.code) == 18 else '普通护照',
                         "证件号码": user.code,"用户类型":user.type,"单位":user.company,"职务":user.title,
@@ -921,7 +924,10 @@ def download_register_user_list():
     os.mkdir('{}/guest'.format(now))
     for user in users:
         if user.img_url is not None:
-            download_cdn_file(user.img_url, '{}/{}'.format(now, user.img_url))
+            if os.path.exists(user.img_url):
+                shutil.copy2(user.img_url, '{}/{}'.format(now, user.img_url))
+            else:
+                download_cdn_file(user.img_url, '{}/{}'.format(now, user.img_url))
         df = df.append({"序号": user.id, "员工编号": user.id, "姓名": user.name, "性别": "男", "电话号码": user.phone,
                         "证件类型": "身份证" if user.code is None or len(user.code) == 18 else '普通护照',
                         "证件号码": user.code,"用户类型":user.type,"单位":user.company,"职务":user.title,

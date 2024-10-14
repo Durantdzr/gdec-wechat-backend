@@ -393,7 +393,7 @@ def downloadfile_json():
     # 获取请求体参数
     wxopenid = request.headers['X-WX-OPENID']
     cloudid = request.args.get('cloudid', "")
-    return make_succ_response(batchdownloadfile(wxopenid, [cloudid]))
+    return make_succ_response(batchdownloadfile([cloudid],wxopenid))
 
 
 @app.route('/api/conference/get_schedule_list', methods=['GET'])
