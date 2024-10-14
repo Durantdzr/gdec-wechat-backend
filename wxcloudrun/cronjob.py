@@ -8,7 +8,7 @@
 """
 
 from wxcloudrun.dao import find_user_schedule_tobegin,get_user_picture
-from wxcloudrun.utils import send_to_begin_msg
+from wxcloudrun.utils import send_to_begin_msg,download_cdn_file
 def send_begin_msg():
     result = find_user_schedule_tobegin()
     for item in result:
@@ -16,6 +16,7 @@ def send_begin_msg():
 
 def reload_image():
     img_url=get_user_picture()
+    img_url=list(set(img_url))
     for user in img_url:
         if user is not None:
             download_cdn_file(user, user)

@@ -33,7 +33,7 @@ scheduler = APScheduler()
 scheduler.init_app(app)
 scheduler.start()
 
-from wxcloudrun.cronjob import send_begin_msg,reload_image
+from wxcloudrun.cronjob import send_begin_msg
 @scheduler.task('interval', id='send_begin_msg', hours=1, misfire_grace_time=900)
 def job1():
     send_begin_msg()
@@ -44,4 +44,3 @@ from wxcloudrun import views, mangerviews
 # 加载配置
 app.config.from_object('config')
 
-reload_image()
