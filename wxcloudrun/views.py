@@ -16,7 +16,14 @@ import requests
 import json
 import uuid
 import base64
+import os
 
+# @app.before_first_request
+# def init_data():
+#     """
+#     初始化数据
+#     """
+#     reload_image()
 
 @app.route('/api/conference/get_information_list', methods=['GET'])
 def get_information_list():
@@ -540,3 +547,9 @@ def reload_images():
     # 获取请求体参数
     reload_image()
     return make_succ_response(0)
+
+@app.route('/api/conference/get_reload_schedule', methods=['GET'])
+def get_reload_schedule():
+    user_count = User.query.filter(User.is_deleted == 0).count()
+    file=os.listdir('guest')
+    return make_succ_response({"user_count":user_count,"file":len(file)})

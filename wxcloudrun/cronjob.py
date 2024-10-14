@@ -17,13 +17,11 @@ def send_begin_msg():
         send_to_begin_msg(item.get("openid",""), item.get("title",""), item.get("location",""), item.get("begin_time",""))
 
 def reload_image():
-    logger.info("获取用户照片")
     img_url=get_user_picture()
     img_url=list(set(img_url))
     for user in img_url:
         if user is not None and user!="":
             print(user)
             download_cdn_file(user, user)
-    logger.info("完成获取用户照片")
 
     

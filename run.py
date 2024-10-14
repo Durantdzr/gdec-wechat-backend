@@ -2,11 +2,8 @@
 import sys
 
 from wxcloudrun import app
-from wxcloudrun.cronjob import reload_image
 # 启动Flask Web服务
 if __name__ == '__main__':
-    # app.run(host='0.0.0.0', port='80')
-    
-    app.run(host=sys.argv[1], port=sys.argv[2], use_reloader=False)
-    reload_image()
+    app.run(host='0.0.0.0', port='80')
+    # app.run(host=sys.argv[1], port=sys.argv[2], use_reloader=False)
     
