@@ -539,4 +539,4 @@ def reload_images():
     """
     # 获取请求体参数
     reload_image()
-    return make_succ_response()
+    return make_succ_response(0)
