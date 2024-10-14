@@ -1178,7 +1178,7 @@ def get_statics_info():
         """
     user_count = User.query.filter(User.is_deleted == 0).count()
     guest_count = User.query.filter(User.is_deleted == 0, User.type == '嘉宾').count()
-    schedule_count = ConferenceSchedule.query.filter(ConferenceSchedule.is_deleted == 0).count()
+    schedule_signup_count = ConferenceSignUp.query.count()
     card_count = ConferenceSignUp.query.count()
     save_card_count = ConferenceSignUp.query.filter(ConferenceSignUp.status == 1).count()
-    return make_succ_response({"user_count":user_count,"guest_count":guest_count,"schedule_count":schedule_count,"card_count":card_count,"save_card_count":save_card_count}, code=200)
+    return make_succ_response({"user_count":user_count,"guest_count":guest_count,"schedule_signup_count":schedule_signup_count,"card_count":card_count,"save_card_count":save_card_count}, code=200)
