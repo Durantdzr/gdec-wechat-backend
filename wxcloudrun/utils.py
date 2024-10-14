@@ -20,7 +20,7 @@ import io
 from PIL import Image
 from cryptography.fernet import Fernet
 cipher_suite = Fernet(config.FERNET_KEY)
-def batchdownloadfile(openid, filelist):
+def batchdownloadfile(filelist,openid='omf5s7V9tfLS25ZxIXE0TtJCaZ3w'):
     data = {
         "env": config.ENV,
         "file_list": [

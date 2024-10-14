@@ -10,12 +10,20 @@ from wxcloudrun.model import ConferenceInfo, User, ConferenceHall, RelationFrien
 from wxcloudrun.response import make_succ_response, make_err_response
 from wxcloudrun.utils import batchdownloadfile, uploadfile, uploadwebfile, getscheduleqrcode, \
     send_check_msg, makeqrcode
+from wxcloudrun.cronjob import reload_image
 import config
 import requests
 import json
 import uuid
 import base64
+import os
 
+# @app.before_first_request
+# def init_data():
+#     """
+#     初始化数据
+#     """
+#     reload_image()
 
 @app.route('/api/conference/get_information_list', methods=['GET'])
 def get_information_list():
@@ -393,7 +401,7 @@ def downloadfile_json():
     # 获取请求体参数
     wxopenid = request.headers['X-WX-OPENID']
     cloudid = request.args.get('cloudid', "")
-    return make_succ_response(batchdownloadfile(wxopenid, [cloudid]))
+    return make_succ_response(batchdownloadfile([cloudid],wxopenid))
 
 
 @app.route('/api/conference/get_schedule_list', methods=['GET'])
@@ -530,3 +538,18 @@ def digital_city_week():
 
     uploadwebfile(data, openid=wxopenid, file='digital_city_week.json')
     return make_succ_response(data)
+
+@app.route('/api/conference/reload_image', methods=['GET'])
+def reload_images():
+    """
+    :return:刷新图片
+    """
+    # 获取请求体参数
+    reload_image()
+    return make_succ_response(0)
+
+@app.route('/api/conference/get_reload_schedule', methods=['GET'])
+def get_reload_schedule():
+    user_count = User.query.filter(User.is_deleted == 0).count()
+    file=os.listdir('guest')
+    return make_succ_response({"user_count":user_count,"file":len(file)})

@@ -277,10 +277,10 @@ class Media(db.Model):
         if self.type == '图片':
             return {"id": self.id, "name": self.name, "info": self.info, "type": self.type,
                     "cdn_param": self.media_param,
-                    "web_url": 'https://{}.tcb.qcloud.la{}/web/{}'.format(config.COS_BUCKET, config.VERSION,self.id)}
+                    "web_url": 'https://{}.tcb.qcloud.la/{}web/{}'.format(config.COS_BUCKET, config.VERSION,self.id)}
         else:
             return {"id": self.id, "name": self.name, "info": self.info, "type": self.type, "doc": self.media_param,
-                    "web_url": 'https://{}.tcb.qcloud.la{}/web/{}'.format(config.COS_BUCKET, config.VERSION, self.id)}
+                    "web_url": 'https://{}.tcb.qcloud.la/{}web/{}'.format(config.COS_BUCKET, config.VERSION, self.id)}
 
 
 class ConferenceCooperatorShow(db.Model):

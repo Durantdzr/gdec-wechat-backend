@@ -49,9 +49,20 @@ def search_friends_byopenid(openid, name):
     for friend in friends:
         friend_list.append(friend.operater_id)
         friend_list.append(friend.inviter_id)
-    socail_user = User.query.filter(or_(User.name.like('%' + name + '%'), User.company.like('%' + name + '%')),
-                                    User.status == 2, User.is_deleted == 0, ~User.type.in_(['嘉宾', '管理员']),
-                                    User.socail == 1, ~User.id.in_(friend_list)).all()
+    schedules=ConferenceSchedule.query.filter(ConferenceSchedule.title.like('%' + name + '%'),ConferenceSchedule.is_deleted==0).all()
+    guest=[]
+    schedule_id=[]
+    for item in schedules:
+        schedule=item.get_schedule()
+        guest.extend(schedule.get('guest_id',[]))
+        schedule_id.append(schedule.get('id'))
+    user_id=[]
+    sign_up=ConferenceSignUp.query.filter(ConferenceSignUp.schedule_id.in_(schedule_id),ConferenceSignUp.status==2).all()
+    for item in sign_up:
+        user_id.append(item.user_id)
+    socail_user = User.query.filter(or_(User.name.like('%' + name + '%'), User.company.like('%' + name + '%'),User.origin_userid.in_(guest),User.id.in_(user_id)),
+                                User.status == 2, User.is_deleted == 0, ~User.type.in_(['嘉宾', '管理员']),
+                                User.socail == 1, ~User.id.in_(friend_list)).all()
     return socail_user
 
 
@@ -298,6 +309,11 @@ def get_user_schedule_num_by_id(userid):
         if delta / 60 > 0 and delta / 60 < 120:
             num += 1
     return num
+
+
+def get_user_picture():
+    users=User.query.filter(User.is_deleted == 0).all()
+    return [user.img_url for user in users]
 
 
 def find_user_schedule_tobegin():

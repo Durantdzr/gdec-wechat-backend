@@ -43,3 +43,4 @@ from wxcloudrun import views, mangerviews
 
 # 加载配置
 app.config.from_object('config')
+
