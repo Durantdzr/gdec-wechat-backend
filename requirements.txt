@@ -18,3 +18,5 @@ Pillow==9.4.0
 cryptography==35.0.0
 
 tencentcloud-sdk-python-sms==3.0.1250
+tencentcloud-sdk-python==3.0.609
+tencentcloud-sdk-python-common==3.0.1250
