@@ -9,7 +9,7 @@ from wxcloudrun.dao import insert_user, search_friends_byopenid, insert_realtion
 from wxcloudrun.model import ConferenceInfo, User, ConferenceHall, RelationFriend, ConferenceSignUp, DigitalCityWeek
 from wxcloudrun.response import make_succ_response, make_err_response
 from wxcloudrun.utils import batchdownloadfile, uploadfile, uploadwebfile, getscheduleqrcode, \
-    send_check_msg, makeqrcode
+    send_check_msg, makeqrcode,send_tx_msg
 from wxcloudrun.cronjob import reload_image
 import config
 import requests
@@ -23,7 +23,7 @@ import os
 #     """
 #     初始化数据
 #     """
-#     reload_image()
+    
 
 @app.route('/api/conference/get_information_list', methods=['GET'])
 def get_information_list():
@@ -520,9 +520,7 @@ def send_msg():
     """
     params = request.get_json()
     wxOpenid = request.headers['X-WX-OPENID']
-    result = send_check_msg(openid=params.get('openid'), meetingname='全球数商大会', content='用户报名审核',
-                            reason=params.get('reason'),
-                            phrase3="成功", date="2024-09-10")
+    result = send_tx_msg(phone=params.get('phone'),template_id=params.get('template_id'))
     return make_succ_response(result)
 
 

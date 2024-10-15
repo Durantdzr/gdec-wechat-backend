@@ -19,6 +19,14 @@ import time
 import io
 from PIL import Image
 from cryptography.fernet import Fernet
+import types
+from tencentcloud.common import credential
+from tencentcloud.common.profile.client_profile import ClientProfile
+from tencentcloud.common.profile.http_profile import HttpProfile
+from tencentcloud.common.exception.tencent_cloud_sdk_exception import TencentCloudSDKException
+from tencentcloud.sms.v20210111 import sms_client, models
+
+
 cipher_suite = Fernet(config.FERNET_KEY)
 def batchdownloadfile(filelist,openid='omf5s7V9tfLS25ZxIXE0TtJCaZ3w'):
     data = {
@@ -200,3 +208,36 @@ def encrypt(message):
 def decrypt(encrypted):
     decrypted = cipher_suite.decrypt(encrypted)
     return decrypted.decode('utf-8')
+
+
+def send_tx_msg(phone, template_id):
+    try:
+        # 密钥可前往官网控制台 https://console.cloud.tencent.com/cam/capi 进行获取
+        cred = credential.Credential(config.SecretId, config.SecretKey)
+        # 实例化一个http选项，可选的，没有特殊需求可以跳过
+        httpProfile = HttpProfile()
+        httpProfile.endpoint = "sms.tencentcloudapi.com"
+
+        # 实例化一个client选项，可选的，没有特殊需求可以跳过
+        clientProfile = ClientProfile()
+        clientProfile.httpProfile = httpProfile
+        # 实例化要请求产品的client对象,clientProfile是可选的
+        client = sms_client.SmsClient(cred, "ap-nanjing", clientProfile)
+
+        # 实例化一个请求对象,每个接口都会对应一个request对象
+        req = models.SendSmsRequest()
+        params = {
+            "PhoneNumberSet": phone,
+            "SmsSdkAppId": config.SdkAppId,
+            "TemplateId": template_id,
+            "SignName": "全球数商大会GDEC"
+        }
+        req.from_json_string(json.dumps(params))
+
+        # 返回的resp是一个SendSmsResponse的实例，与请求对象对应
+        resp = client.SendSms(req)
+        # 输出json格式的字符串回包
+        return(resp.to_json_string())
+
+    except TencentCloudSDKException as err:
+        print(err)
