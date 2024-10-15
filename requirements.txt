@@ -16,3 +16,5 @@ openpyxl==3.0.6
 Flask-APScheduler==1.12.4
 Pillow==9.4.0
 cryptography==35.0.0
+
+tencentcloud-sdk-python-sms==3.0.1250
