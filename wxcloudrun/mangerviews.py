@@ -16,7 +16,7 @@ from wxcloudrun.dao import update_user_statusbyid, insert_user, get_review_confe
     refresh_conference_info, get_hall_schedule_byid, get_operat_list, get_hall_exhibition_byid, \
     get_hall_exhibition,get_hall_blockchain_schedule,get_all_review_conference_list
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, ConferenCoopearter, Media, \
-    ConferenceCooperatorShow, OperaterRule, Exhibiton,ConferenceSignUp
+    ConferenceCooperatorShow, OperaterRule, Exhibiton,ConferenceSignUp,RelationFriend
 from wxcloudrun.response import make_succ_page_response, make_succ_response, make_err_response
 from wxcloudrun.utils import uploadfile, valid_image, vaild_password, uploadwebfile, download_cdn_file, zip_folder, \
     get_ticket, get_urllink, getscheduleqrcode
@@ -1179,6 +1179,6 @@ def get_statics_info():
     user_count = User.query.filter(User.is_deleted == 0).count()
     guest_count = User.query.filter(User.is_deleted == 0, User.type == '嘉宾').count()
     schedule_signup_count = ConferenceSignUp.query.count()
-    card_count = ConferenceSignUp.query.count()
-    save_card_count = ConferenceSignUp.query.filter(ConferenceSignUp.status == 1).count()
+    card_count = RelationFriend.query.count()
+    save_card_count = RelationFriend.query.filter(RelationFriend.status == 1).count()
     return make_succ_response({"user_count":user_count,"guest_count":guest_count,"schedule_signup_count":schedule_signup_count,"card_count":card_count,"save_card_count":save_card_count}, code=200)
