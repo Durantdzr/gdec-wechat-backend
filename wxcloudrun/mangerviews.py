@@ -335,7 +335,7 @@ def manage_get_guest_list():
         users=User.query.filter(User.origin_userid is not None,User.is_deleted==0).all()
         guest_id=[user.id for user in users]
         guests = User.query.filter(User.type == '嘉宾', User.is_deleted == 0, User.name.like('%' + name + '%'),
-                               User.forum.like('%' + forum + '%'),User.id._in(guest_id)).order_by(
+                               User.forum.like('%' + forum + '%'),User.id.in_(guest_id)).order_by(
         User.order.desc()).paginate(
         page,
         per_page=page_size,
