@@ -3,7 +3,7 @@ import logging
 
 from sqlalchemy.exc import OperationalError
 from sqlalchemy import func
-
+from sqlalchemy.orm import aliased
 from wxcloudrun import db
 from wxcloudrun.model import ConferenceInfo, RelationFriend, User, ConferenceSignUp, ConferenceSchedule, \
     ConferenCoopearter, ConferenceCooperatorShow, OperaterLog, OperaterRule, Exhibiton
@@ -279,6 +279,26 @@ def get_all_review_conference_list(name,  forum, status):
              "日期": schedule.conference_date.strftime('%Y-%m-%d'), "开始时间": schedule.begin_time,
              "结束时间": schedule.end_time, "联系方式": user.phone, "状态": signup_status_ENUM.get(signup.status), "公司名称": user.company,
              "职务": user.title} for signup, user, schedule in result]
+
+def get_all_signup_conference_statics():
+    ConferenceScheduleAlias = aliased(ConferenceSchedule)
+    result = db.session.query(
+        ConferenceScheduleAlias.title.label('会议名'),
+        func.count(ConferenceSignUp.id).label('预约数量')
+    ).join(
+        User, User.id == ConferenceSignUp.user_id
+    ).join(
+        ConferenceScheduleAlias, ConferenceSignUp.schedule_id == ConferenceScheduleAlias.id
+    ).filter(
+        User.is_deleted == 0,
+        ConferenceScheduleAlias.is_deleted == 0
+    ).group_by(
+        ConferenceScheduleAlias.title
+    ).all()
+
+    # 将结果转换为字典列表
+    return [{"会议名": row.会议名, "预约数量": row.预约数量,"统计日期":datetime.datetime.now().strftime('%Y-%m-%d')} for row in result]
+
 
 def get_conference_schedule_by_id(userid):
     signup_status_ENUM = {0: '等待审核', 1: '审核未通过', 2: '审核通过'}

@@ -14,7 +14,7 @@ from run import app
 from wxcloudrun.dao import update_user_statusbyid, insert_user, get_review_conference_list, update_schedule_statusbyid, \
     refresh_cooperater, refresh_guest, refresh_guest_info, get_hall_schedule_bydate, get_live_data, \
     refresh_conference_info, get_hall_schedule_byid, get_operat_list, get_hall_exhibition_byid, \
-    get_hall_exhibition,get_hall_blockchain_schedule,get_all_review_conference_list
+    get_hall_exhibition,get_hall_blockchain_schedule,get_all_review_conference_list,get_all_signup_conference_statics
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, ConferenCoopearter, Media, \
     ConferenceCooperatorShow, OperaterRule, Exhibiton,ConferenceSignUp,RelationFriend
 from wxcloudrun.response import make_succ_page_response, make_succ_response, make_err_response
@@ -1223,3 +1223,20 @@ def get_statics_info():
     card_count = RelationFriend.query.count()
     save_card_count = RelationFriend.query.filter(RelationFriend.status == 1).count()
     return make_succ_response({"user_count":user_count,"guest_count":guest_count,"schedule_signup_count":schedule_signup_count,"card_count":card_count,"save_card_count":save_card_count}, code=200)
+
+
+@app.route('/api/manage/download_conference_sign_up_num', methods=['GET'])
+@jwt_required()
+def download_conference_sign_up_num():
+    """
+        :return:下载活动报名人数统计excel
+    """
+    result=get_all_signup_conference_statics()
+    df = pd.DataFrame(result)
+    now = datetime.datetime.now().strftime('%Y-%m-%d%H:%M:%S')
+    os.mkdir(now)
+    df.to_excel('{}/会议报名统计.xlsx'.format(now), index=False)
+    zip_folder(now, '数商大会会议报名统计{}.zip'.format(now))
+    operatr_log(get_jwt_identity(), request.url_rule.rule, '下载成功', request.remote_addr)
+    return send_file('../数商大会会议报名统计{}.zip'.format(now),
+                     download_name='数商大会会议报名统计{}.zip'.format(now))
