@@ -351,12 +351,12 @@ def manage_get_guest_list():
         error_out=False)
     
     data = [guest.get_guest() for guest in guests.items]
-    for item in data:
-        user=User.query.filter(User.origin_userid==item.id).first()
+    for num in range(len(data)):
+        user=User.query.filter(User.origin_userid==data[num].id).first()
         if user is not None:
-            item['bind_status']=True
+            data[num]['bind_status']=True
         else:
-            item['bind_status']=False
+            data[num]['bind_status']=False
     return make_succ_page_response(data, code=200, total=guests.total)
 
 @app.route('/api/manage/download_guest_list', methods=['GET'])
