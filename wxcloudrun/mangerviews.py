@@ -319,7 +319,7 @@ def manage_get_guest_list():
     page = request.args.get('page', default=1, type=int)
     page_size = request.args.get('page_size', default=1000, type=int)
     forum1 = request.args.get('forum', '')
-    bind_status = request.args.get('bind_status', type=bool)
+    bind_status = request.args.get('bind_status', type=int)
     forum = get_jwt().get("forum", "")
     if forum1 != '' and forum == '':
         forum = forum1
@@ -333,7 +333,7 @@ def manage_get_guest_list():
         error_out=False)
     elif bind_status:
         users=User.query.filter(User.origin_userid is not None,User.is_deleted==0).all()
-        guest_id=[user.id for user in users]
+        guest_id=[user.origin_userid for user in users if user.origin_userid is not None]
         guests = User.query.filter(User.type == '嘉宾', User.is_deleted == 0, User.name.like('%' + name + '%'),
                                User.forum.like('%' + forum + '%'),User.id.in_(guest_id)).order_by(
         User.order.desc()).paginate(
@@ -342,7 +342,7 @@ def manage_get_guest_list():
         error_out=False)
     else:
         users=User.query.filter(User.origin_userid is not None,User.is_deleted==0).all()
-        guest_id=[user.id for user in users]
+        guest_id=[user.origin_userid for user in users if user.origin_userid is not None]
         guests = User.query.filter(User.type == '嘉宾', User.is_deleted == 0, User.name.like('%' + name + '%'),
                                User.forum.like('%' + forum + '%'),User.id.notin_(guest_id)).order_by(
         User.order.desc()).paginate(
@@ -354,9 +354,9 @@ def manage_get_guest_list():
     for num in range(len(data)):
         user=User.query.filter(User.origin_userid==data[num].get("id")).first()
         if user is not None:
-            data[num]['bind_status']=True
+            data[num]['bind_status']=1
         else:
-            data[num]['bind_status']=False
+            data[num]['bind_status']=0
     return make_succ_page_response(data, code=200, total=guests.total)
 
 @app.route('/api/manage/download_guest_list', methods=['GET'])
@@ -377,12 +377,12 @@ def download_guest_list():
         User.order.desc()).all()
     elif bind_status:
         users=User.query.filter(User.origin_userid is not None,User.is_deleted==0).all()
-        guest_id=[user.id for user in users]
+        guest_id=[user.origin_userid for user in users if user.origin_userid is not None]
         users = User.query.filter(User.type == '嘉宾', User.is_deleted == 0, User.name.like('%' + name + '%'),
                                User.forum.like('%' + forum + '%'),User.id._in(guest_id)).all()
     else:
         users=User.query.filter(User.origin_userid is not None,User.is_deleted==0).all()
-        guest_id=[user.id for user in users]
+        guest_id=[user.origin_userid for user in users if user.origin_userid is not None]
         users = User.query.filter(User.type == '嘉宾', User.is_deleted == 0, User.name.like('%' + name + '%'),
                                User.forum.like('%' + forum + '%'),User.id.notin_(guest_id)).all()
     df = pd.read_excel('template.xlsx')
