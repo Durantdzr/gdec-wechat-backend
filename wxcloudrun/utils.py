@@ -25,7 +25,7 @@ from tencentcloud.common.profile.client_profile import ClientProfile
 from tencentcloud.common.profile.http_profile import HttpProfile
 from tencentcloud.common.exception.tencent_cloud_sdk_exception import TencentCloudSDKException
 from tencentcloud.sms.v20210111 import sms_client, models
-
+import re
 
 cipher_suite = Fernet(config.FERNET_KEY)
 def batchdownloadfile(filelist,openid='omf5s7V9tfLS25ZxIXE0TtJCaZ3w'):
@@ -209,6 +209,11 @@ def decrypt(encrypted):
     decrypted = cipher_suite.decrypt(encrypted)
     return decrypted.decode('utf-8')
 
+def masked_view(s):
+    if len(s) <= 7:
+        return s
+    masked = re.sub(r'(?<=.{3}).(?=.{4})', '*', s)
+    return masked
 
 def send_tx_msg(phone, template_id):
     try:

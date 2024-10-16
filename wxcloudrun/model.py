@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-from wxcloudrun.utils import encrypt, decrypt
+from wxcloudrun.utils import encrypt, decrypt,masked_view
 from wxcloudrun import db
 import config
 
@@ -207,8 +207,8 @@ class User(db.Model):
 
     def get_full(self):
         return {"id": self.id, "name": self.name, "company": self.company, "title": self.title,
-                "phone": decrypt(self.phoneEncrypted) if self.phoneEncrypted else None,
-                "code": decrypt(self.codeEncrypted) if self.codeEncrypted else None,
+                "phone": masked_view(decrypt(self.phoneEncrypted)) if self.phoneEncrypted else None,
+                "code": masked_view(decrypt(self.codeEncrypted)) if self.codeEncrypted else None,
                 "type": self.type,
                 "socail": self.socail,
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET,

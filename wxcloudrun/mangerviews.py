@@ -88,8 +88,8 @@ def logout():
 
 
 @app.route('/api/manage/get_register_list', methods=['GET'])
-# @jwt_required()
-# @admin_required()
+@jwt_required()
+@admin_required()
 def get_register_list():
     """
         :return:获取用户审核列表
@@ -319,15 +319,37 @@ def manage_get_guest_list():
     page = request.args.get('page', default=1, type=int)
     page_size = request.args.get('page_size', default=1000, type=int)
     forum1 = request.args.get('forum', '')
+    bind_status = request.args.get('bind_status', type=bool)
     forum = get_jwt().get("forum", "")
     if forum1 != '' and forum == '':
         forum = forum1
-    guests = User.query.filter(User.type == '嘉宾', User.is_deleted == 0, User.name.like('%' + name + '%'),
+        
+    if bind_status is None:
+        guests = User.query.filter(User.type == '嘉宾', User.is_deleted == 0, User.name.like('%' + name + '%'),
                                User.forum.like('%' + forum + '%')).order_by(
         User.order.desc()).paginate(
         page,
         per_page=page_size,
         error_out=False)
+    elif bind_status:
+        users=User.query.filter(User.origin_userid is not None,User.is_deleted==0).all()
+        guest_id=[user.id for user in users]
+        guests = User.query.filter(User.type == '嘉宾', User.is_deleted == 0, User.name.like('%' + name + '%'),
+                               User.forum.like('%' + forum + '%'),User.id._in(guest_id)).order_by(
+        User.order.desc()).paginate(
+        page,
+        per_page=page_size,
+        error_out=False)
+    else:
+        users=User.query.filter(User.origin_userid is not None,User.is_deleted==0).all()
+        guest_id=[user.id for user in users]
+        guests = User.query.filter(User.type == '嘉宾', User.is_deleted == 0, User.name.like('%' + name + '%'),
+                               User.forum.like('%' + forum + '%'),User.id.notin_(guest_id)).order_by(
+        User.order.desc()).paginate(
+        page,
+        per_page=page_size,
+        error_out=False)
+    
     data = [guest.get_guest() for guest in guests.items]
     for item in data:
         user=User.query.filter(User.origin_userid==item.id).first()
@@ -346,10 +368,23 @@ def download_guest_list():
     name = request.args.get('name', default='', type=str)
     forum1 = request.args.get('forum', '')
     forum = get_jwt().get("forum", "")
+    bind_status = request.args.get('bind_status', type=bool)
     if forum1 != '' and forum == '':
         forum = forum1
-    users = User.query.filter(User.type == '嘉宾', User.is_deleted == 0, User.name.like('%' + name + '%'),
-                               User.forum.like('%' + forum + '%')).all()
+    if bind_status is None:
+        users = User.query.filter(User.type == '嘉宾', User.is_deleted == 0, User.name.like('%' + name + '%'),
+                               User.forum.like('%' + forum + '%')).order_by(
+        User.order.desc()).all()
+    elif bind_status:
+        users=User.query.filter(User.origin_userid is not None,User.is_deleted==0).all()
+        guest_id=[user.id for user in users]
+        users = User.query.filter(User.type == '嘉宾', User.is_deleted == 0, User.name.like('%' + name + '%'),
+                               User.forum.like('%' + forum + '%'),User.id._in(guest_id)).all()
+    else:
+        users=User.query.filter(User.origin_userid is not None,User.is_deleted==0).all()
+        guest_id=[user.id for user in users]
+        users = User.query.filter(User.type == '嘉宾', User.is_deleted == 0, User.name.like('%' + name + '%'),
+                               User.forum.like('%' + forum + '%'),User.id.notin_(guest_id)).all()
     df = pd.read_excel('template.xlsx')
     now = datetime.datetime.now().strftime('%Y-%m-%d%H:%M:%S')
     os.mkdir(now)
@@ -1226,7 +1261,7 @@ def get_statics_info():
 
 
 @app.route('/api/manage/download_conference_sign_up_num', methods=['GET'])
-@jwt_required()
+# @jwt_required()
 def download_conference_sign_up_num():
     """
         :return:下载活动报名人数统计excel
@@ -1237,6 +1272,6 @@ def download_conference_sign_up_num():
     os.mkdir(now)
     df.to_excel('{}/会议报名统计.xlsx'.format(now), index=False)
     zip_folder(now, '数商大会会议报名统计{}.zip'.format(now))
-    operatr_log(get_jwt_identity(), request.url_rule.rule, '下载成功', request.remote_addr)
+    # operatr_log(get_jwt_identity(), request.url_rule.rule, '下载成功', request.remote_addr)
     return send_file('../数商大会会议报名统计{}.zip'.format(now),
                      download_name='数商大会会议报名统计{}.zip'.format(now))
