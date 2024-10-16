@@ -8,7 +8,7 @@ from wxcloudrun import db
 from wxcloudrun.model import ConferenceInfo, RelationFriend, User, ConferenceSignUp, ConferenceSchedule, \
     ConferenCoopearter, ConferenceCooperatorShow, OperaterLog, OperaterRule, Exhibiton
 from sqlalchemy import or_, and_
-from wxcloudrun.utils import uploadwebfile, send_check_msg
+from wxcloudrun.utils import uploadwebfile, send_check_msg,masked_view
 import config
 
 # 初始化日志
@@ -255,7 +255,7 @@ def get_review_conference_list(name, page, page_size, forum, status):
                                                                        error_out=False)
     return [{"id": signup.id, "user_name": user.name, "schedule_name": schedule.title,
              "schedule_date": schedule.conference_date.strftime('%Y-%m-%d'), "begin_time": schedule.begin_time,
-             "end_time": schedule.end_time, "phone": user.phone, "status": signup.status, "company": user.company,
+             "end_time": schedule.end_time, "phone": masked_view(user.phone), "status": signup.status, "company": user.company,
              "title": user.title} for signup, user, schedule in result.items], result.total
 
 def get_all_review_conference_list(name,  forum, status):
