@@ -3,12 +3,12 @@ import logging
 
 from sqlalchemy.exc import OperationalError
 from sqlalchemy import func
-
+from sqlalchemy.orm import aliased
 from wxcloudrun import db
 from wxcloudrun.model import ConferenceInfo, RelationFriend, User, ConferenceSignUp, ConferenceSchedule, \
     ConferenCoopearter, ConferenceCooperatorShow, OperaterLog, OperaterRule, Exhibiton
 from sqlalchemy import or_, and_
-from wxcloudrun.utils import uploadwebfile, send_check_msg
+from wxcloudrun.utils import uploadwebfile, send_check_msg,masked_view
 import config
 
 # 初始化日志
@@ -255,7 +255,7 @@ def get_review_conference_list(name, page, page_size, forum, status):
                                                                        error_out=False)
     return [{"id": signup.id, "user_name": user.name, "schedule_name": schedule.title,
              "schedule_date": schedule.conference_date.strftime('%Y-%m-%d'), "begin_time": schedule.begin_time,
-             "end_time": schedule.end_time, "phone": user.phone, "status": signup.status, "company": user.company,
+             "end_time": schedule.end_time, "phone": masked_view(user.phone), "status": signup.status, "company": user.company,
              "title": user.title} for signup, user, schedule in result.items], result.total
 
 def get_all_review_conference_list(name,  forum, status):
@@ -279,6 +279,26 @@ def get_all_review_conference_list(name,  forum, status):
              "日期": schedule.conference_date.strftime('%Y-%m-%d'), "开始时间": schedule.begin_time,
              "结束时间": schedule.end_time, "联系方式": user.phone, "状态": signup_status_ENUM.get(signup.status), "公司名称": user.company,
              "职务": user.title} for signup, user, schedule in result]
+
+def get_all_signup_conference_statics():
+    ConferenceScheduleAlias = aliased(ConferenceSchedule)
+    result = db.session.query(
+        ConferenceScheduleAlias.title.label('会议名'),
+        func.count(ConferenceSignUp.id).label('预约数量')
+    ).join(
+        User, User.id == ConferenceSignUp.user_id
+    ).join(
+        ConferenceScheduleAlias, ConferenceSignUp.schedule_id == ConferenceScheduleAlias.id
+    ).filter(
+        User.is_deleted == 0,
+        ConferenceScheduleAlias.is_deleted == 0
+    ).group_by(
+        ConferenceScheduleAlias.title
+    ).all()
+
+    # 将结果转换为字典列表
+    return [{"会议名": row.会议名, "预约数量": row.预约数量,"统计日期":datetime.datetime.now().strftime('%Y-%m-%d')} for row in result]
+
 
 def get_conference_schedule_by_id(userid):
     signup_status_ENUM = {0: '等待审核', 1: '审核未通过', 2: '审核通过'}
@@ -553,7 +573,7 @@ def refresh_guest_info(userid):
 
 
 def refresh_conference_info():
-    result = ConferenceInfo.query.filter(ConferenceInfo.is_deleted == 0).all()
+    result = ConferenceInfo.query.filter(ConferenceInfo.is_deleted == 0).order_by(ConferenceInfo.order.desc()).all()
     data = [item.get() for item in result]
     uploadwebfile(data, file='get_information_list.json')
 

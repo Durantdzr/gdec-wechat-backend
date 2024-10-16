@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-from wxcloudrun.utils import encrypt, decrypt
+from wxcloudrun.utils import encrypt, decrypt,masked_view
 from wxcloudrun import db
 import config
 
@@ -17,12 +17,13 @@ class ConferenceInfo(db.Model):
     file_url = db.Column('file_url', db.TEXT)
     link_url = db.Column('link_url', db.TEXT)
     is_deleted = db.Column('is_deleted', db.INT, default=0)
+    order = db.Column('order', db.Integer, default=0)
 
     def get(self):
         return {'id': self.id, 'title': self.title, 'org': self.org,
                 'file_url': 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.file_url),
                 "cdn_param": self.file_url, 'create_time': self.create_time.strftime('%Y-%m-%d'),
-                'link_url': self.link_url}
+                'link_url': self.link_url,"order": self.order}
 
 
 WEEKDAY = {0: '周一', 1: '周二', 2: '周三', 3: '周四', 4: '周五', 5: '周六', 6: '周日'}
@@ -206,8 +207,8 @@ class User(db.Model):
 
     def get_full(self):
         return {"id": self.id, "name": self.name, "company": self.company, "title": self.title,
-                "phone": decrypt(self.phoneEncrypted) if self.phoneEncrypted else None,
-                "code": decrypt(self.codeEncrypted) if self.codeEncrypted else None,
+                "phone": masked_view(decrypt(self.phoneEncrypted)) if self.phoneEncrypted else None,
+                "code": masked_view(decrypt(self.codeEncrypted)) if self.codeEncrypted else None,
                 "type": self.type,
                 "socail": self.socail,
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET,

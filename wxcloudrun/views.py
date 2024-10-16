@@ -9,7 +9,7 @@ from wxcloudrun.dao import insert_user, search_friends_byopenid, insert_realtion
 from wxcloudrun.model import ConferenceInfo, User, ConferenceHall, RelationFriend, ConferenceSignUp, DigitalCityWeek
 from wxcloudrun.response import make_succ_response, make_err_response
 from wxcloudrun.utils import batchdownloadfile, uploadfile, uploadwebfile, getscheduleqrcode, \
-    send_check_msg, makeqrcode
+    send_check_msg, makeqrcode,send_tx_msg
 from wxcloudrun.cronjob import reload_image
 import config
 import requests
@@ -23,7 +23,7 @@ import os
 #     """
 #     初始化数据
 #     """
-#     reload_image()
+    
 
 @app.route('/api/conference/get_information_list', methods=['GET'])
 def get_information_list():
@@ -31,8 +31,7 @@ def get_information_list():
         :return:大会资讯列表
         """
     # 获取请求体参数
-    result = ConferenceInfo.query.filter(ConferenceInfo.is_deleted == 0).all()
-    data = [item.get() for item in result]
+    result = ConferenceInfo.query.filter(ConferenceInfo.is_deleted == 0).order_by(ConferenceInfo.order.desc()).all()
     return make_succ_response([item.get() for item in result])
 
 
@@ -520,9 +519,7 @@ def send_msg():
     """
     params = request.get_json()
     wxOpenid = request.headers['X-WX-OPENID']
-    result = send_check_msg(openid=params.get('openid'), meetingname='全球数商大会', content='用户报名审核',
-                            reason=params.get('reason'),
-                            phrase3="成功", date="2024-09-10")
+    result = send_tx_msg(phone=params.get('phone'),template_id=params.get('template_id'))
     return make_succ_response(result)
 
 
@@ -553,3 +550,17 @@ def get_reload_schedule():
     user_count = User.query.filter(User.is_deleted == 0).count()
     file=os.listdir('guest')
     return make_succ_response({"user_count":user_count,"file":len(file)})
+
+
+@app.route('/api/send_open_msg', methods=['POST'])
+def send_open_msg():
+    """
+        :return:发送消息
+    """
+    params = request.get_json()
+    users=User.query.filter(User.type=='开幕式观众',User.is_deleted==0).all()
+    print(len(users))
+    for user in users:
+        result=send_tx_msg(phone=[user.phone],template_id='2285544')
+        print(result)
+    return make_succ_response(0)
