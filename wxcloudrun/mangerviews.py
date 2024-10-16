@@ -368,7 +368,7 @@ def download_guest_list():
     name = request.args.get('name', default='', type=str)
     forum1 = request.args.get('forum', '')
     forum = get_jwt().get("forum", "")
-    bind_status = request.args.get('bind_status', type=bool)
+    bind_status = request.args.get('bind_status', type=int)
     if forum1 != '' and forum == '':
         forum = forum1
     if bind_status is None:
