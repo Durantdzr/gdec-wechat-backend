@@ -329,7 +329,46 @@ def manage_get_guest_list():
         per_page=page_size,
         error_out=False)
     data = [guest.get_guest() for guest in guests.items]
+    for item in data:
+        user=User.query.filter(User.origin_userid==item.id).first()
+        if user is not None:
+            item['bind_status']=True
+        else:
+            item['bind_status']=False
     return make_succ_page_response(data, code=200, total=guests.total)
+
+@app.route('/api/manage/download_guest_list', methods=['GET'])
+@jwt_required()
+def download_guest_list():
+    """
+        :return:下载嘉宾列表
+    """
+    name = request.args.get('name', default='', type=str)
+    forum1 = request.args.get('forum', '')
+    forum = get_jwt().get("forum", "")
+    if forum1 != '' and forum == '':
+        forum = forum1
+    users = User.query.filter(User.type == '嘉宾', User.is_deleted == 0, User.name.like('%' + name + '%'),
+                               User.forum.like('%' + forum + '%')).all()
+    df = pd.read_excel('template.xlsx')
+    now = datetime.datetime.now().strftime('%Y-%m-%d%H:%M:%S')
+    os.mkdir(now)
+    os.mkdir('{}/guest'.format(now))
+    for user in users:
+        if user.img_url is not None:
+            if os.path.exists(user.img_url):
+                shutil.copy2(user.img_url, '{}/{}'.format(now, user.img_url))
+            else:
+                download_cdn_file(user.img_url, '{}/{}'.format(now, user.img_url))
+        df = df.append({"序号": user.id, "员工编号": user.id, "姓名": user.name, "性别": "男", "电话号码": user.phone,
+                        "证件类型": "身份证" if user.code is None or len(user.code) == 18 else '普通护照',
+                        "证件号码": user.code,"用户类型":user.type,"单位":user.company,"职务":user.title,
+                        "照片路径(相对路径)": '/' + user.img_url}, ignore_index=True)
+    df.to_excel('{}/人员信息表.xlsx'.format(now), index=False)
+    zip_folder(now, '数商大会人员信息导出{}.zip'.format(now))
+    operatr_log(get_jwt_identity(), request.url_rule.rule, '下载成功', request.remote_addr)
+    return send_file('../数商大会人员信息导出{}.zip'.format(now),
+                     download_name='数商大会人员信息导出{}.zip'.format(now))
 
 
 @app.route('/api/manage/upload_img', methods=['post'])
@@ -828,6 +867,7 @@ def manage_add_information_list():
     conferenceinfo.create_time = params.get('create_time')
     conferenceinfo.file_url = params.get('cdn_param')
     conferenceinfo.link_url = params.get('link_url')
+    conferenceinfo.order = params.get('order')
     insert_user(conferenceinfo)
     refresh_conference_info()
     operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
@@ -849,6 +889,7 @@ def manage_edit_information_list():
     conferenceinfo.create_time = params.get('create_time')
     conferenceinfo.file_url = params.get('cdn_param')
     conferenceinfo.link_url = params.get('link_url')
+    conferenceinfo.order = params.get('order')
     insert_user(conferenceinfo)
     refresh_conference_info()
     operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)

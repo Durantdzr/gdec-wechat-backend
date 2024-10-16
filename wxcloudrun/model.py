@@ -17,6 +17,7 @@ class ConferenceInfo(db.Model):
     file_url = db.Column('file_url', db.TEXT)
     link_url = db.Column('link_url', db.TEXT)
     is_deleted = db.Column('is_deleted', db.INT, default=0)
+    order = db.Column('order', db.Integer, default=0)
 
     def get(self):
         return {'id': self.id, 'title': self.title, 'org': self.org,

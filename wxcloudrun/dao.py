@@ -553,7 +553,7 @@ def refresh_guest_info(userid):
 
 
 def refresh_conference_info():
-    result = ConferenceInfo.query.filter(ConferenceInfo.is_deleted == 0).all()
+    result = ConferenceInfo.query.filter(ConferenceInfo.is_deleted == 0).order_by(ConferenceInfo.order.desc()).all()
     data = [item.get() for item in result]
     uploadwebfile(data, file='get_information_list.json')
 
