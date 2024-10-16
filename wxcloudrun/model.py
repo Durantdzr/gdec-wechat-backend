@@ -23,7 +23,7 @@ class ConferenceInfo(db.Model):
         return {'id': self.id, 'title': self.title, 'org': self.org,
                 'file_url': 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.file_url),
                 "cdn_param": self.file_url, 'create_time': self.create_time.strftime('%Y-%m-%d'),
-                'link_url': self.link_url}
+                'link_url': self.link_url,"order": self.order}
 
 
 WEEKDAY = {0: '周一', 1: '周二', 2: '周三', 3: '周四', 4: '周五', 5: '周六', 6: '周日'}
