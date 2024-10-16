@@ -1261,7 +1261,7 @@ def get_statics_info():
 
 
 @app.route('/api/manage/download_conference_sign_up_num', methods=['GET'])
-# @jwt_required()
+@jwt_required()
 def download_conference_sign_up_num():
     """
         :return:下载活动报名人数统计excel
@@ -1272,6 +1272,6 @@ def download_conference_sign_up_num():
     os.mkdir(now)
     df.to_excel('{}/会议报名统计.xlsx'.format(now), index=False)
     zip_folder(now, '数商大会会议报名统计{}.zip'.format(now))
-    # operatr_log(get_jwt_identity(), request.url_rule.rule, '下载成功', request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, '下载成功', request.remote_addr)
     return send_file('../数商大会会议报名统计{}.zip'.format(now),
                      download_name='数商大会会议报名统计{}.zip'.format(now))
