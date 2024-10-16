@@ -352,7 +352,7 @@ def manage_get_guest_list():
     
     data = [guest.get_guest() for guest in guests.items]
     for num in range(len(data)):
-        user=User.query.filter(User.origin_userid==data[num].id).first()
+        user=User.query.filter(User.origin_userid==data[num].get("id")).first()
         if user is not None:
             data[num]['bind_status']=True
         else:
