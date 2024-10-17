@@ -19,6 +19,7 @@ import uuid
 import base64
 import os
 
+
 # @app.before_first_request
 # def init_data():
 #     """
@@ -143,7 +144,7 @@ def get_user_phone():
         json_data = json.loads(data_list.get('json', ''))
         json_data = json_data.get('data', {})
         phoneNumber = json_data.get('phoneNumber', '')
-        if user.status!=2 or user.status!=3:
+        if user.status!=2 and user.status!=3:
             user.savephoneEncrypted(phoneNumber)
         user.openid = str(uuid.uuid4())
         insert_user(user)
@@ -163,7 +164,7 @@ def get_user_phone():
             user.img_url = None
             user.phoneEncrypted = None
             user.codeEncrypted = None
-        elif user.phone!=phoneNumber and user.openid==request.headers['X-WX-OPENID']:
+        elif user.phone==masked_view(phoneNumber) and user.openid==request.headers['X-WX-OPENID']:
             user.phone = phoneNumber
             user.savephoneEncrypted(phoneNumber)
             user.auto_flag = 1
