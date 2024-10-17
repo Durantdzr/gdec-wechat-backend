@@ -146,7 +146,8 @@ def get_user_phone():
         phoneNumber = json_data.get('phoneNumber', '')
         if user.status!=2 and user.status!=3:
             user.savephoneEncrypted(phoneNumber)
-        user.openid = str(uuid.uuid4())
+        s=str(uuid.uuid4())
+        user.openid = s
         insert_user(user)
         user = User.query.filter(or_(User.phone == phoneNumber,User.phone==masked_view(phoneNumber))).first()
         if user is None:
@@ -164,7 +165,7 @@ def get_user_phone():
             user.img_url = None
             user.phoneEncrypted = None
             user.codeEncrypted = None
-        elif user.phone==masked_view(phoneNumber) and user.openid==request.headers['X-WX-OPENID']:
+        elif user.phone==masked_view(phoneNumber) and user.openid==s:
             user.phone = phoneNumber
             user.savephoneEncrypted(phoneNumber)
             user.auto_flag = 1
