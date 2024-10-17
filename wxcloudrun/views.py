@@ -9,7 +9,8 @@ from wxcloudrun.dao import insert_user, search_friends_byopenid, insert_realtion
 from wxcloudrun.model import ConferenceInfo, User, ConferenceHall, RelationFriend, ConferenceSignUp, DigitalCityWeek
 from wxcloudrun.response import make_succ_response, make_err_response
 from wxcloudrun.utils import batchdownloadfile, uploadfile, uploadwebfile, getscheduleqrcode, \
-    send_check_msg, makeqrcode,send_tx_msg
+    send_check_msg, makeqrcode,send_tx_msg,masked_view
+from sqlalchemy import or_
 from wxcloudrun.cronjob import reload_image
 import config
 import requests
@@ -17,6 +18,7 @@ import json
 import uuid
 import base64
 import os
+
 
 # @app.before_first_request
 # def init_data():
@@ -142,10 +144,12 @@ def get_user_phone():
         json_data = json.loads(data_list.get('json', ''))
         json_data = json_data.get('data', {})
         phoneNumber = json_data.get('phoneNumber', '')
-        user.savephoneEncrypted(phoneNumber)
-        user.openid = str(uuid.uuid4())
+        if user.status!=2 and user.status!=3:
+            user.savephoneEncrypted(phoneNumber)
+        s=str(uuid.uuid4())
+        user.openid = s
         insert_user(user)
-        user = User.query.filter(User.phone == phoneNumber).first()
+        user = User.query.filter(or_(User.phone == phoneNumber,User.phone==masked_view(phoneNumber))).first()
         if user is None:
             user = User()
             user.phone = phoneNumber
@@ -161,6 +165,10 @@ def get_user_phone():
             user.img_url = None
             user.phoneEncrypted = None
             user.codeEncrypted = None
+        elif user.phone==masked_view(phoneNumber) and user.openid==s:
+            user.phone = phoneNumber
+            user.savephoneEncrypted(phoneNumber)
+            user.auto_flag = 1
         user.openid = request.headers['X-WX-OPENID']
         insert_user(user)
     return make_succ_response(data)
