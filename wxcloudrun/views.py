@@ -9,7 +9,8 @@ from wxcloudrun.dao import insert_user, search_friends_byopenid, insert_realtion
 from wxcloudrun.model import ConferenceInfo, User, ConferenceHall, RelationFriend, ConferenceSignUp, DigitalCityWeek
 from wxcloudrun.response import make_succ_response, make_err_response
 from wxcloudrun.utils import batchdownloadfile, uploadfile, uploadwebfile, getscheduleqrcode, \
-    send_check_msg, makeqrcode,send_tx_msg
+    send_check_msg, makeqrcode,send_tx_msg,masked_view
+from sqlalchemy import or_
 from wxcloudrun.cronjob import reload_image
 import config
 import requests
