@@ -190,6 +190,7 @@ class User(db.Model):
     phoneEncrypted = db.Column('phone_encrypted', db.BINARY)
     origin_userid = db.Column('origin_user_id', db.INT)
     branch = db.Column('branch', db.INT)
+    auto_flag = db.Column('auto_flag', db.INT)
 
     def get_status(self):
         status_ENUM = {1: '审核未通过', 2: '审核已通过', 0: '未审核', 3: '待审核'}
