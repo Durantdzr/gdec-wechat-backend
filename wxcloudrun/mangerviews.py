@@ -545,6 +545,7 @@ def add_hall_schedule():
     schedule.coorganizer = ','.join([str(item) for item in params.get('coorganizer', [])])
     schedule.background = params.get('background')
     schedule.label = params.get('label')
+    schedule.signup_max=params.get('signup_max')
     if schedule.label=='分论坛':
         schedule.order=5
     if schedule.label=='分论坛（外场）':
@@ -597,6 +598,7 @@ def edit_hall_schedule():
     schedule.coorganizer = ','.join([str(item) for item in params.get('coorganizer', [])])
     schedule.background = params.get('background')
     schedule.label = params.get('label')
+    schedule.signup_max = params.get('signup_max')
     if schedule.label=='分论坛':
         schedule.order=5
     if schedule.label=='分论坛（外场）':

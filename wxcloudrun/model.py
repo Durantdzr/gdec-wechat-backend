@@ -58,6 +58,7 @@ class ConferenceSchedule(db.Model):
     background = db.Column('background', db.TEXT)
     label = db.Column('label', db.String(30), nullable=True)
     order = db.Column('order', db.Integer, default=0)
+    signup_max= db.Column('signup_max', db.Integer, default=30)
 
     def get_live(self):
         status_ENUM = {1: '即将直播', 2: '正在直播', 3: '查看回放'}
@@ -99,7 +100,7 @@ class ConferenceSchedule(db.Model):
                 "agenda": [] if (self.agenda is None or self.agenda == '') else json.loads(self.agenda),
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url),
                 'cdn_param': self.img_url, "sponsor": sponsor, "supported": supported, "organizer": organizer,
-                "coorganizer": coorganizer, "background": self.background, "label": self.label,
+                "coorganizer": coorganizer, "background": self.background, "label": self.label,"signup_max":self.signup_max,
                 "qrcode_cdn": 'https://{}.tcb.qcloud.la/{}qrcode_schedule_{}.jpg'.format(config.COS_BUCKET,
                                                                                          config.VERSION, self.id)}
 
@@ -117,7 +118,7 @@ class ConferenceSchedule(db.Model):
             sponsor = list(map(int, self.sponsor.split(',')))
         return {'id': self.id, 'title': self.title, 'hall': self.location, "location": self.hall,
                 'conference_date': self.conference_date.strftime('%Y-%m-%d'), 'status': status_ENUM.get(self.status),
-                "begin_time": self.begin_time, "end_time": self.end_time, 'live_url': self.live_url,
+                "begin_time": self.begin_time, "end_time": self.end_time, 'live_url': self.live_url,"signup_max":self.signup_max,
                 "record_url": self.record_url, 'guest_id': guest_id, 'ext': self.label, "sponsor": sponsor,
                 'live_status': live_status_ENUM.get(self.live_status, ''),"blockchain_ext":"会议论坛" if self.label in ["开幕式","分论坛","分论坛（外场）"] else self.label}
 
@@ -148,7 +149,7 @@ class ConferenceSchedule(db.Model):
         return {'id': self.id, 'title': self.title, 'hall': self.location, "location": self.hall,
                 'conference_date': self.conference_date.strftime('%Y-%m-%d'),
                 "begin_time": self.begin_time, "end_time": self.end_time, 'live_url': self.live_url,
-                "record_url": self.record_url, 'ext': self.label,
+                "record_url": self.record_url, 'ext': self.label,"signup_max":self.signup_max,
                 "agenda": [] if (self.agenda is None or self.agenda == '') else json.loads(self.agenda),
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url), "guest_id": guest_id,
                 'status': status_ENUM.get(self.status), 'live_status': live_status_ENUM.get(self.live_status, ''),
