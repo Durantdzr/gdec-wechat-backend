@@ -209,7 +209,7 @@ def upload_user_info():
     user.type = params.get("type")
     user.socail = params.get("socail", 0)
     user.img_url = params.get("cdn_param")
-    user.status = 3
+    user.status = 2
     insert_user(user)
     return make_succ_response(user.id)
 
