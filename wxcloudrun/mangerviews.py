@@ -8,7 +8,7 @@
 """
 import datetime
 import json
-
+import math
 from flask import request, send_file
 from run import app
 from wxcloudrun.dao import update_user_statusbyid, insert_user, get_review_conference_list, update_schedule_statusbyid, \
@@ -545,7 +545,7 @@ def add_hall_schedule():
     schedule.coorganizer = ','.join([str(item) for item in params.get('coorganizer', [])])
     schedule.background = params.get('background')
     schedule.label = params.get('label')
-    schedule.signup_max=params.get('signup_max')
+    schedule.signup_max=math.floor(params.get('signup_max'))
     if schedule.label=='分论坛':
         schedule.order=5
     if schedule.label=='分论坛（外场）':
@@ -598,7 +598,7 @@ def edit_hall_schedule():
     schedule.coorganizer = ','.join([str(item) for item in params.get('coorganizer', [])])
     schedule.background = params.get('background')
     schedule.label = params.get('label')
-    schedule.signup_max = params.get('signup_max')
+    schedule.signup_max = math.floor(params.get('signup_max'))
     if schedule.label=='分论坛':
         schedule.order=5
     if schedule.label=='分论坛（外场）':

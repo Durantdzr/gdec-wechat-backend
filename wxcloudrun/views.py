@@ -6,7 +6,7 @@ from wxcloudrun.dao import insert_user, search_friends_byopenid, insert_realtion
     get_user_schedule_num_by_id, refresh_schedule_info, get_hall_schedule_byid, get_hall_exhibition_bydate, \
     get_hall_exhibition_byid, get_hall_exhibition, search_friends_random, refresh_guest, refresh_guest_info, is_friend, \
     get_hall_blockchain_schedule
-from wxcloudrun.model import ConferenceInfo, User, ConferenceHall, RelationFriend, ConferenceSignUp, DigitalCityWeek
+from wxcloudrun.model import ConferenceInfo, User, ConferenceHall, RelationFriend, ConferenceSignUp, DigitalCityWeek,ConferenceSchedule
 from wxcloudrun.response import make_succ_response, make_err_response
 from wxcloudrun.utils import batchdownloadfile, uploadfile, uploadwebfile, getscheduleqrcode, \
     send_check_msg, makeqrcode,send_tx_msg,masked_view
@@ -109,6 +109,11 @@ def sign_up_conference():
     if ConferenceSignUp.query.filter(ConferenceSignUp.schedule_id == params['schedule_id'],
                                      ConferenceSignUp.user_id == user.id).first():
         return make_err_response('已报名过该会议')
+    success=len(ConferenceSignUp.query.filter(ConferenceSignUp.schedule_id == params['schedule_id'],
+                                  ConferenceSignUp.status == 2).all())
+    signup_max=ConferenceSchedule.query.filter(ConferenceSchedule.id==params['schedule_id']).first()
+    if success>=signup_max.signup_max:
+        return make_err_response('报名人数已满')
     sign_up = ConferenceSignUp()
     sign_up.user_id = user.id
     sign_up.schedule_id = params.get('schedule_id')
