@@ -11,6 +11,7 @@ from sqlalchemy import or_, and_
 from wxcloudrun.utils import uploadwebfile, send_check_msg,masked_view
 import config
 
+
 # 初始化日志
 logger = logging.getLogger('log')
 
@@ -352,9 +353,9 @@ def find_user_schedule_tobegin():
     return data
 
 
-def get_hall_schedule_bydate(date):
+def get_hall_schedule_bydate(date=datetime.datetime.now().strftime('%Y-%m-%d')):
     result = ConferenceSchedule.query.filter(
-        ConferenceSchedule.is_deleted == 0, ConferenceSchedule.conference_date == date).order_by(
+        ConferenceSchedule.is_deleted == 0, ConferenceSchedule.conference_date >= date).order_by(
         ConferenceSchedule.order.desc(), ConferenceSchedule.begin_time.asc()).all()
     data = []
     for item in result:

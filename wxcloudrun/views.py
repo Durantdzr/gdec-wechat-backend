@@ -70,7 +70,7 @@ def get_hall_schedule():
     if blockChain:
         data = get_hall_blockchain_schedule()
     else:
-        data = get_hall_schedule_bydate(date)
+        data = get_hall_schedule_bydate()
     return make_succ_response(data)
 
 
