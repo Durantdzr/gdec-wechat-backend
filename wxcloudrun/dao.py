@@ -8,7 +8,7 @@ from wxcloudrun import db
 from wxcloudrun.model import ConferenceInfo, RelationFriend, User, ConferenceSignUp, ConferenceSchedule, \
     ConferenCoopearter, ConferenceCooperatorShow, OperaterLog, OperaterRule, Exhibiton
 from sqlalchemy import or_, and_
-from wxcloudrun.utils import uploadwebfile, send_check_msg,masked_view
+from wxcloudrun.utils import uploadwebfile, send_check_msg,masked_view,send_signup_check_msg
 import config
 
 
@@ -183,7 +183,11 @@ def update_schedule_statusbyid(signuplist, status):
     """
     try:
         records = ConferenceSignUp.query.filter(ConferenceSignUp.id.in_(signuplist)).all()
+        status_ENUM = {0: "审核未通过", 1: "审核通过"}
         for record in records:
+            schedule=ConferenceSchedule.query.filter(ConferenceSchedule.id==record.schedule_id).first()
+            user=User.query.filter(User.id==record.user_id).first()
+            send_signup_check_msg(openid=user.openid, meetingname=schedule.title,reason=status_ENUM.get(status), date=datetime.datetime.now().strftime('%Y-%m-%d'))
             record.status = status
         db.session.commit()
         return True

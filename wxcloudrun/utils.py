@@ -162,6 +162,28 @@ def send_check_msg(openid, meetingname, content, reason, phrase3, date):
                            json=data)
     return result.json()
 
+def send_signup_check_msg(openid, meetingname,  reason, date):
+    data = {
+        "touser": openid,
+        "template_id": "bHsq35N7aVQUPK-2-pUlBQXYnf95mHU22UupirPrcGg",
+        "data": {
+            "thing1": {
+                "value": meetingname
+            },
+            "phrase7": {
+                "value": reason
+            },
+            "time6": {
+                "value": date
+            }
+        },
+        "miniprogram_state": "trial",
+        "lang": "zh_CN"
+    }
+
+    result = requests.post('http://api.weixin.qq.com/cgi-bin/message/subscribe/send', params={"openid": openid},
+                           json=data)
+    return result.json()
 
 def get_urllink(openid='omf5s7V9tfLS25ZxIXE0TtJCaZ3w'):
     data = {"expire_type": 1, "expire_interval": 15, "env_version": "trial"}
