@@ -466,6 +466,10 @@ def manage_get_hall_schedule():
     data = []
     for item in result.items:
         schedule = item.get_schedule()
+        signup = ConferenceSignUp.query.filter_by(schedule_id=schedule['id']).all()
+        signup_success = ConferenceSignUp.query.filter_by(schedule_id=schedule['id'], status=2).all()
+        schedule['signup_success'] = len(signup_success)
+        schedule['signup'] = len(signup)
         schedule['guest_info'] = []
         schedule['sponsor_info'] = []
         schedule['supported_info'] = []
