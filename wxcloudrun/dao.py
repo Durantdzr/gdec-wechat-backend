@@ -504,6 +504,10 @@ def get_hall_schedule_byid(id):
         schedule['coorganizer_info'].extend(get_coopearter_by_list(schedule.get('coorganizer', [])))
     if len(schedule.get('sponsor', [])) > 0:
         schedule['sponsor_info'].extend(get_coopearter_by_list(schedule.get('sponsor', [])))
+    signup=ConferenceSignUp.query.filter_by(schedule_id=id).all()
+    signup_success=ConferenceSignUp.query.filter_by(schedule_id=id,status=2).all()
+    schedule['signup_success']=len(signup_success)
+    schedule['signup']=len(signup)
     return schedule
 
 
