@@ -190,20 +190,20 @@ def upload_user_info():
     if user is None:
         user = User()
         user.openid = request.headers['X-WX-OPENID']
-    if user.status == 2 and user.socail == params.get("socail", 0):
-        return make_err_response('用户已完成审核，无法再次提交审核。')
-    elif user.status == 2:
-        user.socail = params.get("socail", 0)
-        insert_user(user)
-        if user.origin_userid is not None:
-            guest = User.query.filter(User.id == user.origin_userid).first()
-            guest.socail = params.get("socail", 0)
-            insert_user(guest)
-            refresh_guest()
-            refresh_guest_info(guest.id)
-        return make_succ_response(user.id)
-    elif user.status == 3:
-        return make_err_response('无法提交用户数据')
+    # if user.status == 2 and user.socail == params.get("socail", 0):
+    #     return make_err_response('用户已完成审核，无法再次提交审核。')
+    # elif user.status == 2:
+    #     user.socail = params.get("socail", 0)
+    #     insert_user(user)
+    #     if user.origin_userid is not None:
+    #         guest = User.query.filter(User.id == user.origin_userid).first()
+    #         guest.socail = params.get("socail", 0)
+    #         insert_user(guest)
+    #         refresh_guest()
+    #         refresh_guest_info(guest.id)
+    #     return make_succ_response(user.id)
+    # elif user.status == 3:
+    #     return make_err_response('无法提交用户数据')
     user.name = params.get("name")
     user.phone = params.get("phone")
     user.savephoneEncrypted(params.get("phone"))
