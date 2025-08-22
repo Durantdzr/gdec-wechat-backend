@@ -67,10 +67,27 @@ def get_hall_schedule():
     date = request.args.get('date')
     wxOpenid = request.headers['X-WX-OPENID']
     blockChain = request.args.get('blockChain')
+    label = request.args.get('label')
+    forum = request.args.get('forum')
     if blockChain:
         data = get_hall_blockchain_schedule()
     else:
-        data = get_hall_schedule_bydate(date)
+        data = get_hall_schedule_bydate(date,label,forum)
+    return make_succ_response(data)
+
+@app.route('/api/conference/get_hall_forum', methods=['GET'])
+def get_hall_forum():
+    """
+        :return:大会会场日程
+    """
+    # 获取请求体参数
+    date = request.args.get('date')
+    wxOpenid = request.headers['X-WX-OPENID']
+    result=get_hall_schedule_bydate(date)
+    data=[]
+    for item in result:
+        if item.get('forum') not in data:
+            data.append(item.get('forum'))
     return make_succ_response(data)
 
 

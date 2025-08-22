@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-from wxcloudrun.utils import encrypt, decrypt,masked_view
+from wxcloudrun.utils import encrypt, decrypt, masked_view
 from wxcloudrun import db
 import config
 
@@ -23,7 +23,7 @@ class ConferenceInfo(db.Model):
         return {'id': self.id, 'title': self.title, 'org': self.org,
                 'file_url': 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.file_url),
                 "cdn_param": self.file_url, 'create_time': self.create_time.strftime('%Y-%m-%d'),
-                'link_url': self.link_url,"order": self.order}
+                'link_url': self.link_url, "order": self.order}
 
 
 WEEKDAY = {0: '周一', 1: '周二', 2: '周三', 3: '周四', 4: '周五', 5: '周六', 6: '周日'}
@@ -115,11 +115,13 @@ class ConferenceSchedule(db.Model):
             sponsor = []
         else:
             sponsor = list(map(int, self.sponsor.split(',')))
-        return {'id': self.id, 'title': self.title, 'hall': self.location, "location": self.hall,
-                'conference_date': self.conference_date.strftime('%Y-%m-%d'), 'status': status_ENUM.get(self.status),
+        return {'id': self.id, 'title': self.title, 'hall': self.location, "location": self.hall, "label": self.label,
+                "forum": self.forum, 'conference_date': self.conference_date.strftime('%Y-%m-%d'),
+                'status': status_ENUM.get(self.status),
                 "begin_time": self.begin_time, "end_time": self.end_time, 'live_url': self.live_url,
                 "record_url": self.record_url, 'guest_id': guest_id, 'ext': self.label, "sponsor": sponsor,
-                'live_status': live_status_ENUM.get(self.live_status, ''),"blockchain_ext":"会议论坛" if self.label in ["开幕式","分论坛","分论坛（外场）"] else self.label}
+                'live_status': live_status_ENUM.get(self.live_status, ''),
+                "blockchain_ext": "会议论坛" if self.label in ["开幕式", "分论坛", "分论坛（外场）"] else self.label}
 
     def get_schedule_view_simple(self):
         status_ENUM = {0: '我要报名', 1: '正在直播' if self.live_status == 1 else '会议进行中',
@@ -279,7 +281,7 @@ class Media(db.Model):
         if self.type == '图片':
             return {"id": self.id, "name": self.name, "info": self.info, "type": self.type,
                     "cdn_param": self.media_param,
-                    "web_url": 'https://{}.tcb.qcloud.la/{}web/{}'.format(config.COS_BUCKET, config.VERSION,self.id)}
+                    "web_url": 'https://{}.tcb.qcloud.la/{}web/{}'.format(config.COS_BUCKET, config.VERSION, self.id)}
         else:
             return {"id": self.id, "name": self.name, "info": self.info, "type": self.type, "doc": self.media_param,
                     "web_url": 'https://{}.tcb.qcloud.la/{}web/{}'.format(config.COS_BUCKET, config.VERSION, self.id)}
@@ -398,7 +400,7 @@ class Exhibiton(db.Model):
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url),
                 'cdn_param': self.img_url, "sponsor": sponsor, "supported": supported, "organizer": organizer,
                 "coorganizer": coorganizer, "info": self.info, "label": self.label}
-    
+
     def get_blockview_simple(self):
         status_ENUM = {0: '我要报名', 1: '会议进行中', 2: '会议结束', 3: "不可报名"}
         if self.sponsor is None or self.sponsor == '':
@@ -419,7 +421,7 @@ class Exhibiton(db.Model):
             coorganizer = list(map(int, self.coorganizer.split(',')))
         return {'id': self.id, 'title': self.title, 'hall': self.location, "location": self.hall,
                 'status': status_ENUM.get(self.status), "district": self.district,
-                'conference_date':self.begin_time.strftime('%Y-%m-%d'),
+                'conference_date': self.begin_time.strftime('%Y-%m-%d'),
                 "begin_time": self.begin_time.strftime('%H:%M'),
                 "end_time": self.end_time.strftime('%H:%M'),
                 "participating_unit": [] if (
@@ -427,7 +429,7 @@ class Exhibiton(db.Model):
                     self.participating_unit),
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url),
                 'cdn_param': self.img_url, "sponsor": sponsor, "supported": supported, "organizer": organizer,
-                "coorganizer": coorganizer, "info": self.info, "label": self.label,"blockchain_ext":self.district}
+                "coorganizer": coorganizer, "info": self.info, "label": self.label, "blockchain_ext": self.district}
 
 
 class DigitalCityWeek(db.Model):

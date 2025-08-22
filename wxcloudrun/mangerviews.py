@@ -64,13 +64,15 @@ def login():
     if pwdhash != vaild_password(user.password):
         operatr_log(username, request.url_rule.rule, '密码错误', request.remote_addr)
         return make_err_response('认证失败')
-    additional_claims = {"forum": user.forum}
-    access_token = create_access_token(identity=username, expires_delta=timedelta(days=1),
-                                       additional_claims=additional_claims)
+
     if user.forum == '':
         branch = 0
+        additional_claims = {"forum": "主论坛"}
     else:
         branch = user.branch
+        additional_claims = {"forum": user.forum}
+    access_token = create_access_token(identity=username, expires_delta=timedelta(days=1),
+                                       additional_claims=additional_claims)
     operatr_log(username, request.url_rule.rule, '登录成功',
                 request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response({"access_token": access_token, "branch": branch}, code=200)
