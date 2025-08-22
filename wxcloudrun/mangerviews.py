@@ -38,7 +38,7 @@ def admin_required():
         def decorator(*args, **kwargs):
             verify_jwt_in_request()
             claims = get_jwt()
-            if claims["forum"] == "":
+            if claims["forum"] == "主论坛":
                 return fn(*args, **kwargs)
             else:
                 operatr_log(get_jwt_identity(), request.url_rule.rule, '用户权限错误', request.remote_addr)
