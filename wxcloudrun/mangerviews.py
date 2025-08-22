@@ -323,7 +323,7 @@ def manage_get_guest_list():
     forum1 = request.args.get('forum', '')
     bind_status = request.args.get('bind_status', type=int)
     forum = get_jwt().get("forum", "")
-    if forum1 != '' and forum == '':
+    if forum1 != '' and forum == '主论坛':
         forum = forum1
         
     if bind_status is None:
@@ -371,7 +371,7 @@ def download_guest_list():
     forum1 = request.args.get('forum', '')
     forum = get_jwt().get("forum", "")
     bind_status = request.args.get('bind_status', type=int)
-    if forum1 != '' and forum == '':
+    if forum1 != '' and forum == '主论坛':
         forum = forum1
     if bind_status is None:
         users = User.query.filter(User.type == '嘉宾', User.is_deleted == 0, User.name.like('%' + name + '%'),
