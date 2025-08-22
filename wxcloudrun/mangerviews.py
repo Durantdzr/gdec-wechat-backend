@@ -653,6 +653,8 @@ def get_cooperater():
     """
     # 获取请求体参数
     forum = get_jwt().get("forum")
+    if forum=="主论坛":
+        forum = ""
     name = request.args.get('name', '')
     type = request.args.get('type')
     page = request.args.get('page', default=1, type=int)
