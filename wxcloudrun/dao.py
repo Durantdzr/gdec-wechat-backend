@@ -8,7 +8,7 @@ from wxcloudrun import db
 from wxcloudrun.model import ConferenceInfo, RelationFriend, User, ConferenceSignUp, ConferenceSchedule, \
     ConferenCoopearter, ConferenceCooperatorShow, OperaterLog, OperaterRule, Exhibiton
 from sqlalchemy import or_, and_
-from wxcloudrun.utils import uploadwebfile, send_check_msg,masked_view
+from wxcloudrun.utils import uploadwebfile, send_check_msg, masked_view
 import config
 
 # 初始化日志
@@ -49,20 +49,24 @@ def search_friends_byopenid(openid, name):
     for friend in friends:
         friend_list.append(friend.operater_id)
         friend_list.append(friend.inviter_id)
-    schedules=ConferenceSchedule.query.filter(ConferenceSchedule.title.like('%' + name + '%'),ConferenceSchedule.is_deleted==0).all()
-    guest=[]
-    schedule_id=[]
+    schedules = ConferenceSchedule.query.filter(ConferenceSchedule.title.like('%' + name + '%'),
+                                                ConferenceSchedule.is_deleted == 0).all()
+    guest = []
+    schedule_id = []
     for item in schedules:
-        schedule=item.get_schedule()
-        guest.extend(schedule.get('guest_id',[]))
+        schedule = item.get_schedule()
+        guest.extend(schedule.get('guest_id', []))
         schedule_id.append(schedule.get('id'))
-    user_id=[]
-    sign_up=ConferenceSignUp.query.filter(ConferenceSignUp.schedule_id.in_(schedule_id),ConferenceSignUp.status==2).all()
+    user_id = []
+    sign_up = ConferenceSignUp.query.filter(ConferenceSignUp.schedule_id.in_(schedule_id),
+                                            ConferenceSignUp.status == 2).all()
     for item in sign_up:
         user_id.append(item.user_id)
-    socail_user = User.query.filter(or_(User.name.like('%' + name + '%'), User.company.like('%' + name + '%'),User.origin_userid.in_(guest),User.id.in_(user_id)),
-                                User.status == 2, User.is_deleted == 0, ~User.type.in_(['嘉宾', '管理员']),
-                                User.socail == 1, ~User.id.in_(friend_list)).all()
+    socail_user = User.query.filter(
+        or_(User.name.like('%' + name + '%'), User.company.like('%' + name + '%'), User.origin_userid.in_(guest),
+            User.id.in_(user_id)),
+        User.status == 2, User.is_deleted == 0, ~User.type.in_(['嘉宾', '管理员']),
+        User.socail == 1, ~User.id.in_(friend_list)).all()
     return socail_user
 
 
@@ -82,9 +86,11 @@ def search_friends_random(openid):
 
 
 def is_friend(user_id, friend_id):
-    r_friend=RelationFriend.query.filter(RelationFriend.is_deleted==0,
-        or_(and_(RelationFriend.operater_id == user_id, RelationFriend.inviter_id == friend_id),
-            and_(RelationFriend.operater_id == friend_id, RelationFriend.inviter_id == user_id))).first()
+    r_friend = RelationFriend.query.filter(RelationFriend.is_deleted == 0,
+                                           or_(and_(RelationFriend.operater_id == user_id,
+                                                    RelationFriend.inviter_id == friend_id),
+                                               and_(RelationFriend.operater_id == friend_id,
+                                                    RelationFriend.inviter_id == user_id))).first()
     if r_friend:
         return True
     else:
@@ -258,7 +264,8 @@ def get_review_conference_list(name, page, page_size, forum, status):
              "end_time": schedule.end_time, "phone": user.phone, "status": signup.status, "company": user.company,
              "title": user.title} for signup, user, schedule in result.items], result.total
 
-def get_all_review_conference_list(name,  forum, status):
+
+def get_all_review_conference_list(name, forum, status):
     if status is None:
         result = db.session.query(ConferenceSignUp, User, ConferenceSchedule).join(User,
                                                                                    User.id == ConferenceSignUp.user_id).join(
@@ -277,8 +284,10 @@ def get_all_review_conference_list(name,  forum, status):
     signup_status_ENUM = {0: '等待审核', 1: '审核未通过', 2: '审核通过'}
     return [{"id": signup.id, "姓名": user.name, "预约会议名": schedule.title,
              "日期": schedule.conference_date.strftime('%Y-%m-%d'), "开始时间": schedule.begin_time,
-             "结束时间": schedule.end_time, "联系方式": user.phone, "状态": signup_status_ENUM.get(signup.status), "公司名称": user.company,
+             "结束时间": schedule.end_time, "联系方式": user.phone, "状态": signup_status_ENUM.get(signup.status),
+             "公司名称": user.company,
              "职务": user.title} for signup, user, schedule in result]
+
 
 def get_all_signup_conference_statics():
     ConferenceScheduleAlias = aliased(ConferenceSchedule)
@@ -297,7 +306,8 @@ def get_all_signup_conference_statics():
     ).all()
 
     # 将结果转换为字典列表
-    return [{"会议名": row.会议名, "预约数量": row.预约数量,"统计日期":datetime.datetime.now().strftime('%Y-%m-%d')} for row in result]
+    return [{"会议名": row.会议名, "预约数量": row.预约数量, "统计日期": datetime.datetime.now().strftime('%Y-%m-%d')}
+            for row in result]
 
 
 def get_conference_schedule_by_id(userid):
@@ -332,7 +342,7 @@ def get_user_schedule_num_by_id(userid):
 
 
 def get_user_picture():
-    users=User.query.filter(User.is_deleted == 0).all()
+    users = User.query.filter(User.is_deleted == 0).all()
     return [user.img_url for user in users]
 
 
@@ -352,10 +362,21 @@ def find_user_schedule_tobegin():
     return data
 
 
-def get_hall_schedule_bydate(date):
-    result = ConferenceSchedule.query.filter(
-        ConferenceSchedule.is_deleted == 0, ConferenceSchedule.conference_date == date).order_by(
-        ConferenceSchedule.order.desc(), ConferenceSchedule.begin_time.asc()).all()
+def get_hall_schedule_bydate(date, label=None, forum=None):
+    query = ConferenceSchedule.query.filter(
+        ConferenceSchedule.is_deleted == 0,
+        ConferenceSchedule.conference_date == date
+    )
+    if label is not None:
+        query = query.filter(ConferenceSchedule.label == label)
+    if forum is not None:
+        query = query.filter(ConferenceSchedule.forum == forum)
+
+    result = query.order_by(
+        ConferenceSchedule.order.desc(),
+        ConferenceSchedule.begin_time.asc()
+    ).all()
+
     data = []
     for item in result:
         schedule = item.get_schedule_view()
@@ -372,19 +393,21 @@ def get_hall_schedule_bydate(date):
         data.append(schedule)
     return data
 
+
 def get_hall_blockchain_schedule():
     result = ConferenceSchedule.query.filter(
-        ConferenceSchedule.is_deleted == 0,or_(ConferenceSchedule.title.like("%链%"),ConferenceSchedule.label=='展示展览')).order_by(
+        ConferenceSchedule.is_deleted == 0,
+        or_(ConferenceSchedule.title.like("%链%"), ConferenceSchedule.label == '展示展览')).order_by(
         ConferenceSchedule.begin_time.asc()).all()
     Exhibitonresult = Exhibiton.query.filter(
-        Exhibiton.is_deleted ==0, Exhibiton.district=='展示展览').order_by(
+        Exhibiton.is_deleted == 0, Exhibiton.district == '展示展览').order_by(
         Exhibiton.begin_time.asc()).all()
     data = []
     for item in result:
         schedule = item.get_schedule_view()
         schedule['guest_img'] = []
         schedule['sponsor_info'] = []
-        schedule['type']='schedule'
+        schedule['type'] = 'schedule'
         if len(schedule.get('guest_id', [])) > 0:
             for guest in schedule.get('guest_id', []):
                 user = User.query.filter_by(id=guest, is_deleted=0).first()
@@ -395,8 +418,8 @@ def get_hall_blockchain_schedule():
             schedule['sponsor_info'].extend(get_coopearter_by_list(schedule.get('sponsor', [])))
         data.append(schedule)
     for item in Exhibitonresult:
-        exhibiton=item.get_blockview_simple()
-        exhibiton['type']='exhibition'
+        exhibiton = item.get_blockview_simple()
+        exhibiton['type'] = 'exhibition'
         exhibiton['guest_img'] = []
         exhibiton['sponsor_info'] = []
         if len(exhibiton.get('sponsor', [])) > 0:
@@ -426,9 +449,9 @@ def get_hall_exhibition():
     result = Exhibiton.query.filter(
         Exhibiton.is_deleted == 0).order_by(
         Exhibiton.begin_time.asc()).all()
-    data=[]
+    data = []
     for item in result:
-        exhibition=item.get_view_simple()
+        exhibition = item.get_view_simple()
         exhibition['guest_info'] = []
         exhibition['sponsor_info'] = []
         exhibition['supported_info'] = []
