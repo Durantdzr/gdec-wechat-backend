@@ -5,12 +5,13 @@ from wxcloudrun.dao import insert_user, search_friends_byopenid, insert_realtion
     get_main_hall_guests_list, get_other_hall_guests_list, get_cooperater_list, get_hall_schedule_bydate, get_live_data, \
     get_user_schedule_num_by_id, refresh_schedule_info, get_hall_schedule_byid, get_hall_exhibition_bydate, \
     get_hall_exhibition_byid, get_hall_exhibition, search_friends_random, refresh_guest, refresh_guest_info, is_friend, \
-    get_hall_blockchain_schedule
-from wxcloudrun.model import ConferenceInfo, User, ConferenceHall, RelationFriend, ConferenceSignUp, DigitalCityWeek
+    get_hall_blockchain_schedule, get_business_list
+from wxcloudrun.model import ConferenceInfo, User, ConferenceHall, RelationFriend, ConferenceSignUp, DigitalCityWeek, \
+    BusinessInfo, EnterpriseCertified
 from wxcloudrun.response import make_succ_response, make_err_response
 from wxcloudrun.utils import batchdownloadfile, uploadfile, uploadwebfile, getscheduleqrcode, \
-    send_check_msg, makeqrcode,send_tx_msg,masked_view
-from sqlalchemy import or_
+    send_check_msg, makeqrcode, send_tx_msg, masked_view
+from sqlalchemy import or_, and_
 from wxcloudrun.cronjob import reload_image
 import config
 import requests
@@ -25,7 +26,7 @@ import os
 #     """
 #     初始化数据
 #     """
-    
+
 
 @app.route('/api/conference/get_information_list', methods=['GET'])
 def get_information_list():
@@ -72,8 +73,9 @@ def get_hall_schedule():
     if blockChain:
         data = get_hall_blockchain_schedule()
     else:
-        data = get_hall_schedule_bydate(date,label,forum)
+        data = get_hall_schedule_bydate(date, label, forum)
     return make_succ_response(data)
+
 
 @app.route('/api/conference/get_hall_forum', methods=['GET'])
 def get_hall_forum():
@@ -83,8 +85,8 @@ def get_hall_forum():
     # 获取请求体参数
     date = request.args.get('date')
     wxOpenid = request.headers['X-WX-OPENID']
-    result=get_hall_schedule_bydate(date)
-    data=[]
+    result = get_hall_schedule_bydate(date)
+    data = []
     for item in result:
         if item.get('forum') not in data:
             data.append(item.get('forum'))
@@ -161,12 +163,12 @@ def get_user_phone():
         json_data = json.loads(data_list.get('json', ''))
         json_data = json_data.get('data', {})
         phoneNumber = json_data.get('phoneNumber', '')
-        if user.status!=2 and user.status!=3:
+        if user.status != 2 and user.status != 3:
             user.savephoneEncrypted(phoneNumber)
-        s=str(uuid.uuid4())
+        s = str(uuid.uuid4())
         user.openid = s
         insert_user(user)
-        user = User.query.filter(or_(User.phone == phoneNumber,User.phone==masked_view(phoneNumber))).first()
+        user = User.query.filter(or_(User.phone == phoneNumber, User.phone == masked_view(phoneNumber))).first()
         if user is None:
             user = User()
             user.phone = phoneNumber
@@ -182,7 +184,7 @@ def get_user_phone():
             user.img_url = None
             user.phoneEncrypted = None
             user.codeEncrypted = None
-        elif user.phone==masked_view(phoneNumber) and user.openid==s:
+        elif user.phone == masked_view(phoneNumber) and user.openid == s:
             user.phone = phoneNumber
             user.savephoneEncrypted(phoneNumber)
             user.auto_flag = 1
@@ -425,7 +427,7 @@ def downloadfile_json():
     # 获取请求体参数
     wxopenid = request.headers['X-WX-OPENID']
     cloudid = request.args.get('cloudid', "")
-    return make_succ_response(batchdownloadfile([cloudid],wxopenid))
+    return make_succ_response(batchdownloadfile([cloudid], wxopenid))
 
 
 @app.route('/api/conference/get_schedule_list', methods=['GET'])
@@ -544,7 +546,7 @@ def send_msg():
     """
     params = request.get_json()
     wxOpenid = request.headers['X-WX-OPENID']
-    result = send_tx_msg(phone=params.get('phone'),template_id=params.get('template_id'))
+    result = send_tx_msg(phone=params.get('phone'), template_id=params.get('template_id'))
     return make_succ_response(result)
 
 
@@ -561,6 +563,7 @@ def digital_city_week():
     uploadwebfile(data, openid=wxopenid, file='digital_city_week.json')
     return make_succ_response(data)
 
+
 @app.route('/api/conference/reload_image', methods=['GET'])
 def reload_images():
     """
@@ -570,11 +573,12 @@ def reload_images():
     reload_image()
     return make_succ_response(0)
 
+
 @app.route('/api/conference/get_reload_schedule', methods=['GET'])
 def get_reload_schedule():
     user_count = User.query.filter(User.is_deleted == 0).count()
-    file=os.listdir('guest')
-    return make_succ_response({"user_count":user_count,"file":len(file)})
+    file = os.listdir('guest')
+    return make_succ_response({"user_count": user_count, "file": len(file)})
 
 
 @app.route('/api/send_open_msg', methods=['POST'])
@@ -583,9 +587,113 @@ def send_open_msg():
         :return:发送消息
     """
     params = request.get_json()
-    users=User.query.filter(User.type=='开幕式观众',User.is_deleted==0).all()
+    users = User.query.filter(User.type == '开幕式观众', User.is_deleted == 0).all()
     print(len(users))
     for user in users:
-        result=send_tx_msg(phone=[user.phone],template_id='2285544')
+        result = send_tx_msg(phone=[user.phone], template_id='2285544')
         print(result)
     return make_succ_response(0)
+
+
+@app.route('/api/business/upload_img', methods=['POST'])
+def business_upload_img():
+    """
+    :return:上传文件
+    """
+    # 获取请求体参数
+
+    params = request.get_json()
+    src = params.get('img_encode')
+    data = src.split(',')[1]
+    image_data = base64.b64decode(data)
+    u = uuid.uuid4()
+    filename = 'business/' + str(u) + '.jpeg'
+    with open(filename, 'wb') as file_to_save:
+        file_to_save.write(image_data)
+    uploadfile(filename, openid=request.headers['X-WX-OPENID'])
+    return make_succ_response(
+        {'img_url': 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, filename), "cdn_param": filename})
+
+
+@app.route('/api/business/certified', methods=['POST'])
+def business_business_certified():
+    """
+    :return:提交用户企业认证
+    """
+    # 获取请求体参数
+    params = request.get_json()
+    user = User.query.filter(User.openid == request.headers['X-WX-OPENID']).first()
+    if user is None:
+        return make_err_response('用户不存在')
+    if user.status != 2:
+        return make_err_response('用户未完成审核，请稍后。')
+    else:
+        certified = EnterpriseCertified.query.filter(
+            or_(EnterpriseCertified.user_id == user.id, and_(EnterpriseCertified.status == 1,
+                                                             EnterpriseCertified.code == params.get('code'))),
+            EnterpriseCertified.is_deleted == 0).first()
+        if certified is not None:
+            return make_err_response('该用户或者企业已有认证，请勿重新提交')
+        certified = EnterpriseCertified()
+        certified.user_id = user.id
+        certified.name = params.get('name')
+        certified.code = params.get('code')
+        certified.file_url = params.get('cdn_param')
+        insert_user(certified)
+        return make_succ_response(certified.id)
+
+
+@app.route('/api/business/deploy_info', methods=['POST'])
+def business_deploy_info():
+    """
+    :return:商务信息发布
+    """
+    # 获取请求体参数
+    params = request.get_json()
+    user = User.query.filter(User.openid == request.headers['X-WX-OPENID']).first()
+    if user is None:
+        return make_err_response('用户不存在')
+    certified = EnterpriseCertified.query.filter(EnterpriseCertified.user_id == user.id,
+                                                 EnterpriseCertified.status == 1,
+                                                 EnterpriseCertified.is_deleted == 0).first()
+    if certified is None:
+        return make_err_response('该用户未完成企业认证')
+    business = BusinessInfo()
+    business.title = params.get('title')
+    business.company = certified.name
+    business.type = params.get('type')
+    business.project_info = params.get('project_info')
+    business.demand = params.get('demand')
+    business.team_info = params.get('team_info')
+    business.creater_userid = user.id
+    insert_user(business)
+    return make_succ_response(business.id)
+
+
+@app.route('/api/business/list_info', methods=['GET'])
+def business_list_info():
+    """
+    :return:获取我发布的商务信息
+    """
+    # 获取请求体参数
+    wxopenid = request.headers['X-WX-OPENID']
+    user = User.query.filter(User.openid == wxopenid).first()
+    if user is None:
+        return make_err_response('用户不存在')
+    result = BusinessInfo.query.filter(BusinessInfo.creater_userid == user.id, BusinessInfo.is_deleted == 0).order_by(
+        BusinessInfo.create_time.desc()).all()
+    data = [item.get() for item in result]
+    return make_succ_response(data)
+
+
+@app.route('/api/business/list_all_info', methods=['GET'])
+def business_list_all_info():
+    """
+    :return:获取商务信息列表
+    """
+    # 获取请求体参数
+    wxopenid = request.headers['X-WX-OPENID']
+    title = request.args.get('title')
+    type = request.args.get('type')
+    data = get_business_list(title, type)
+    return make_succ_response(data)

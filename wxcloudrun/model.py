@@ -451,3 +451,41 @@ class DigitalCityWeek(db.Model):
     def get(self):
         return {"title": self.title, "dept": self.dept, "location": self.location, "activity_time": self.activity_time,
                 "contact": self.contact, "info": self.info, "url": self.url, "slogan": self.slogan}
+
+
+class BusinessInfo(db.Model):
+    # 设置结构体表格名称
+    __tablename__ = 'business_info'
+
+    # 设定结构体对应表格的字段
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column('title', db.String(50), nullable=True)
+    company = db.Column('company', db.String(50), nullable=True)
+    type = db.Column('type', db.String(20), nullable=True)
+    project_info = db.Column('project_info', db.TEXT, nullable=True)
+    demand = db.Column('demand', db.String(20), nullable=True)
+    team_info = db.Column('team_info', db.TEXT, nullable=True)
+    creater_userid = db.Column('creater_userid', db.Integer, nullable=True)
+    is_deleted = db.Column('is_deleted', db.Integer, nullable=True, default=0)
+    create_time = db.Column('create_time', db.DateTime, nullable=True, default=datetime.now)
+
+    def get(self):
+        return {"id": self.id, "title": self.title, "company": self.company, "type": self.type,
+                "project_info": self.project_info, "demand": self.demand, "team_info": self.team_info,
+                "creater_userid": self.creater_userid, "is_deleted": self.is_deleted,
+                "create_time": self.create_time.strftime('%Y-%m-%d')}
+
+
+class EnterpriseCertified(db.Model):
+    # 设置结构体表格名称
+    __tablename__ = 'enterprise_certified'
+
+    # 设定结构体对应表格的字段
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column('name', db.String(50), nullable=True)
+    code = db.Column('code', db.String(50), nullable=True)
+    file_url = db.Column('file', db.String(100), nullable=True)
+    user_id = db.Column('user_id', db.Integer, nullable=True)
+    status = db.Column('status', db.Integer, nullable=True, default=0)
+    is_deleted = db.Column('is_deleted', db.Integer, nullable=True, default=0)
+    create_time = db.Column('create_time', db.DateTime, nullable=True, default=datetime.now)
