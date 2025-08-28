@@ -639,6 +639,11 @@ def business_business_certified():
         certified.name = params.get('name')
         certified.code = params.get('code')
         certified.file_url = params.get('cdn_param')
+        certified.scale = params.get('scale')
+        certified.industry=params.get('industry')
+        certified.area = params.get('area')
+        certified.financing_stage = params.get('financing_stage')
+        certified.result = params.get('result')
         insert_user(certified)
         return make_succ_response(certified.id)
 
