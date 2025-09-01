@@ -5,9 +5,9 @@ from wxcloudrun.dao import insert_user, search_friends_byopenid, insert_realtion
     get_main_hall_guests_list, get_other_hall_guests_list, get_cooperater_list, get_hall_schedule_bydate, get_live_data, \
     get_user_schedule_num_by_id, refresh_schedule_info, get_hall_schedule_byid, get_hall_exhibition_bydate, \
     get_hall_exhibition_byid, get_hall_exhibition, search_friends_random, refresh_guest, refresh_guest_info, is_friend, \
-    get_hall_blockchain_schedule, get_business_list
+    get_hall_blockchain_schedule, get_business_list, get_enterprise_list
 from wxcloudrun.model import ConferenceInfo, User, ConferenceHall, RelationFriend, ConferenceSignUp, DigitalCityWeek, \
-    BusinessInfo, EnterpriseCertified
+    BusinessInfo, EnterpriseCertified, BusinessNegotiation
 from wxcloudrun.response import make_succ_response, make_err_response
 from wxcloudrun.utils import batchdownloadfile, uploadfile, uploadwebfile, getscheduleqrcode, \
     send_check_msg, makeqrcode, send_tx_msg, masked_view
@@ -640,7 +640,7 @@ def business_business_certified():
         certified.code = params.get('code')
         certified.file_url = params.get('cdn_param')
         certified.scale = params.get('scale')
-        certified.industry=params.get('industry')
+        certified.industry = params.get('industry')
         certified.area = params.get('area')
         certified.financing_stage = params.get('financing_stage')
         certified.result = params.get('result')
@@ -700,5 +700,99 @@ def business_list_all_info():
     wxopenid = request.headers['X-WX-OPENID']
     title = request.args.get('title')
     type = request.args.get('type')
-    data = get_business_list(title, type)
+    data = []
+    business_list_info = get_business_list(title, type)
+    data.extend(business_list_info)
+    enterprise_list_info = get_enterprise_list(title, type)
+    data.extend(enterprise_list_info)
     return make_succ_response(data)
+
+
+@app.route('/api/business/negotiation', methods=['POST'])
+def business_negotiation():
+    """
+    :return:商务洽谈
+    """
+    # 获取请求体参数
+    params = request.get_json()
+    user = User.query.filter(User.openid == request.headers['X-WX-OPENID']).first()
+    if user is None:
+        return make_err_response('用户不存在')
+    negotiation = BusinessNegotiation.query.filter(
+        BusinessNegotiation.chat_object_type == params.get('chat_object_type'),
+        BusinessNegotiation.chat_object_id == params.get('chat_object_id'),
+        BusinessNegotiation.creater_userid == user.id).first()
+    if negotiation is not None:
+        return make_err_response('该用户已经提交过该洽谈信息')
+    negotiation = BusinessNegotiation()
+    negotiation.chat_object_type = params.get('chat_object_type')
+    negotiation.chat_object_id = params.get('chat_object_id')
+    negotiation.creater_userid = user.id
+    negotiation.negotation_intention = params.get('negotation_intention')
+    if params.get('chat_object_type') == '项目':
+        business = BusinessInfo.query.filter(BusinessInfo.id == params.get('chat_object_id'),
+                                             BusinessInfo.is_deleted == 0).first()
+        if business is None:
+            return make_err_response('该商务信息不存在')
+        else:
+            negotiation.negotation_userid = business.creater_userid
+            negotiation.chat_object_name = business.title
+    elif params.get('chat_object_type') == '企业':
+        enterprise = EnterpriseCertified.query.filter(EnterpriseCertified.id == params.get('chat_object_id'),
+                                                      EnterpriseCertified.is_deleted == 0).first()
+        if enterprise is None:
+            return make_err_response('该企业不存在')
+        else:
+            negotiation.negotation_userid = enterprise.user_id
+            negotiation.chat_object_name = enterprise.name
+    insert_user(negotiation)
+    return make_succ_response(negotiation.id)
+
+
+@app.route('/api/business/list_send_negotiation', methods=['GET'])
+def business_list_send_negotiation():
+    """
+    :return:获取发起洽谈列表
+    """
+    # 获取请求体参数
+    wxopenid = request.headers['X-WX-OPENID']
+    status = request.args.get('status')
+    user = User.query.filter(User.openid == request.headers['X-WX-OPENID']).first()
+    query = BusinessNegotiation.query.filter(BusinessNegotiation.creater_userid == user.id)
+    if status is not None:
+        query = query.filter(
+            or_(BusinessNegotiation.status == status))
+    data = query.order_by(BusinessNegotiation.create_time.desc()).all()
+    return make_succ_response([item.get() for item in data])
+
+
+@app.route('/api/business/list_receive_negotiation', methods=['GET'])
+def business_list_receive_negotiation():
+    """
+    :return:获取收到洽谈列表
+    """
+    # 获取请求体参数
+    wxopenid = request.headers['X-WX-OPENID']
+    status = request.args.get('status')
+    user = User.query.filter(User.openid == request.headers['X-WX-OPENID']).first()
+    query = BusinessNegotiation.query.filter(BusinessNegotiation.negotation_userid == user.id)
+    if status is not None:
+        query = query.filter(
+            or_(BusinessNegotiation.status == status))
+    data = query.order_by(BusinessNegotiation.create_time.desc()).all()
+    return make_succ_response([item.get() for item in data])
+
+
+@app.route('/api/business/negotiation_opt', methods=['POST'])
+def business_negotiation_opt():
+    """
+    :return:商务洽谈
+    """
+    # 获取请求体参数
+    params = request.get_json()
+    negotiation=BusinessNegotiation.query.filter(
+        BusinessNegotiation.id == params.get('id'),
+        BusinessNegotiation.is_deleted == 0).first()
+    negotiation.status = params.get('status')
+    insert_user(negotiation)
+    return make_succ_response(negotiation.id)

@@ -464,6 +464,7 @@ class BusinessInfo(db.Model):
     type = db.Column('type', db.String(20), nullable=True)
     project_info = db.Column('project_info', db.TEXT, nullable=True)
     demand = db.Column('demand', db.String(20), nullable=True)
+    status = db.Column('status', db.INT, nullable=True)
     team_info = db.Column('team_info', db.TEXT, nullable=True)
     creater_userid = db.Column('creater_userid', db.Integer, nullable=True)
     is_deleted = db.Column('is_deleted', db.Integer, nullable=True, default=0)
@@ -471,9 +472,9 @@ class BusinessInfo(db.Model):
 
     def get(self):
         return {"id": self.id, "title": self.title, "company": self.company, "type": self.type,
-                "project_info": self.project_info, "demand": self.demand, "team_info": self.team_info,
-                "creater_userid": self.creater_userid, "is_deleted": self.is_deleted,
-                "create_time": self.create_time.strftime('%Y-%m-%d')}
+                "project_info": self.project_info, "demand": self.demand, "status": self.status,
+                "team_info": self.team_info, "creater_userid": self.creater_userid, "is_deleted": self.is_deleted,
+                "create_time": self.create_time.strftime('%Y-%m-%d'), "chat_object_type": "项目"}
 
 
 class EnterpriseCertified(db.Model):
@@ -485,12 +486,45 @@ class EnterpriseCertified(db.Model):
     name = db.Column('name', db.String(50), nullable=True)
     code = db.Column('code', db.String(50), nullable=True)
     file_url = db.Column('file', db.String(100), nullable=True)
-    scale=db.Column('scale', db.String(50), nullable=True)
+    scale = db.Column('scale', db.String(50), nullable=True)
     industry = db.Column('industry', db.String(50), nullable=True)
     area = db.Column('area', db.String(100), nullable=True)
     financing_stage = db.Column('financing_stage', db.String(50), nullable=True)
-    result=db.Column('result', db.TEXT, nullable=True)
+    result = db.Column('result', db.TEXT, nullable=True)
     user_id = db.Column('user_id', db.Integer, nullable=True)
     status = db.Column('status', db.Integer, nullable=True, default=0)
     is_deleted = db.Column('is_deleted', db.Integer, nullable=True, default=0)
     create_time = db.Column('create_time', db.DateTime, nullable=True, default=datetime.now)
+
+    def get(self):
+        return {"id": self.id, "name": self.name, "code": self.code, "file_url": self.file_url, "scale": self.scale,
+                "industry": self.industry, "area": self.area, "financing_stage": self.financing_stage,
+                "result": self.result, "user_id": self.user_id, "status": self.status, "is_deleted": self.is_deleted,
+                "create_time": self.create_time.strftime('%Y-%m-%d'), "chat_object_type": "企业"
+                }
+
+
+class BusinessNegotiation(db.Model):
+    # 设置结构体表格名称
+    __tablename__ = 'business_negotiation'
+
+    # 设定结构体对应表格的字段
+    id = db.Column(db.Integer, primary_key=True)
+    chat_object_id = db.Column('chat_object_id', db.Integer, nullable=True)
+    chat_object_type = db.Column('chat_object_type', db.String(50), nullable=True)
+    chat_object_name = db.Column('chat_object_name', db.String(100), nullable=True)
+    creater_userid = db.Column('creater_userid', db.Integer, nullable=True)
+    negotation_userid = db.Column('negotiation_userid', db.Integer, nullable=True)
+    negotation_intention = db.Column('negotiation_intention', db.String(100), nullable=True)
+    status = db.Column('status', db.INT, nullable=True, default=0)
+    is_deleted = db.Column('is_deleted', db.Integer, nullable=True, default=0)
+    create_time = db.Column('create_time', db.DateTime, nullable=True, default=datetime.now)
+
+    def get(self):
+        status_ENUM = {0: "待通过", 1: "已拒绝", 2: "已同意"}
+        return {"id": self.id, "chat_object_id": self.chat_object_id, "chat_object_type": self.chat_object_type,
+                "chat_object_name": self.chat_object_name, "creater_userid": self.creater_userid,
+                "negotation_userid": self.negotation_userid, "negotation_intention": self.negotation_intention,
+                "status": self.status, "status_info": status_ENUM.get(self.status),
+                "create_time": self.create_time.strftime('%Y-%m-%d')
+                }

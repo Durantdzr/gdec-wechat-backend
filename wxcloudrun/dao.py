@@ -6,7 +6,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import aliased
 from wxcloudrun import db
 from wxcloudrun.model import ConferenceInfo, RelationFriend, User, ConferenceSignUp, ConferenceSchedule, \
-    ConferenCoopearter, ConferenceCooperatorShow, OperaterLog, OperaterRule, Exhibiton, BusinessInfo
+    ConferenCoopearter, ConferenceCooperatorShow, OperaterLog, OperaterRule, Exhibiton, BusinessInfo,EnterpriseCertified
 from sqlalchemy import or_, and_
 from wxcloudrun.utils import uploadwebfile, send_check_msg, masked_view
 import config
@@ -626,10 +626,21 @@ def get_operat_list(page, page_size, operator, event, begin_time, end_time):
 
 
 def get_business_list(title=None, type=None):
-    query = BusinessInfo.query.filter(BusinessInfo.is_deleted == 0)
+    query = BusinessInfo.query.filter(BusinessInfo.is_deleted == 0, BusinessInfo.status == 1)
     if title is not None:
-        query = query.filter(or_(BusinessInfo.title.like('%' + title + '%'),BusinessInfo.company.like('%' + title + '%')))
+        query = query.filter(
+            or_(BusinessInfo.title.like('%' + title + '%'), BusinessInfo.company.like('%' + title + '%')))
     if type is not None:
         query = query.filter(BusinessInfo.type.like('%' + type + '%'))
     result = query.order_by(BusinessInfo.create_time.desc()).all()
+    return [item.get() for item in result]
+
+def get_enterprise_list(title=None, type=None):
+    query = EnterpriseCertified.query.filter(EnterpriseCertified.is_deleted == 0, EnterpriseCertified.status == 1)
+    if title is not None:
+        query = query.filter(
+            or_(EnterpriseCertified.name.like('%' + title + '%')))
+    if type is not None:
+        query = query.filter(EnterpriseCertified.industry.like('%' + type + '%'))
+    result = query.order_by(EnterpriseCertified.create_time.desc()).all()
     return [item.get() for item in result]
