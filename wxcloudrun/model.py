@@ -528,3 +528,28 @@ class BusinessNegotiation(db.Model):
                 "status": self.status, "status_info": status_ENUM.get(self.status),
                 "create_time": self.create_time.strftime('%Y-%m-%d')
                 }
+
+
+class MeetingRoom(db.Model):
+    # 设置结构体表格名称
+    __tablename__ = 't_meeting_room'
+
+    # 设定结构体对应表格的字段
+    id = db.Column(db.Integer, primary_key=True)
+    location = db.Column('location', db.String(100), nullable=True)
+    name = db.Column('name', db.String(100), nullable=True)
+
+    def get(self):
+        return {"id": self.id, "location": self.location, "name": self.name}
+
+
+class MeetingReservation(db.Model):
+    # 设置结构体表格名称
+    __tablename__ = 't_meeting_reservation'
+
+    # 设定结构体对应表格的字段
+    id = db.Column(db.Integer, primary_key=True)
+    meeting_room_id = db.Column('meeting_room_id', db.INT, nullable=True)
+    is_deleted = db.Column('is_deleted', db.Integer, nullable=True, default=0)
+    start_time = db.Column('start_time', db.DateTime, nullable=True)
+    end_time = db.Column('end_time', db.DateTime, nullable=True)

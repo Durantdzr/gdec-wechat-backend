@@ -7,11 +7,11 @@ from wxcloudrun.dao import insert_user, search_friends_byopenid, insert_realtion
     get_hall_exhibition_byid, get_hall_exhibition, search_friends_random, refresh_guest, refresh_guest_info, is_friend, \
     get_hall_blockchain_schedule, get_business_list, get_enterprise_list
 from wxcloudrun.model import ConferenceInfo, User, ConferenceHall, RelationFriend, ConferenceSignUp, DigitalCityWeek, \
-    BusinessInfo, EnterpriseCertified, BusinessNegotiation
+    BusinessInfo, EnterpriseCertified, BusinessNegotiation, MeetingRoom, MeetingReservation
 from wxcloudrun.response import make_succ_response, make_err_response
 from wxcloudrun.utils import batchdownloadfile, uploadfile, uploadwebfile, getscheduleqrcode, \
     send_check_msg, makeqrcode, send_tx_msg, masked_view
-from sqlalchemy import or_, and_
+from sqlalchemy import or_, and_, func
 from wxcloudrun.cronjob import reload_image
 import config
 import requests
@@ -19,6 +19,7 @@ import json
 import uuid
 import base64
 import os
+import datetime
 
 
 # @app.before_first_request
@@ -790,9 +791,48 @@ def business_negotiation_opt():
     """
     # 获取请求体参数
     params = request.get_json()
-    negotiation=BusinessNegotiation.query.filter(
+    negotiation = BusinessNegotiation.query.filter(
         BusinessNegotiation.id == params.get('id'),
         BusinessNegotiation.is_deleted == 0).first()
     negotiation.status = params.get('status')
     insert_user(negotiation)
     return make_succ_response(negotiation.id)
+
+
+@app.route('/api/business/list_meeting_room', methods=['GET'])
+def business_list_meeting_room():
+    """
+    :return:获取会议室列表
+    """
+    # 获取请求体参数
+    wxopenid = request.headers['X-WX-OPENID']
+    data = MeetingRoom.query.all()
+    return make_succ_response([item.get() for item in data])
+
+
+@app.route('/api/business/get_meeting_room_available_time', methods=['GET'])
+def business_get_meeting_room_available_time():
+    """
+    :return:获取会议室可以预约时间
+    """
+    # 获取请求体参数
+    wxopenid = request.headers['X-WX-OPENID']
+    date = request.args.get('date')
+    meeting_room_id = request.args.get('meeting_room_id')
+    meeting_room_use_time = MeetingReservation.query.filter(
+        MeetingReservation.meeting_room_id == meeting_room_id,
+        func.date(MeetingReservation.start_time) == date).all()
+    meeting_room_use_time = [item.start_time.strftime('%H:%M') for item in meeting_room_use_time]
+    meeting_room_available_time = []
+    day = datetime.datetime.strptime(date, "%Y-%m-%d").date()
+    start_work = datetime.time(9, 0)
+    end_work = datetime.time(18, 0)
+    cursor = datetime.datetime.combine(day, start_work)
+    close = datetime.datetime.combine(day, end_work)
+    while cursor + datetime.timedelta(minutes=30) <= close:
+        if cursor.time().strftime('%H:%M') in meeting_room_use_time:
+            cursor += datetime.timedelta(minutes=30)
+            continue
+        meeting_room_available_time.append((cursor.time().strftime('%H:%M'), (cursor + datetime.timedelta(minutes=30)).time().strftime('%H:%M')))
+        cursor += datetime.timedelta(minutes=30)
+    return make_succ_response(meeting_room_available_time)
