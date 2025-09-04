@@ -520,8 +520,11 @@ class BusinessNegotiation(db.Model):
     is_deleted = db.Column('is_deleted', db.Integer, nullable=True, default=0)
     create_time = db.Column('create_time', db.DateTime, nullable=True, default=datetime.now)
 
-    def get(self):
-        status_ENUM = {0: "待通过", 1: "已拒绝", 2: "已同意"}
+    def get(self,visit=True):
+        if visit:
+            status_ENUM = {0: "待审核", 1: "审核不通过", 2: "审核通过"}
+        else:
+            status_ENUM = {0: "待通过", 1: "已拒绝", 2: "已同意"}
         return {"id": self.id, "chat_object_id": self.chat_object_id, "chat_object_type": self.chat_object_type,
                 "chat_object_name": self.chat_object_name, "creater_userid": self.creater_userid,
                 "negotation_userid": self.negotation_userid, "negotation_intention": self.negotation_intention,

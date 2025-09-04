@@ -764,7 +764,7 @@ def business_list_send_negotiation():
         query = query.filter(
             or_(BusinessNegotiation.status == status))
     data = query.order_by(BusinessNegotiation.create_time.desc()).all()
-    return make_succ_response([item.get() for item in data])
+    return make_succ_response([item.get(True) for item in data])
 
 
 @app.route('/api/business/list_receive_negotiation', methods=['GET'])
@@ -781,7 +781,7 @@ def business_list_receive_negotiation():
         query = query.filter(
             or_(BusinessNegotiation.status == status))
     data = query.order_by(BusinessNegotiation.create_time.desc()).all()
-    return make_succ_response([item.get() for item in data])
+    return make_succ_response([item.get(False) for item in data])
 
 
 @app.route('/api/business/negotiation_opt', methods=['POST'])
