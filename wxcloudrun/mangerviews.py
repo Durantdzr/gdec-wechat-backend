@@ -14,13 +14,14 @@ from run import app
 from wxcloudrun.dao import update_user_statusbyid, insert_user, get_review_conference_list, update_schedule_statusbyid, \
     refresh_cooperater, refresh_guest, refresh_guest_info, get_hall_schedule_bydate, get_live_data, \
     refresh_conference_info, get_hall_schedule_byid, get_operat_list, get_hall_exhibition_byid, \
-    get_hall_exhibition,get_hall_blockchain_schedule,get_all_review_conference_list,get_all_signup_conference_statics
+    get_hall_exhibition, get_hall_blockchain_schedule, get_all_review_conference_list, get_all_signup_conference_statics
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, ConferenCoopearter, Media, \
-    ConferenceCooperatorShow, OperaterRule, Exhibiton,ConferenceSignUp,RelationFriend
+    ConferenceCooperatorShow, OperaterRule, Exhibiton, ConferenceSignUp, RelationFriend, EnterpriseCertified
 from wxcloudrun.response import make_succ_page_response, make_succ_response, make_err_response
 from wxcloudrun.utils import uploadfile, valid_image, vaild_password, uploadwebfile, download_cdn_file, zip_folder, \
     get_ticket, get_urllink, getscheduleqrcode
 from datetime import timedelta
+from sqlalchemy import or_
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, get_jwt, verify_jwt_in_request
 import uuid
 import config
@@ -31,6 +32,7 @@ import os
 from functools import wraps
 from wxcloudrun.logger import operatr_log
 import shutil
+
 
 def admin_required():
     def wrapper(fn):
@@ -102,13 +104,14 @@ def get_register_list():
     status = request.args.get('status', type=int)
     type = request.args.get('type', default='', type=str)
     if status is None:
-        users = User.query.filter(User.name.like('%' + name + '%'), User.status != 2, User.is_deleted == 0,User.type.like('%' + type + '%')).paginate(
+        users = User.query.filter(User.name.like('%' + name + '%'), User.status != 2, User.is_deleted == 0,
+                                  User.type.like('%' + type + '%')).paginate(
             page,
             per_page=page_size,
             error_out=False)
     else:
         users = User.query.filter(User.name.like('%' + name + '%'), User.status == status,
-                                  User.is_deleted == 0,User.type.like('%' + type + '%')).paginate(
+                                  User.is_deleted == 0, User.type.like('%' + type + '%')).paginate(
             page,
             per_page=page_size,
             error_out=False)
@@ -126,7 +129,8 @@ def get_success_user_list():
     page_size = request.args.get('page_size', default=10, type=int)
     name = request.args.get('name', default='', type=str)
     type = request.args.get('type', default='', type=str)
-    users = User.query.filter(User.name.like('%' + name + '%'), User.status == 2, User.is_deleted == 0,User.type.like('%' + type + '%'),
+    users = User.query.filter(User.name.like('%' + name + '%'), User.status == 2, User.is_deleted == 0,
+                              User.type.like('%' + type + '%'),
                               User.type.notin_(['管理员', '嘉宾'])).paginate(page,
                                                                              per_page=page_size,
                                                                              error_out=False)
@@ -232,8 +236,8 @@ def bind_guest():
         return make_err_response('该嘉宾已被关联')
     user = User.query.filter_by(id=params.get('id')).first()
     if user.origin_userid is not None:
-        old_guest= User.query.filter_by(id=user.origin_userid).first()
-        old_guest.socail=0
+        old_guest = User.query.filter_by(id=user.origin_userid).first()
+        old_guest.socail = 0
         insert_user(old_guest)
         refresh_guest_info(old_guest.id)
     user.origin_userid = params.get('guest_id')
@@ -295,7 +299,8 @@ def delete_guest():
         :return:删除嘉宾
         """
     params = request.get_json()
-    schedule=ConferenceSchedule.query.filter(ConferenceSchedule.guest.like('%' + str(params.get('id')) + '%'),ConferenceSchedule.is_deleted==0).first()
+    schedule = ConferenceSchedule.query.filter(ConferenceSchedule.guest.like('%' + str(params.get('id')) + '%'),
+                                               ConferenceSchedule.is_deleted == 0).first()
     if schedule is None:
         user = User.query.filter_by(id=params.get('id')).first()
         user.is_deleted = 1
@@ -305,9 +310,6 @@ def delete_guest():
         return make_succ_response(user.id, code=200)
     else:
         return make_err_response('嘉宾在日程中存在，无法删除')
-    
-    
-    
 
 
 @app.route('/api/manage/get_guest_list', methods=['GET'])
@@ -325,41 +327,42 @@ def manage_get_guest_list():
     forum = get_jwt().get("forum", "")
     if forum1 != '' and forum == '主论坛':
         forum = forum1
-        
+
     if bind_status is None:
         guests = User.query.filter(User.type == '嘉宾', User.is_deleted == 0, User.name.like('%' + name + '%'),
-                               User.forum.like('%' + forum + '%')).order_by(
-        User.order.desc()).paginate(
-        page,
-        per_page=page_size,
-        error_out=False)
+                                   User.forum.like('%' + forum + '%')).order_by(
+            User.order.desc()).paginate(
+            page,
+            per_page=page_size,
+            error_out=False)
     elif bind_status:
-        users=User.query.filter(User.origin_userid is not None,User.is_deleted==0).all()
-        guest_id=[user.origin_userid for user in users if user.origin_userid is not None]
+        users = User.query.filter(User.origin_userid is not None, User.is_deleted == 0).all()
+        guest_id = [user.origin_userid for user in users if user.origin_userid is not None]
         guests = User.query.filter(User.type == '嘉宾', User.is_deleted == 0, User.name.like('%' + name + '%'),
-                               User.forum.like('%' + forum + '%'),User.id.in_(guest_id)).order_by(
-        User.order.desc()).paginate(
-        page,
-        per_page=page_size,
-        error_out=False)
+                                   User.forum.like('%' + forum + '%'), User.id.in_(guest_id)).order_by(
+            User.order.desc()).paginate(
+            page,
+            per_page=page_size,
+            error_out=False)
     else:
-        users=User.query.filter(User.origin_userid is not None,User.is_deleted==0).all()
-        guest_id=[user.origin_userid for user in users if user.origin_userid is not None]
+        users = User.query.filter(User.origin_userid is not None, User.is_deleted == 0).all()
+        guest_id = [user.origin_userid for user in users if user.origin_userid is not None]
         guests = User.query.filter(User.type == '嘉宾', User.is_deleted == 0, User.name.like('%' + name + '%'),
-                               User.forum.like('%' + forum + '%'),User.id.notin_(guest_id)).order_by(
-        User.order.desc()).paginate(
-        page,
-        per_page=page_size,
-        error_out=False)
-    
+                                   User.forum.like('%' + forum + '%'), User.id.notin_(guest_id)).order_by(
+            User.order.desc()).paginate(
+            page,
+            per_page=page_size,
+            error_out=False)
+
     data = [guest.get_guest() for guest in guests.items]
     for num in range(len(data)):
-        user=User.query.filter(User.origin_userid==data[num].get("id")).first()
+        user = User.query.filter(User.origin_userid == data[num].get("id")).first()
         if user is not None:
-            data[num]['bind_status']=1
+            data[num]['bind_status'] = 1
         else:
-            data[num]['bind_status']=0
+            data[num]['bind_status'] = 0
     return make_succ_page_response(data, code=200, total=guests.total)
+
 
 @app.route('/api/manage/download_guest_list', methods=['GET'])
 @jwt_required()
@@ -375,18 +378,18 @@ def download_guest_list():
         forum = forum1
     if bind_status is None:
         users = User.query.filter(User.type == '嘉宾', User.is_deleted == 0, User.name.like('%' + name + '%'),
-                               User.forum.like('%' + forum + '%')).order_by(
-        User.order.desc()).all()
+                                  User.forum.like('%' + forum + '%')).order_by(
+            User.order.desc()).all()
     elif bind_status:
-        users=User.query.filter(User.origin_userid is not None,User.is_deleted==0).all()
-        guest_id=[user.origin_userid for user in users if user.origin_userid is not None]
+        users = User.query.filter(User.origin_userid is not None, User.is_deleted == 0).all()
+        guest_id = [user.origin_userid for user in users if user.origin_userid is not None]
         users = User.query.filter(User.type == '嘉宾', User.is_deleted == 0, User.name.like('%' + name + '%'),
-                               User.forum.like('%' + forum + '%'),User.id._in(guest_id)).all()
+                                  User.forum.like('%' + forum + '%'), User.id._in(guest_id)).all()
     else:
-        users=User.query.filter(User.origin_userid is not None,User.is_deleted==0).all()
-        guest_id=[user.origin_userid for user in users if user.origin_userid is not None]
+        users = User.query.filter(User.origin_userid is not None, User.is_deleted == 0).all()
+        guest_id = [user.origin_userid for user in users if user.origin_userid is not None]
         users = User.query.filter(User.type == '嘉宾', User.is_deleted == 0, User.name.like('%' + name + '%'),
-                               User.forum.like('%' + forum + '%'),User.id.notin_(guest_id)).all()
+                                  User.forum.like('%' + forum + '%'), User.id.notin_(guest_id)).all()
     df = pd.read_excel('template.xlsx')
     now = datetime.datetime.now().strftime('%Y-%m-%d%H:%M:%S')
     os.mkdir(now)
@@ -399,7 +402,7 @@ def download_guest_list():
                 download_cdn_file(user.img_url, '{}/{}'.format(now, user.img_url))
         df = df.append({"序号": user.id, "员工编号": user.id, "姓名": user.name, "性别": "男", "电话号码": user.phone,
                         "证件类型": "身份证" if user.code is None or len(user.code) == 18 else '普通护照',
-                        "证件号码": user.code,"用户类型":user.type,"单位":user.company,"职务":user.title,
+                        "证件号码": user.code, "用户类型": user.type, "单位": user.company, "职务": user.title,
                         "照片路径(相对路径)": '/' + user.img_url}, ignore_index=True)
     df.to_excel('{}/人员信息表.xlsx'.format(now), index=False)
     zip_folder(now, '数商大会人员信息导出{}.zip'.format(now))
@@ -547,12 +550,12 @@ def add_hall_schedule():
     schedule.coorganizer = ','.join([str(item) for item in params.get('coorganizer', [])])
     schedule.background = params.get('background')
     schedule.label = params.get('label')
-    if schedule.label=='分论坛':
-        schedule.order=5
-    if schedule.label=='分论坛（外场）':
-        schedule.order=4
-    if schedule.label=='路演对接':
-        schedule.order=3
+    if schedule.label == '分论坛':
+        schedule.order = 5
+    if schedule.label == '分论坛（外场）':
+        schedule.order = 4
+    if schedule.label == '路演对接':
+        schedule.order = 3
     insert_user(schedule)
     refresh_guest()
     refresh_cooperater()
@@ -599,12 +602,12 @@ def edit_hall_schedule():
     schedule.coorganizer = ','.join([str(item) for item in params.get('coorganizer', [])])
     schedule.background = params.get('background')
     schedule.label = params.get('label')
-    if schedule.label=='分论坛':
-        schedule.order=5
-    if schedule.label=='分论坛（外场）':
-        schedule.order=4
-    if schedule.label=='路演对接':
-        schedule.order=3
+    if schedule.label == '分论坛':
+        schedule.order = 5
+    if schedule.label == '分论坛（外场）':
+        schedule.order = 4
+    if schedule.label == '路演对接':
+        schedule.order = 3
     insert_user(schedule)
     refresh_guest()
     refresh_cooperater()
@@ -653,7 +656,7 @@ def get_cooperater():
     """
     # 获取请求体参数
     forum = get_jwt().get("forum")
-    if forum=="主论坛":
+    if forum == "主论坛":
         forum = ""
     name = request.args.get('name', '')
     type = request.args.get('type')
@@ -764,6 +767,7 @@ def get_conference_sign_up():
     result, total = get_review_conference_list(name, page, page_size, forum, status)
     return make_succ_page_response(result, code=200, total=total)
 
+
 @app.route('/api/manage/download_conference_sign_up', methods=['GET'])
 @jwt_required()
 def download_conference_sign_up():
@@ -773,7 +777,7 @@ def download_conference_sign_up():
     name = request.args.get('user_name', '')
     status = request.args.get('status', default=None, type=int)
     forum = get_jwt().get("forum", "")
-    result=get_all_review_conference_list(name,forum, status)
+    result = get_all_review_conference_list(name, forum, status)
     df = pd.DataFrame(result)
     now = datetime.datetime.now().strftime('%Y-%m-%d%H:%M:%S')
     os.mkdir(now)
@@ -782,6 +786,7 @@ def download_conference_sign_up():
     operatr_log(get_jwt_identity(), request.url_rule.rule, '下载成功', request.remote_addr)
     return send_file('../数商大会会议报名表{}.zip'.format(now),
                      download_name='数商大会会议报名表{}.zip'.format(now))
+
 
 @app.route('/api/manage/add_media', methods=['post'])
 @jwt_required()
@@ -797,7 +802,7 @@ def add_media():
     media.type = params.get('type')
     media.media_param = params.get('cdn_param', params.get('doc', ''))
     insert_user(media)
-    filename = config.VERSION+'web/' + str(media.id)
+    filename = config.VERSION + 'web/' + str(media.id)
     if params.get('type') == '文字':
         with open(filename, 'w') as f:
             f.write(params.get('doc'))
@@ -826,7 +831,7 @@ def edit_media():
     media.type = params.get('type')
     media.media_param = params.get('cdn_param', params.get('doc', ''))
     insert_user(media)
-    filename = config.VERSION+'web/' + str(media.id)
+    filename = config.VERSION + 'web/' + str(media.id)
     if params.get('type') == '文字':
         with open(filename, 'w') as f:
             f.write(params.get('doc'))
@@ -961,7 +966,8 @@ def download_user_list():
     """
     name = request.args.get('name', default='', type=str)
     type = request.args.get('type', default='', type=str)
-    users = User.query.filter(User.name.like('%' + name + '%'), User.status == 2, User.is_deleted == 0,User.type.like('%' + type + '%'),
+    users = User.query.filter(User.name.like('%' + name + '%'), User.status == 2, User.is_deleted == 0,
+                              User.type.like('%' + type + '%'),
                               User.type.notin_(['管理员', '嘉宾'])).all()
     df = pd.read_excel('template.xlsx')
     now = datetime.datetime.now().strftime('%Y-%m-%d%H:%M:%S')
@@ -975,13 +981,14 @@ def download_user_list():
                 download_cdn_file(user.img_url, '{}/{}'.format(now, user.img_url))
         df = df.append({"序号": user.id, "员工编号": user.id, "姓名": user.name, "性别": "男", "电话号码": user.phone,
                         "证件类型": "身份证" if user.code is None or len(user.code) == 18 else '普通护照',
-                        "证件号码": user.code,"用户类型":user.type,"单位":user.company,"职务":user.title,
+                        "证件号码": user.code, "用户类型": user.type, "单位": user.company, "职务": user.title,
                         "照片路径(相对路径)": '/' + user.img_url}, ignore_index=True)
     df.to_excel('{}/人员信息表.xlsx'.format(now), index=False)
     zip_folder(now, '数商大会人员信息导出{}.zip'.format(now))
     operatr_log(get_jwt_identity(), request.url_rule.rule, '下载成功', request.remote_addr)
     return send_file('../数商大会人员信息导出{}.zip'.format(now),
                      download_name='数商大会人员信息导出{}.zip'.format(now))
+
 
 @app.route('/api/manage/download_register_user_list', methods=['GET'])
 @jwt_required()
@@ -994,10 +1001,11 @@ def download_register_user_list():
     status = request.args.get('status', type=int)
     type = request.args.get('type', default='', type=str)
     if status is None:
-        users = User.query.filter(User.name.like('%' + name + '%'), User.status != 2, User.is_deleted == 0,User.type.like('%' + type + '%')).all()
+        users = User.query.filter(User.name.like('%' + name + '%'), User.status != 2, User.is_deleted == 0,
+                                  User.type.like('%' + type + '%')).all()
     else:
         users = User.query.filter(User.name.like('%' + name + '%'), User.status == status,
-                                  User.is_deleted == 0,User.type.like('%' + type + '%')).all()
+                                  User.is_deleted == 0, User.type.like('%' + type + '%')).all()
     df = pd.read_excel('template.xlsx')
     now = datetime.datetime.now().strftime('%Y-%m-%d%H:%M:%S')
     os.mkdir(now)
@@ -1010,7 +1018,7 @@ def download_register_user_list():
                 download_cdn_file(user.img_url, '{}/{}'.format(now, user.img_url))
         df = df.append({"序号": user.id, "员工编号": user.id, "姓名": user.name, "性别": "男", "电话号码": user.phone,
                         "证件类型": "身份证" if user.code is None or len(user.code) == 18 else '普通护照',
-                        "证件号码": user.code,"用户类型":user.type,"单位":user.company,"职务":user.title,
+                        "证件号码": user.code, "用户类型": user.type, "单位": user.company, "职务": user.title,
                         "照片路径(相对路径)": '/' + user.img_url}, ignore_index=True)
     df.to_excel('{}/人员信息表.xlsx'.format(now), index=False)
     zip_folder(now, '数商大会人员信息导出{}.zip'.format(now))
@@ -1133,7 +1141,7 @@ def add_exhibiton():
     uploadwebfile(data, file='get_hall_exhibition.json')
     data = get_hall_exhibition_byid(exhibiton.id)
     uploadwebfile(data, file='get_exhibition_by_id' + str(exhibiton.id) + '.json')
-    if exhibiton.district=='展示展览':
+    if exhibiton.district == '展示展览':
         data = get_hall_blockchain_schedule()
         uploadwebfile(data, file='get_hall_blockchain_schedule.json')
     return make_succ_response(exhibiton.id, code=200)
@@ -1170,7 +1178,7 @@ def edit_exhibtion():
     uploadwebfile(data, file='get_hall_exhibition.json')
     data = get_hall_exhibition_byid(exhibiton.id)
     uploadwebfile(data, file='get_exhibition_by_id' + str(exhibiton.id) + '.json')
-    if exhibiton.district=='展示展览':
+    if exhibiton.district == '展示展览':
         data = get_hall_blockchain_schedule()
         uploadwebfile(data, file='get_hall_blockchain_schedule.json')
     return make_succ_response(exhibiton.id, code=200)
@@ -1190,7 +1198,7 @@ def delete_exhibtion():
     refresh_cooperater()
     data = get_hall_exhibition()
     uploadwebfile(data, file='get_hall_exhibition.json')
-    if exhibiton.district=='展示展览':
+    if exhibiton.district == '展示展览':
         data = get_hall_blockchain_schedule()
         uploadwebfile(data, file='get_hall_blockchain_schedule.json')
     return make_succ_response(exhibiton.id, code=200)
@@ -1261,7 +1269,9 @@ def get_statics_info():
     schedule_signup_count = ConferenceSignUp.query.count()
     card_count = RelationFriend.query.count()
     save_card_count = RelationFriend.query.filter(RelationFriend.status == 1).count()
-    return make_succ_response({"user_count":user_count,"guest_count":guest_count,"schedule_signup_count":schedule_signup_count,"card_count":card_count,"save_card_count":save_card_count}, code=200)
+    return make_succ_response(
+        {"user_count": user_count, "guest_count": guest_count, "schedule_signup_count": schedule_signup_count,
+         "card_count": card_count, "save_card_count": save_card_count}, code=200)
 
 
 @app.route('/api/manage/download_conference_sign_up_num', methods=['GET'])
@@ -1270,7 +1280,7 @@ def download_conference_sign_up_num():
     """
         :return:下载活动报名人数统计excel
     """
-    result=get_all_signup_conference_statics()
+    result = get_all_signup_conference_statics()
     df = pd.DataFrame(result)
     now = datetime.datetime.now().strftime('%Y-%m-%d%H:%M:%S')
     os.mkdir(now)
@@ -1279,3 +1289,24 @@ def download_conference_sign_up_num():
     operatr_log(get_jwt_identity(), request.url_rule.rule, '下载成功', request.remote_addr)
     return send_file('../数商大会会议报名统计{}.zip'.format(now),
                      download_name='数商大会会议报名统计{}.zip'.format(now))
+
+
+@app.route('/api/manage/get_business_certified_list', methods=['GET'])
+@jwt_required()
+def manage_get_business_certified():
+    """
+        :return:获取企业认证列表
+    """
+    # 获取请求体参数
+    title = request.args.get('title', '')
+    code = request.args.get('code', '')
+    page = request.args.get('page', default=1, type=int)
+    page_size = request.args.get('page_size', default=10, type=int)
+    result = EnterpriseCertified.query.filter(
+        (or_(EnterpriseCertified.name.like('%' + title + '%'), EnterpriseCertified.code == code)),
+        EnterpriseCertified.is_deleted == 0).paginate(page,
+                                                      per_page=page_size,
+                                                      error_out=False)
+
+    data = [item.get() for item in result.items]
+    return make_succ_page_response(data, code=200, total=result.total)
