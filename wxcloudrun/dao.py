@@ -6,7 +6,8 @@ from sqlalchemy import func
 from sqlalchemy.orm import aliased
 from wxcloudrun import db
 from wxcloudrun.model import ConferenceInfo, RelationFriend, User, ConferenceSignUp, ConferenceSchedule, \
-    ConferenCoopearter, ConferenceCooperatorShow, OperaterLog, OperaterRule, Exhibiton, BusinessInfo,EnterpriseCertified
+    ConferenCoopearter, ConferenceCooperatorShow, OperaterLog, OperaterRule, Exhibiton, BusinessInfo, \
+    EnterpriseCertified
 from sqlalchemy import or_, and_
 from wxcloudrun.utils import uploadwebfile, send_check_msg, masked_view
 import config
@@ -635,6 +636,7 @@ def get_business_list(title=None, type=None):
     result = query.order_by(BusinessInfo.create_time.desc()).all()
     return [item.get() for item in result]
 
+
 def get_enterprise_list(title=None, type=None):
     query = EnterpriseCertified.query.filter(EnterpriseCertified.is_deleted == 0, EnterpriseCertified.status == 1)
     if title is not None:
@@ -644,3 +646,49 @@ def get_enterprise_list(title=None, type=None):
         query = query.filter(EnterpriseCertified.industry.like('%' + type + '%'))
     result = query.order_by(EnterpriseCertified.create_time.desc()).all()
     return [item.get() for item in result]
+
+
+def get_business_certified_list(page, page_size, title, status):
+    if status is None:
+        result = (db.session.query(EnterpriseCertified, User).join(User,
+                                                                   EnterpriseCertified.user_id == User.id)
+                  .filter(EnterpriseCertified.name.like('%' + title + '%'),
+                          EnterpriseCertified.is_deleted == 0).order_by(
+            EnterpriseCertified.create_time.desc()).paginate(page, per_page=page_size, error_out=False))
+    else:
+        result = (db.session.query(EnterpriseCertified, User).join(User,
+                                                                   EnterpriseCertified.user_id == User.id)
+                  .filter(EnterpriseCertified.name.like('%' + title + '%'),
+                          EnterpriseCertified.is_deleted == 0,
+                          EnterpriseCertified.status == status).order_by(
+            EnterpriseCertified.create_time.desc()).paginate(page, per_page=page_size, error_out=False))
+    data = []
+    for enterprise, user in result.items:
+        u = user.get()
+        data.append({"id": enterprise.id, "name": enterprise.name, "code": enterprise.code,
+                     "file_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, enterprise.file_url),
+                     "scale": enterprise.scale,
+                     "industry": enterprise.industry, "area": enterprise.area,
+                     "financing_stage": enterprise.financing_stage,
+                     "result": enterprise.result, "user_id": enterprise.user_id, "user_name": u.get("name"),
+                     "status": enterprise.status, "is_deleted": enterprise.is_deleted,
+                     "create_time": enterprise.create_time.strftime('%Y-%m-%d'), "chat_object_type": "公司"
+                     })
+
+    return data, result.total
+
+def update_EnterpriseCertified_statusbyid(userlist, status, reason):
+    """
+    :param id: Counter的ID
+    :return: Counter实体
+    """
+    try:
+        records = EnterpriseCertified.query.filter(EnterpriseCertified.id.in_(userlist)).all()
+        for record in records:
+            record.status = status
+            record.reason = reason
+        db.session.commit()
+        return True
+    except OperationalError as e:
+        logger.info("query_counterbyid errorMsg= {} ".format(e))
+        return None

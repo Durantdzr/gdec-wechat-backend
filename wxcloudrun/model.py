@@ -500,7 +500,7 @@ class EnterpriseCertified(db.Model):
         return {"id": self.id, "name": self.name, "code": self.code, "file_url": self.file_url, "scale": self.scale,
                 "industry": self.industry, "area": self.area, "financing_stage": self.financing_stage,
                 "result": self.result, "user_id": self.user_id, "status": self.status, "is_deleted": self.is_deleted,
-                "create_time": self.create_time.strftime('%Y-%m-%d'), "chat_object_type": "企业"
+                "create_time": self.create_time.strftime('%Y-%m-%d'), "chat_object_type": "公司"
                 }
 
 

@@ -14,7 +14,8 @@ from run import app
 from wxcloudrun.dao import update_user_statusbyid, insert_user, get_review_conference_list, update_schedule_statusbyid, \
     refresh_cooperater, refresh_guest, refresh_guest_info, get_hall_schedule_bydate, get_live_data, \
     refresh_conference_info, get_hall_schedule_byid, get_operat_list, get_hall_exhibition_byid, \
-    get_hall_exhibition, get_hall_blockchain_schedule, get_all_review_conference_list, get_all_signup_conference_statics
+    get_hall_exhibition, get_hall_blockchain_schedule, get_all_review_conference_list, \
+    get_all_signup_conference_statics, get_business_certified_list,update_EnterpriseCertified_statusbyid
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, ConferenCoopearter, Media, \
     ConferenceCooperatorShow, OperaterRule, Exhibiton, ConferenceSignUp, RelationFriend, EnterpriseCertified
 from wxcloudrun.response import make_succ_page_response, make_succ_response, make_err_response
@@ -1298,15 +1299,30 @@ def manage_get_business_certified():
         :return:获取企业认证列表
     """
     # 获取请求体参数
-    title = request.args.get('title', '')
-    code = request.args.get('code', '')
+    name = request.args.get('name', '')
+    status = request.args.get('status')
     page = request.args.get('page', default=1, type=int)
     page_size = request.args.get('page_size', default=10, type=int)
-    result = EnterpriseCertified.query.filter(
-        (or_(EnterpriseCertified.name.like('%' + title + '%'), EnterpriseCertified.code == code)),
-        EnterpriseCertified.is_deleted == 0).paginate(page,
-                                                      per_page=page_size,
-                                                      error_out=False)
+    data,total = get_business_certified_list(page, page_size, name, status)
+    return make_succ_page_response(data, code=200, total=total)
 
-    data = [item.get() for item in result.items]
-    return make_succ_page_response(data, code=200, total=result.total)
+
+@app.route('/api/manage/review_business_certified', methods=['post'])
+@jwt_required()
+@admin_required()
+def manage_review_business_certified():
+    """
+        :return:审核企业认证
+        """
+    params = request.get_json()
+    opt = params.get('opt')
+    reason = params.get('reason', "审核通过")
+    certifiedList = params.get('certifiedList', '')
+    if opt == 'agree':
+        update_EnterpriseCertified_statusbyid(certifiedList, 1, reason)
+    elif opt == 'unagree':
+        update_EnterpriseCertified_statusbyid(certifiedList, 2, reason)
+    else:
+        return make_err_response('无该操作方法')
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    return make_succ_response('操作成功', code=200)
