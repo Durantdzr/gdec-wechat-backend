@@ -469,6 +469,7 @@ class BusinessInfo(db.Model):
     creater_userid = db.Column('creater_userid', db.Integer, nullable=True)
     is_deleted = db.Column('is_deleted', db.Integer, nullable=True, default=0)
     create_time = db.Column('create_time', db.DateTime, nullable=True, default=datetime.now)
+    reason=db.Column('reason', db.String(100), nullable=True)
 
     def get(self):
         return {"id": self.id, "title": self.title, "company": self.company, "type": self.type,
@@ -495,6 +496,7 @@ class EnterpriseCertified(db.Model):
     status = db.Column('status', db.Integer, nullable=True, default=0)
     is_deleted = db.Column('is_deleted', db.Integer, nullable=True, default=0)
     create_time = db.Column('create_time', db.DateTime, nullable=True, default=datetime.now)
+    reason=db.Column('reason', db.String(100), nullable=True)
 
     def get(self):
         return {"id": self.id, "name": self.name, "code": self.code, "file_url": self.file_url, "scale": self.scale,

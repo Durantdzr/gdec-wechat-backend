@@ -15,9 +15,10 @@ from wxcloudrun.dao import update_user_statusbyid, insert_user, get_review_confe
     refresh_cooperater, refresh_guest, refresh_guest_info, get_hall_schedule_bydate, get_live_data, \
     refresh_conference_info, get_hall_schedule_byid, get_operat_list, get_hall_exhibition_byid, \
     get_hall_exhibition, get_hall_blockchain_schedule, get_all_review_conference_list, \
-    get_all_signup_conference_statics, get_business_certified_list,update_EnterpriseCertified_statusbyid
+    get_all_signup_conference_statics, get_business_certified_list, update_EnterpriseCertified_statusbyid, \
+    update_BusinessInfo_statusbyid
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, ConferenCoopearter, Media, \
-    ConferenceCooperatorShow, OperaterRule, Exhibiton, ConferenceSignUp, RelationFriend, EnterpriseCertified
+    ConferenceCooperatorShow, OperaterRule, Exhibiton, ConferenceSignUp, RelationFriend, BusinessInfo
 from wxcloudrun.response import make_succ_page_response, make_succ_response, make_err_response
 from wxcloudrun.utils import uploadfile, valid_image, vaild_password, uploadwebfile, download_cdn_file, zip_folder, \
     get_ticket, get_urllink, getscheduleqrcode
@@ -1303,7 +1304,7 @@ def manage_get_business_certified():
     status = request.args.get('status')
     page = request.args.get('page', default=1, type=int)
     page_size = request.args.get('page_size', default=10, type=int)
-    data,total = get_business_certified_list(page, page_size, name, status)
+    data, total = get_business_certified_list(page, page_size, name, status)
     return make_succ_page_response(data, code=200, total=total)
 
 
@@ -1322,6 +1323,53 @@ def manage_review_business_certified():
         update_EnterpriseCertified_statusbyid(certifiedList, 1, reason)
     elif opt == 'unagree':
         update_EnterpriseCertified_statusbyid(certifiedList, 2, reason)
+    else:
+        return make_err_response('无该操作方法')
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    return make_succ_response('操作成功', code=200)
+
+
+@app.route('/api/manage/get_business_info_list', methods=['GET'])
+@jwt_required()
+def manage_get_business_info_list():
+    """
+        :return:获取项目发布
+    """
+    # 获取请求体参数
+    title = request.args.get('title', '')
+    status = request.args.get('status')
+    page = request.args.get('page', default=1, type=int)
+    page_size = request.args.get('page_size', default=10, type=int)
+    if status is None:
+        result = BusinessInfo.query.filter(BusinessInfo.is_deleted == 0,
+                                           BusinessInfo.title.like('%' + title + '%')).paginate(page,
+                                                                                                per_page=page_size,
+                                                                                                error_out=False)
+    else:
+        result = BusinessInfo.query.filter(BusinessInfo.is_deleted == 0,
+                                           BusinessInfo.title.like('%' + title + '%'),
+                                           BusinessInfo.status == status).paginate(page,
+                                                                                   per_page=page_size,
+                                                                                   error_out=False)
+    data = [item.get() for item in result.items]
+    return make_succ_page_response(data, code=200, total=result.total)
+
+
+@app.route('/api/manage/review_business_info', methods=['post'])
+@jwt_required()
+@admin_required()
+def manage_review_business_info():
+    """
+        :return:审核项目发布
+        """
+    params = request.get_json()
+    opt = params.get('opt')
+    reason = params.get('reason', "审核通过")
+    certifiedList = params.get('businessInfoList', '')
+    if opt == 'agree':
+        update_BusinessInfo_statusbyid(certifiedList, 1, reason)
+    elif opt == 'unagree':
+        update_BusinessInfo_statusbyid(certifiedList, 2, reason)
     else:
         return make_err_response('无该操作方法')
     operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)

@@ -692,3 +692,20 @@ def update_EnterpriseCertified_statusbyid(userlist, status, reason):
     except OperationalError as e:
         logger.info("query_counterbyid errorMsg= {} ".format(e))
         return None
+
+
+def update_BusinessInfo_statusbyid(userlist, status, reason):
+    """
+    :param id: Counter的ID
+    :return: Counter实体
+    """
+    try:
+        records = BusinessInfo.query.filter(BusinessInfo.id.in_(userlist)).all()
+        for record in records:
+            record.status = status
+            record.reason = reason
+        db.session.commit()
+        return True
+    except OperationalError as e:
+        logger.info("query_counterbyid errorMsg= {} ".format(e))
+        return None
