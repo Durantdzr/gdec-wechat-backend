@@ -301,7 +301,15 @@ def get_user_by_openid():
     user = User.query.filter(User.openid == wxopenid, User.is_deleted == 0).first()
     if user is None:
         return make_err_response('没有该用户')
-    return make_succ_response(user.get_full())
+    data = user.get_full()
+    enterprise_certified = EnterpriseCertified.query.filter(EnterpriseCertified.user_id == user.id,
+                                                            EnterpriseCertified.is_deleted == 0).first()
+    if enterprise_certified is not None:
+        status_Enum = {0: "待审核", 1: "审核通过", 2: "审核未通过"}
+        data['enterprise_certified_status'] = status_Enum.get(enterprise_certified.status)
+    else:
+        data['enterprise_certified_status'] = None
+    return make_succ_response(data)
 
 
 @app.route('/api/user/search_friend', methods=['GET'])
@@ -833,6 +841,7 @@ def business_get_meeting_room_available_time():
         if cursor.time().strftime('%H:%M') in meeting_room_use_time:
             cursor += datetime.timedelta(minutes=30)
             continue
-        meeting_room_available_time.append((cursor.time().strftime('%H:%M'), (cursor + datetime.timedelta(minutes=30)).time().strftime('%H:%M')))
+        meeting_room_available_time.append(
+            (cursor.time().strftime('%H:%M'), (cursor + datetime.timedelta(minutes=30)).time().strftime('%H:%M')))
         cursor += datetime.timedelta(minutes=30)
     return make_succ_response(meeting_room_available_time)
