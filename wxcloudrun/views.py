@@ -753,11 +753,19 @@ def business_list_all_info():
     wxopenid = request.headers['X-WX-OPENID']
     title = request.args.get('title')
     type = request.args.get('type')
+    chat_object_type = request.args.get('chat_object_type',"all")
     data = []
-    business_list_info = get_business_list(title, type)
-    data.extend(business_list_info)
-    enterprise_list_info = get_enterprise_list(title, type)
-    data.extend(enterprise_list_info)
+    if chat_object_type == "all":
+        business_list_info = get_business_list(title, type)
+        data.extend(business_list_info)
+        enterprise_list_info = get_enterprise_list(title, type)
+        data.extend(enterprise_list_info)
+    if chat_object_type == "项目":
+        business_list_info = get_business_list(title, type)
+        data.extend(business_list_info)
+    if chat_object_type == "公司":
+        enterprise_list_info = get_enterprise_list(title, type)
+        data.extend(enterprise_list_info)
     return make_succ_response(data)
 
 
