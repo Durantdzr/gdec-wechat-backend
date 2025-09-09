@@ -823,8 +823,15 @@ def business_list_send_negotiation():
     if status is not None:
         query = query.filter(
             or_(BusinessNegotiation.status == status))
-    data = query.order_by(BusinessNegotiation.create_time.desc()).all()
-    return make_succ_response([item.get(True) for item in data])
+    result = query.order_by(BusinessNegotiation.create_time.desc()).all()
+    data=[]
+    for item in result:
+        negotiation=item.get(True)
+        if negotiation.get("status")==2:
+            user=User.query.filter(User.id == negotiation.get("negotation_userid")).first()
+            negotiation["phone"]=user.phone
+        data.append( negotiation)
+    return make_succ_response(data)
 
 
 @app.route('/api/business/list_receive_negotiation', methods=['GET'])
@@ -840,8 +847,15 @@ def business_list_receive_negotiation():
     if status is not None:
         query = query.filter(
             or_(BusinessNegotiation.status == status))
-    data = query.order_by(BusinessNegotiation.create_time.desc()).all()
-    return make_succ_response([item.get(False) for item in data])
+    result = query.order_by(BusinessNegotiation.create_time.desc()).all()
+    data = []
+    for item in result:
+        negotiation = item.get(True)
+        if negotiation.get("status") == 2:
+            user = User.query.filter(User.id == negotiation.get("creater_userid")).first()
+            negotiation["phone"] = user.phone
+        data.append(negotiation)
+    return make_succ_response(data)
 
 
 @app.route('/api/business/negotiation_opt', methods=['POST'])
