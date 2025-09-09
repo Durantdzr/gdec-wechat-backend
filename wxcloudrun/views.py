@@ -455,7 +455,8 @@ def get_schedule_list():
     # 获取请求体参数
     wxopenid = request.headers['X-WX-OPENID']
     user = User.query.filter(User.openid == wxopenid, User.is_deleted == 0).first()
-    data = get_conference_schedule_by_id(userid=user.id)
+    date=request.args.get('date', "2025-11-13")
+    data = get_conference_schedule_by_id(userid=user.id,date=date)
     return make_succ_response(data)
 
 
@@ -704,6 +705,28 @@ def business_deploy_info():
     insert_user(business)
     return make_succ_response(business.id)
 
+
+@app.route('/api/business/delete_info', methods=['POST'])
+def business_delete_info():
+    """
+    :return:商务信息删除
+    """
+    # 获取请求体参数
+    params = request.get_json()
+    user = User.query.filter(User.openid == request.headers['X-WX-OPENID']).first()
+    if user is None:
+        return make_err_response('用户不存在')
+    certified = EnterpriseCertified.query.filter(EnterpriseCertified.user_id == user.id,
+                                                 EnterpriseCertified.status == 1,
+                                                 EnterpriseCertified.is_deleted == 0).first()
+    if certified is None:
+        return make_err_response('该用户未完成企业认证')
+    business = BusinessInfo.query.filter(BusinessInfo.id == params.get('id'), BusinessInfo.is_deleted == 0).first()
+    if business.creater_userid!=user.id:
+        return make_err_response('您没有权限修改该信息')
+    business.is_deleted = 1
+    insert_user(business)
+    return make_succ_response(business.id)
 
 @app.route('/api/business/list_info', methods=['GET'])
 def business_list_info():

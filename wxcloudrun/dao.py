@@ -311,11 +311,11 @@ def get_all_signup_conference_statics():
             for row in result]
 
 
-def get_conference_schedule_by_id(userid):
+def get_conference_schedule_by_id(userid,date):
     signup_status_ENUM = {0: '等待审核', 1: '审核未通过', 2: '审核通过'}
     result = db.session.query(ConferenceSignUp, ConferenceSchedule).join(
         ConferenceSchedule, ConferenceSignUp.schedule_id == ConferenceSchedule.id).filter(
-        ConferenceSchedule.is_deleted == 0, ConferenceSignUp.user_id == userid).all()
+        ConferenceSchedule.is_deleted == 0, ConferenceSignUp.user_id == userid,ConferenceSchedule.conference_date==date).all()
     data = []
     for signup, schedule in result:
         delta = (datetime.datetime.strptime(
