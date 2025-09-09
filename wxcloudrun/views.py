@@ -850,7 +850,7 @@ def business_list_receive_negotiation():
     result = query.order_by(BusinessNegotiation.create_time.desc()).all()
     data = []
     for item in result:
-        negotiation = item.get(True)
+        negotiation = item.get(False)
         if negotiation.get("status") == 2:
             user = User.query.filter(User.id == negotiation.get("creater_userid")).first()
             negotiation["phone"] = user.phone
