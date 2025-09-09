@@ -466,6 +466,15 @@ def get_hall_exhibition():
             exhibition['coorganizer_info'].extend(get_coopearter_by_list(exhibition.get('coorganizer', [])))
         if len(exhibition.get('sponsor', [])) > 0:
             exhibition['sponsor_info'].extend(get_coopearter_by_list(exhibition.get('sponsor', [])))
+        for num in range(len(exhibition.get('participating_unit', []))):
+            unit = ConferenCoopearter.query.filter(
+                ConferenCoopearter.id == exhibition['participating_unit'][num]['unit'],
+                ConferenCoopearter.is_deleted == 0).first()
+            if unit is None:
+                exhibition['participating_unit'][num]['status'] = False
+            else:
+                exhibition['participating_unit'][num]['status'] = True
+                exhibition['participating_unit'][num].update(unit.get())
         data.append(exhibition)
     return data
 
@@ -676,6 +685,7 @@ def get_business_certified_list(page, page_size, title, status):
                      })
 
     return data, result.total
+
 
 def update_EnterpriseCertified_statusbyid(userlist, status, reason):
     """
