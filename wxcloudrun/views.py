@@ -755,7 +755,7 @@ def business_list_all_info():
     type = request.args.get('type')
     chat_object_type = request.args.get('chat_object_type',"all")
     data = []
-    if chat_object_type == "all":
+    if chat_object_type == "所有":
         business_list_info = get_business_list(title, type)
         data.extend(business_list_info)
         enterprise_list_info = get_enterprise_list(title, type)
