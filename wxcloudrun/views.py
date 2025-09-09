@@ -650,7 +650,7 @@ def business_business_certified():
                                                              EnterpriseCertified.code == params.get('code'))),
             EnterpriseCertified.is_deleted == 0).first()
         if certified is not None:
-            if certified.status != 2:
+            if certified.status != 1:
                 return make_err_response('该用户或者企业已有认证，请勿重新提交')
             else:
                 certified.name = params.get('name')

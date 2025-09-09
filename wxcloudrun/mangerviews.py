@@ -1320,9 +1320,9 @@ def manage_review_business_certified():
     reason = params.get('reason', "审核通过")
     certifiedList = params.get('certifiedList', '')
     if opt == 'agree':
-        update_EnterpriseCertified_statusbyid(certifiedList, 1, reason)
-    elif opt == 'unagree':
         update_EnterpriseCertified_statusbyid(certifiedList, 2, reason)
+    elif opt == 'unagree':
+        update_EnterpriseCertified_statusbyid(certifiedList, 1, reason)
     else:
         return make_err_response('无该操作方法')
     operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
@@ -1367,9 +1367,9 @@ def manage_review_business_info():
     reason = params.get('reason', "审核通过")
     certifiedList = params.get('businessInfoList', '')
     if opt == 'agree':
-        update_BusinessInfo_statusbyid(certifiedList, 1, reason)
-    elif opt == 'unagree':
         update_BusinessInfo_statusbyid(certifiedList, 2, reason)
+    elif opt == 'unagree':
+        update_BusinessInfo_statusbyid(certifiedList, 1, reason)
     else:
         return make_err_response('无该操作方法')
     operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
