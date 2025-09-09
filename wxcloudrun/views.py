@@ -650,7 +650,19 @@ def business_business_certified():
                                                              EnterpriseCertified.code == params.get('code'))),
             EnterpriseCertified.is_deleted == 0).first()
         if certified is not None:
-            return make_err_response('该用户或者企业已有认证，请勿重新提交')
+            if certified.status != 2:
+                return make_err_response('该用户或者企业已有认证，请勿重新提交')
+            else:
+                certified.name = params.get('name')
+                certified.code = params.get('code')
+                certified.file_url = params.get('cdn_param')
+                certified.scale = params.get('scale')
+                certified.industry = params.get('industry')
+                certified.area = params.get('area')
+                certified.financing_stage = params.get('financing_stage')
+                certified.result = params.get('result')
+                insert_user(certified)
+            return make_succ_response(certified.id)
         certified = EnterpriseCertified()
         certified.user_id = user.id
         certified.name = params.get('name')
