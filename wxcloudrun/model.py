@@ -464,12 +464,12 @@ class BusinessInfo(db.Model):
     type = db.Column('type', db.String(20), nullable=True)
     project_info = db.Column('project_info', db.TEXT, nullable=True)
     demand = db.Column('demand', db.String(20), nullable=True)
-    status = db.Column('status', db.INT, nullable=True,default=0)
+    status = db.Column('status', db.INT, nullable=True, default=0)
     team_info = db.Column('team_info', db.TEXT, nullable=True)
     creater_userid = db.Column('creater_userid', db.Integer, nullable=True)
     is_deleted = db.Column('is_deleted', db.Integer, nullable=True, default=0)
     create_time = db.Column('create_time', db.DateTime, nullable=True, default=datetime.now)
-    reason=db.Column('reason', db.String(100), nullable=True)
+    reason = db.Column('reason', db.String(100), nullable=True)
 
     def get(self):
         return {"id": self.id, "title": self.title, "company": self.company, "type": self.type,
@@ -496,10 +496,11 @@ class EnterpriseCertified(db.Model):
     status = db.Column('status', db.Integer, nullable=True, default=0)
     is_deleted = db.Column('is_deleted', db.Integer, nullable=True, default=0)
     create_time = db.Column('create_time', db.DateTime, nullable=True, default=datetime.now)
-    reason=db.Column('reason', db.String(100), nullable=True)
+    reason = db.Column('reason', db.String(100), nullable=True)
 
     def get(self):
-        return {"id": self.id, "name": self.name, "code": self.code, "file_url": self.file_url, "scale": self.scale,
+        return {"id": self.id, "name": self.name, "code": self.code, "file_url": self.file_url,
+                "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.file_url), "scale": self.scale,
                 "industry": self.industry, "area": self.area, "financing_stage": self.financing_stage,
                 "result": self.result, "user_id": self.user_id, "status": self.status, "is_deleted": self.is_deleted,
                 "create_time": self.create_time.strftime('%Y-%m-%d'), "chat_object_type": "公司"
@@ -522,7 +523,7 @@ class BusinessNegotiation(db.Model):
     is_deleted = db.Column('is_deleted', db.Integer, nullable=True, default=0)
     create_time = db.Column('create_time', db.DateTime, nullable=True, default=datetime.now)
 
-    def get(self,visit=True):
+    def get(self, visit=True):
         if visit:
             status_ENUM = {0: "待审核", 1: "审核不通过", 2: "审核通过"}
         else:

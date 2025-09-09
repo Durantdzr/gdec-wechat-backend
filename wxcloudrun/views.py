@@ -661,6 +661,7 @@ def business_business_certified():
                 certified.area = params.get('area')
                 certified.financing_stage = params.get('financing_stage')
                 certified.result = params.get('result')
+                certified.status=0
                 insert_user(certified)
             return make_succ_response(certified.id)
         certified = EnterpriseCertified()
