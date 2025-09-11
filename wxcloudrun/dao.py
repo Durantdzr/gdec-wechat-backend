@@ -676,7 +676,7 @@ def get_business_certified_list(page, page_size, title, status):
         u = user.get()
         data.append({"id": enterprise.id, "name": enterprise.name, "code": enterprise.code,
                      "file_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, enterprise.file_url),
-                     "scale": enterprise.scale,
+                     "scale": enterprise.scale,"invite_code":enterprise.invite_code,
                      "industry": enterprise.industry, "area": enterprise.area,
                      "financing_stage": enterprise.financing_stage,
                      "result": enterprise.result, "user_id": enterprise.user_id, "user_name": u.get("name"),
