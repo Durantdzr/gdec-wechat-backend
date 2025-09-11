@@ -641,6 +641,9 @@ def business_business_certified():
     # 获取请求体参数
     params = request.get_json()
     user = User.query.filter(User.openid == request.headers['X-WX-OPENID']).first()
+
+    if params.get('invite_code') is None:
+        return make_err_response('请填写邀请码')
     if user is None:
         return make_err_response('用户不存在')
     if user.status != 2:
@@ -665,17 +668,22 @@ def business_business_certified():
                 certified.status=0
                 insert_user(certified)
             return make_succ_response(certified.id)
-        certified = EnterpriseCertified()
-        certified.user_id = user.id
-        certified.name = params.get('name')
-        certified.code = params.get('code')
-        certified.file_url = params.get('cdn_param')
-        certified.scale = params.get('scale')
-        certified.industry = params.get('industry')
-        certified.area = params.get('area')
-        certified.financing_stage = params.get('financing_stage')
-        certified.result = params.get('result')
-        insert_user(certified)
+        certified = EnterpriseCertified.query.filter(EnterpriseCertified.invite_code==params.get('invite_code')).first()
+        if certified is None:
+            return make_err_response('该邀请码错误')
+        elif certified.user_id!=user.id:
+            return make_err_response('该邀请码已使用，非当前用户绑定')
+        else:
+            certified.user_id = user.id
+            certified.name = params.get('name')
+            certified.code = params.get('code')
+            certified.file_url = params.get('cdn_param')
+            certified.scale = params.get('scale')
+            certified.industry = params.get('industry')
+            certified.area = params.get('area')
+            certified.financing_stage = params.get('financing_stage')
+            certified.result = params.get('result')
+            insert_user(certified)
         return make_succ_response(certified.id)
 
 

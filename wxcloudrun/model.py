@@ -494,13 +494,14 @@ class EnterpriseCertified(db.Model):
     financing_stage = db.Column('financing_stage', db.String(50), nullable=True)
     result = db.Column('result', db.TEXT, nullable=True)
     user_id = db.Column('user_id', db.Integer, nullable=True)
+    invite_code = db.Column('invite_code', db.String(20), nullable=True)
     status = db.Column('status', db.Integer, nullable=True, default=0)
     is_deleted = db.Column('is_deleted', db.Integer, nullable=True, default=0)
     create_time = db.Column('create_time', db.DateTime, nullable=True, default=datetime.now)
     reason = db.Column('reason', db.String(100), nullable=True)
 
     def get(self):
-        return {"id": self.id, "name": self.name, "code": self.code, "file_url": self.file_url,
+        return {"id": self.id, "name": self.name, "code": self.code, "file_url": self.file_url,"invite_code": self.invite_code,
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.file_url), "scale": self.scale,
                 "industry": self.industry, "area": self.area, "financing_stage": self.financing_stage,
                 "result": self.result, "user_id": self.user_id, "status": self.status, "is_deleted": self.is_deleted,

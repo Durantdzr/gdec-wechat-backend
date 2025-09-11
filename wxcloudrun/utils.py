@@ -17,6 +17,7 @@ import os
 import random
 import time
 import io
+import string
 from PIL import Image
 from cryptography.fernet import Fernet
 import types
@@ -246,3 +247,9 @@ def send_tx_msg(phone, template_id):
 
     except TencentCloudSDKException as err:
         print(err)
+def generate_verification_code(length=6):
+    # 定义验证码可能包含的字符集（大小写字母 + 数字）
+    characters = string.ascii_letters + string.digits
+    # 随机选择字符并拼接成验证码
+    verification_code = ''.join(random.choice(characters) for _ in range(length))
+    return verification_code

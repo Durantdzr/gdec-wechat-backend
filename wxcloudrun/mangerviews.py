@@ -18,10 +18,11 @@ from wxcloudrun.dao import update_user_statusbyid, insert_user, get_review_confe
     get_all_signup_conference_statics, get_business_certified_list, update_EnterpriseCertified_statusbyid, \
     update_BusinessInfo_statusbyid
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, ConferenCoopearter, Media, \
-    ConferenceCooperatorShow, OperaterRule, Exhibiton, ConferenceSignUp, RelationFriend, BusinessInfo
+    ConferenceCooperatorShow, OperaterRule, Exhibiton, ConferenceSignUp, RelationFriend, BusinessInfo, \
+    EnterpriseCertified
 from wxcloudrun.response import make_succ_page_response, make_succ_response, make_err_response
 from wxcloudrun.utils import uploadfile, valid_image, vaild_password, uploadwebfile, download_cdn_file, zip_folder, \
-    get_ticket, get_urllink, getscheduleqrcode
+    get_ticket, get_urllink, getscheduleqrcode,generate_verification_code
 from datetime import timedelta
 from sqlalchemy import or_
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, get_jwt, verify_jwt_in_request
@@ -1307,6 +1308,37 @@ def manage_get_business_certified():
     data, total = get_business_certified_list(page, page_size, name, status)
     return make_succ_page_response(data, code=200, total=total)
 
+
+@app.route('/api/manage/create_business_certified', methods=['post'])
+@jwt_required()
+@admin_required()
+def manage_create_business_certified():
+    """
+        :return:创建企业认证
+        """
+    params = request.get_json()
+    certified = EnterpriseCertified()
+    certified.name = params.get('name')
+    certified.code = params.get('code')
+    certified.invite_code=generate_verification_code(6)
+    insert_user(certified)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    return make_succ_response(certified.id)
+
+
+@app.route('/api/manage/delete_business_certified', methods=['post'])
+@jwt_required()
+@admin_required()
+def manage_delete_business_certified():
+    """
+        :return:删除企业认证
+        """
+    params = request.get_json()
+    certified = EnterpriseCertified.query.filter_by(id=params.get('id')).first()
+    certified.is_deleted=1
+    insert_user(certified)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    return make_succ_response(certified.id)
 
 @app.route('/api/manage/review_business_certified', methods=['post'])
 @jwt_required()
