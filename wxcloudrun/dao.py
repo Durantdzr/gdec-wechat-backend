@@ -683,7 +683,26 @@ def get_business_certified_list(page, page_size, title, status):
                      "status": enterprise.status, "is_deleted": enterprise.is_deleted,
                      "create_time": enterprise.create_time.strftime('%Y-%m-%d'), "chat_object_type": "公司"
                      })
-
+    if status is None:
+        result = EnterpriseCertified.query.filter(EnterpriseCertified.name.like('%' + title + '%'),
+                                                  EnterpriseCertified.is_deleted == 0,EnterpriseCertified.user_id==None).order_by(
+            EnterpriseCertified.create_time.desc()).paginate(page, per_page=page_size, error_out=False)
+    else:
+        result = EnterpriseCertified.query.filter(EnterpriseCertified.name.like('%' + title + '%'),
+                                                  EnterpriseCertified.is_deleted == 0,
+                                                  EnterpriseCertified.status == status,EnterpriseCertified.user_id==None).order_by(
+            EnterpriseCertified.create_time.desc()).paginate(page, per_page=page_size, error_out=False)
+    for item in result.items:
+        u = None
+        data.append({"id": item.id, "name": item.name, "code": item.code,
+                     "file_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, item.file_url),
+                     "scale": item.scale,"invite_code":item.invite_code,
+                     "industry": item.industry, "area": item.area,
+                     "financing_stage": item.financing_stage,
+                     "result": item.result, "user_id": item.user_id, "user_name": None,
+                     "status": item.status, "is_deleted": item.is_deleted,
+                     "create_time": item.create_time.strftime('%Y-%m-%d'), "chat_object_type": "公司"
+                     })
     return data, result.total
 
 
