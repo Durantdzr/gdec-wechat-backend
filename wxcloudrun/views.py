@@ -278,7 +278,7 @@ def get_user_privilege():
     enterprise_certified = EnterpriseCertified.query.filter(EnterpriseCertified.user_id == user.id,
                                                             EnterpriseCertified.is_deleted == 0).first()
     if enterprise_certified is not None:
-        status_Enum = {0: "待审核", 1: "审核通过", 2: "审核未通过"}
+        status_Enum = {0: "待审核", 2: "审核通过", 1: "审核未通过"}
         data['enterprise_certified_status'] = status_Enum.get(enterprise_certified.status)
         data['enterprise_certified_info'] = enterprise_certified.get()
     else:
@@ -647,7 +647,7 @@ def business_business_certified():
         return make_err_response('用户未完成审核，请稍后。')
     else:
         certified = EnterpriseCertified.query.filter(
-            or_(EnterpriseCertified.user_id == user.id, and_(EnterpriseCertified.status == 1,
+            or_(EnterpriseCertified.user_id == user.id, and_(EnterpriseCertified.status == 2,
                                                              EnterpriseCertified.code == params.get('code'))),
             EnterpriseCertified.is_deleted == 0).first()
         if certified is not None:
@@ -690,7 +690,7 @@ def business_deploy_info():
     if user is None:
         return make_err_response('用户不存在')
     certified = EnterpriseCertified.query.filter(EnterpriseCertified.user_id == user.id,
-                                                 EnterpriseCertified.status == 1,
+                                                 EnterpriseCertified.status == 2,
                                                  EnterpriseCertified.is_deleted == 0).first()
     if certified is None:
         return make_err_response('该用户未完成企业认证')
@@ -717,7 +717,7 @@ def business_delete_info():
     if user is None:
         return make_err_response('用户不存在')
     certified = EnterpriseCertified.query.filter(EnterpriseCertified.user_id == user.id,
-                                                 EnterpriseCertified.status == 1,
+                                                 EnterpriseCertified.status == 2,
                                                  EnterpriseCertified.is_deleted == 0).first()
     if certified is None:
         return make_err_response('该用户未完成企业认证')
