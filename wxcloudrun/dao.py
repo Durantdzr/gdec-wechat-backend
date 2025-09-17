@@ -636,7 +636,7 @@ def get_operat_list(page, page_size, operator, event, begin_time, end_time):
 
 
 def get_business_list(title=None, type=None):
-    query = BusinessInfo.query.filter(BusinessInfo.is_deleted == 0, BusinessInfo.status == 1)
+    query = BusinessInfo.query.filter(BusinessInfo.is_deleted == 0, BusinessInfo.status == 2)
     if title is not None:
         query = query.filter(
             or_(BusinessInfo.title.like('%' + title + '%'), BusinessInfo.company.like('%' + title + '%')))
@@ -647,7 +647,7 @@ def get_business_list(title=None, type=None):
 
 
 def get_enterprise_list(title=None, type=None):
-    query = EnterpriseCertified.query.filter(EnterpriseCertified.is_deleted == 0, EnterpriseCertified.status == 1)
+    query = EnterpriseCertified.query.filter(EnterpriseCertified.is_deleted == 0, EnterpriseCertified.status == 2)
     if title is not None:
         query = query.filter(
             or_(EnterpriseCertified.name.like('%' + title + '%')))
