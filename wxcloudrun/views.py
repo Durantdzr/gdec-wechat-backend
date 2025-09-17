@@ -671,7 +671,7 @@ def business_business_certified():
         certified = EnterpriseCertified.query.filter(EnterpriseCertified.invite_code==params.get('invite_code')).first()
         if certified is None:
             return make_err_response('该邀请码错误')
-        elif certified.user_id!=user.id:
+        elif certified.user_id is not None and certified.user_id!=user.id:
             return make_err_response('该邀请码已使用，非当前用户绑定')
         else:
             certified.user_id = user.id
