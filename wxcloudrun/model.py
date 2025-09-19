@@ -501,7 +501,8 @@ class EnterpriseCertified(db.Model):
     reason = db.Column('reason', db.String(100), nullable=True)
 
     def get(self):
-        return {"id": self.id, "name": self.name, "code": self.code, "file_url": self.file_url,"invite_code": self.invite_code,
+        return {"id": self.id, "name": self.name, "code": self.code, "file_url": self.file_url,
+                "invite_code": self.invite_code,
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.file_url), "scale": self.scale,
                 "industry": self.industry, "area": self.area, "financing_stage": self.financing_stage,
                 "result": self.result, "user_id": self.user_id, "status": self.status, "is_deleted": self.is_deleted,
@@ -558,6 +559,14 @@ class MeetingReservation(db.Model):
     # 设定结构体对应表格的字段
     id = db.Column(db.Integer, primary_key=True)
     meeting_room_id = db.Column('meeting_room_id', db.INT, nullable=True)
+    negotation_id = db.Column('negotation_id', db.INT, nullable=True)
+    creater_id = db.Column('creater_id', db.INT, nullable=True)
     is_deleted = db.Column('is_deleted', db.Integer, nullable=True, default=0)
     start_time = db.Column('start_time', db.DateTime, nullable=True)
     end_time = db.Column('end_time', db.DateTime, nullable=True)
+
+    def get(self):
+        return {"id": self.id, "meeting_room_id": self.meeting_room_id, "negotation_id": self.negotation_id,
+                "creater_id": self.creater_id, "is_deleted": self.is_deleted,
+                "start_time": self.start_time.strftime('%H:%M'),
+                "end_time": self.end_time.strftime('%H:%M'), "date": self.start_time.strftime('%Y-%m-%d')}

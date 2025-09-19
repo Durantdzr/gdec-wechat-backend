@@ -7,7 +7,7 @@ from sqlalchemy.orm import aliased
 from wxcloudrun import db
 from wxcloudrun.model import ConferenceInfo, RelationFriend, User, ConferenceSignUp, ConferenceSchedule, \
     ConferenCoopearter, ConferenceCooperatorShow, OperaterLog, OperaterRule, Exhibiton, BusinessInfo, \
-    EnterpriseCertified
+    EnterpriseCertified, MeetingReservation, MeetingRoom
 from sqlalchemy import or_, and_
 from wxcloudrun.utils import uploadwebfile, send_check_msg, masked_view
 import config
@@ -311,11 +311,12 @@ def get_all_signup_conference_statics():
             for row in result]
 
 
-def get_conference_schedule_by_id(userid,date):
+def get_conference_schedule_by_id(userid, date):
     signup_status_ENUM = {0: '等待审核', 1: '审核未通过', 2: '审核通过'}
     result = db.session.query(ConferenceSignUp, ConferenceSchedule).join(
         ConferenceSchedule, ConferenceSignUp.schedule_id == ConferenceSchedule.id).filter(
-        ConferenceSchedule.is_deleted == 0, ConferenceSignUp.user_id == userid,ConferenceSchedule.conference_date==date).all()
+        ConferenceSchedule.is_deleted == 0, ConferenceSignUp.user_id == userid,
+        ConferenceSchedule.conference_date == date).all()
     data = []
     for signup, schedule in result:
         delta = (datetime.datetime.strptime(
@@ -676,7 +677,7 @@ def get_business_certified_list(page, page_size, title, status):
         u = user.get()
         data.append({"id": enterprise.id, "name": enterprise.name, "code": enterprise.code,
                      "file_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, enterprise.file_url),
-                     "scale": enterprise.scale,"invite_code":enterprise.invite_code,
+                     "scale": enterprise.scale, "invite_code": enterprise.invite_code,
                      "industry": enterprise.industry, "area": enterprise.area,
                      "financing_stage": enterprise.financing_stage,
                      "result": enterprise.result, "user_id": enterprise.user_id, "user_name": u.get("name"),
@@ -685,18 +686,20 @@ def get_business_certified_list(page, page_size, title, status):
                      })
     if status is None:
         result = EnterpriseCertified.query.filter(EnterpriseCertified.name.like('%' + title + '%'),
-                                                  EnterpriseCertified.is_deleted == 0,EnterpriseCertified.user_id==None).order_by(
+                                                  EnterpriseCertified.is_deleted == 0,
+                                                  EnterpriseCertified.user_id == None).order_by(
             EnterpriseCertified.create_time.desc()).paginate(page, per_page=page_size, error_out=False)
     else:
         result = EnterpriseCertified.query.filter(EnterpriseCertified.name.like('%' + title + '%'),
                                                   EnterpriseCertified.is_deleted == 0,
-                                                  EnterpriseCertified.status == status,EnterpriseCertified.user_id==None).order_by(
+                                                  EnterpriseCertified.status == status,
+                                                  EnterpriseCertified.user_id == None).order_by(
             EnterpriseCertified.create_time.desc()).paginate(page, per_page=page_size, error_out=False)
     for item in result.items:
         u = None
         data.append({"id": item.id, "name": item.name, "code": item.code,
                      "file_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, item.file_url),
-                     "scale": item.scale,"invite_code":item.invite_code,
+                     "scale": item.scale, "invite_code": item.invite_code,
                      "industry": item.industry, "area": item.area,
                      "financing_stage": item.financing_stage,
                      "result": item.result, "user_id": item.user_id, "user_name": None,
@@ -738,3 +741,18 @@ def update_BusinessInfo_statusbyid(userlist, status, reason):
     except OperationalError as e:
         logger.info("query_counterbyid errorMsg= {} ".format(e))
         return None
+
+
+def get_meeting_record_list_byuserid(userid, page=1, page_size=1000):
+    result = (db.session.query(MeetingReservation, MeetingRoom).join(MeetingRoom,
+                                                                     MeetingReservation.meeting_room_id == MeetingRoom.id)
+              .filter(MeetingReservation.creater_id == userid).order_by(
+        MeetingReservation.start_time.desc()).paginate(page, per_page=page_size, error_out=False))
+    data = []
+    for reservation, meeting_room in result.items:
+        r = reservation.get()
+        r["meeting_room_name"] = meeting_room.name
+        r["meeting_room_id"] = meeting_room.id
+        r["meeting_room_location"] = meeting_room.location
+        data.append(r)
+    return data, result.total

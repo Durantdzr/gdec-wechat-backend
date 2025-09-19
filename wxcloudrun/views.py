@@ -5,10 +5,10 @@ from wxcloudrun.dao import insert_user, search_friends_byopenid, insert_realtion
     get_main_hall_guests_list, get_other_hall_guests_list, get_cooperater_list, get_hall_schedule_bydate, get_live_data, \
     get_user_schedule_num_by_id, refresh_schedule_info, get_hall_schedule_byid, get_hall_exhibition_bydate, \
     get_hall_exhibition_byid, get_hall_exhibition, search_friends_random, refresh_guest, refresh_guest_info, is_friend, \
-    get_hall_blockchain_schedule, get_business_list, get_enterprise_list
+    get_hall_blockchain_schedule, get_business_list, get_enterprise_list, get_meeting_record_list_byuserid
 from wxcloudrun.model import ConferenceInfo, User, ConferenceHall, RelationFriend, ConferenceSignUp, DigitalCityWeek, \
     BusinessInfo, EnterpriseCertified, BusinessNegotiation, MeetingRoom, MeetingReservation
-from wxcloudrun.response import make_succ_response, make_err_response
+from wxcloudrun.response import make_succ_response, make_err_response, make_succ_page_response
 from wxcloudrun.utils import batchdownloadfile, uploadfile, uploadwebfile, getscheduleqrcode, \
     send_check_msg, makeqrcode, send_tx_msg, masked_view
 from sqlalchemy import or_, and_, func
@@ -455,8 +455,8 @@ def get_schedule_list():
     # 获取请求体参数
     wxopenid = request.headers['X-WX-OPENID']
     user = User.query.filter(User.openid == wxopenid, User.is_deleted == 0).first()
-    date=request.args.get('date', "2025-11-13")
-    data = get_conference_schedule_by_id(userid=user.id,date=date)
+    date = request.args.get('date', "2025-11-13")
+    data = get_conference_schedule_by_id(userid=user.id, date=date)
     return make_succ_response(data)
 
 
@@ -665,13 +665,14 @@ def business_business_certified():
                 certified.area = params.get('area')
                 certified.financing_stage = params.get('financing_stage')
                 certified.result = params.get('result')
-                certified.status=0
+                certified.status = 0
                 insert_user(certified)
             return make_succ_response(certified.id)
-        certified = EnterpriseCertified.query.filter(EnterpriseCertified.invite_code==params.get('invite_code')).first()
+        certified = EnterpriseCertified.query.filter(
+            EnterpriseCertified.invite_code == params.get('invite_code')).first()
         if certified is None:
             return make_err_response('该邀请码错误')
-        elif certified.user_id is not None and certified.user_id!=user.id:
+        elif certified.user_id is not None and certified.user_id != user.id:
             return make_err_response('该邀请码已使用，非当前用户绑定')
         else:
             certified.user_id = user.id
@@ -730,11 +731,12 @@ def business_delete_info():
     if certified is None:
         return make_err_response('该用户未完成企业认证')
     business = BusinessInfo.query.filter(BusinessInfo.id == params.get('id'), BusinessInfo.is_deleted == 0).first()
-    if business.creater_userid!=user.id:
+    if business.creater_userid != user.id:
         return make_err_response('您没有权限修改该信息')
     business.is_deleted = 1
     insert_user(business)
     return make_succ_response(business.id)
+
 
 @app.route('/api/business/list_info', methods=['GET'])
 def business_list_info():
@@ -761,7 +763,7 @@ def business_list_all_info():
     wxopenid = request.headers['X-WX-OPENID']
     title = request.args.get('title')
     type = request.args.get('type')
-    chat_object_type = request.args.get('chat_object_type',"所有")
+    chat_object_type = request.args.get('chat_object_type', "所有")
     data = []
     if chat_object_type == "所有":
         business_list_info = get_business_list(title, type)
@@ -832,13 +834,13 @@ def business_list_send_negotiation():
         query = query.filter(
             or_(BusinessNegotiation.status == status))
     result = query.order_by(BusinessNegotiation.create_time.desc()).all()
-    data=[]
+    data = []
     for item in result:
-        negotiation=item.get(True)
-        if negotiation.get("status")==2:
-            user=User.query.filter(User.id == negotiation.get("negotation_userid")).first()
-            negotiation["phone"]=user.phone
-        data.append( negotiation)
+        negotiation = item.get(True)
+        if negotiation.get("status") == 2:
+            user = User.query.filter(User.id == negotiation.get("negotation_userid")).first()
+            negotiation["phone"] = user.phone
+        data.append(negotiation)
     return make_succ_response(data)
 
 
@@ -919,3 +921,83 @@ def business_get_meeting_room_available_time():
             (cursor.time().strftime('%H:%M'), (cursor + datetime.timedelta(minutes=30)).time().strftime('%H:%M')))
         cursor += datetime.timedelta(minutes=30)
     return make_succ_response(meeting_room_available_time)
+
+
+@app.route('/api/business/book_meeting_room', methods=['POST'])
+def business_book_meeting_room():
+    """
+    :return:预约会议室
+    """
+    # 获取请求体参数
+    params = request.get_json()
+    user = User.query.filter(User.openid == request.headers['X-WX-OPENID']).first()
+    if user is None:
+        return make_err_response('用户不存在')
+    r = MeetingReservation.query.filter(
+        MeetingReservation.creater_id == user.id,
+        MeetingReservation.is_deleted == 0,
+        func.date(MeetingReservation.start_time) == params.get('start_time')[:10]).all()
+    if len(r) == 2:
+        return make_err_response('每个用户每天可预约两个会议室')
+    reservation = MeetingReservation()
+    reservation.meeting_room_id = params.get('meeting_room_id')
+    reservation.start_time = params.get('start_time')
+    reservation.end_time = params.get('end_time')
+    reservation.negotation_id = params.get('negotation_id')
+    reservation.creater_id = user.id
+    insert_user(reservation)
+    return make_succ_response(reservation.id)
+
+
+@app.route('/api/business/modify_meeting_room', methods=['POST'])
+def business_modify_meeting_room():
+    """
+    :return:修改预约会议室
+    """
+    # 获取请求体参数
+    params = request.get_json()
+    user = User.query.filter(User.openid == request.headers['X-WX-OPENID']).first()
+    if user is None:
+        return make_err_response('用户不存在')
+    reservation = MeetingReservation.query.filter(
+        MeetingReservation.id == params.get('metting_book_id')).first()
+    reservation.meeting_room_id = params.get('meeting_room_id')
+    reservation.start_time = params.get('start_time')
+    reservation.end_time = params.get('end_time')
+    insert_user(reservation)
+    return make_succ_response(reservation.id)
+
+
+@app.route('/api/business/delete_meeting_room', methods=['POST'])
+def business_delete_meeting_room():
+    """
+    :return:删除预约会议室
+    """
+    # 获取请求体参数
+    params = request.get_json()
+    user = User.query.filter(User.openid == request.headers['X-WX-OPENID']).first()
+    if user is None:
+        return make_err_response('用户不存在')
+    reservation = MeetingReservation.query.filter(
+        MeetingReservation.id == params.get('metting_book_id'), MeetingReservation.creater_id == user.id).first()
+    if reservation is None:
+        return make_err_response('用户无权限删除预约会议室')
+    reservation.is_deleted = 1
+    insert_user(reservation)
+    return make_succ_response(reservation.id)
+
+
+@app.route('/api/business/get_meeting_record', methods=['GET'])
+def business_get_meeting_record():
+    """
+    :return:获取会议室列表
+    """
+    # 获取请求体参数
+    wxopenid = request.headers['X-WX-OPENID']
+    page = request.args.get('page', default=1, type=int)
+    page_size = request.args.get('page_size', default=10, type=int)
+    user = User.query.filter(User.openid == wxopenid).first()
+    if user is None:
+        return make_err_response('用户不存在')
+    result, total = get_meeting_record_list_byuserid(user.id, page, page_size)
+    return make_succ_page_response(result, total)
