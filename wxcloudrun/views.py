@@ -1000,4 +1000,4 @@ def business_get_meeting_record():
     if user is None:
         return make_err_response('用户不存在')
     result, total = get_meeting_record_list_byuserid(user.id, page, page_size)
-    return make_succ_page_response(result, total)
+    return make_succ_page_response(data=result,code=0, total=total)
