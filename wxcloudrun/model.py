@@ -562,11 +562,12 @@ class MeetingReservation(db.Model):
     negotation_id = db.Column('negotation_id', db.INT, nullable=True)
     creater_id = db.Column('creater_id', db.INT, nullable=True)
     is_deleted = db.Column('is_deleted', db.Integer, nullable=True, default=0)
+    checkin=db.Column('checkin', db.Integer, nullable=True, default=0)
     start_time = db.Column('start_time', db.DateTime, nullable=True)
     end_time = db.Column('end_time', db.DateTime, nullable=True)
 
     def get(self):
         return {"id": self.id, "meeting_room_id": self.meeting_room_id, "negotation_id": self.negotation_id,
-                "creater_id": self.creater_id, "is_deleted": self.is_deleted,
+                "creater_id": self.creater_id, "is_deleted": self.is_deleted,"checkin":self.checkin,
                 "start_time": self.start_time.strftime('%H:%M'),
                 "end_time": self.end_time.strftime('%H:%M'), "date": self.start_time.strftime('%Y-%m-%d')}

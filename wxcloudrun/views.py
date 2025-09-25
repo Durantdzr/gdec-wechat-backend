@@ -960,7 +960,7 @@ def business_modify_meeting_room():
     if user is None:
         return make_err_response('用户不存在')
     reservation = MeetingReservation.query.filter(
-        MeetingReservation.id == params.get('metting_book_id')).first()
+        MeetingReservation.id == params.get('meeting_room_id')).first()
     reservation.meeting_room_id = params.get('meeting_room_id')
     reservation.start_time = params.get('start_time')
     reservation.end_time = params.get('end_time')
@@ -979,10 +979,29 @@ def business_delete_meeting_room():
     if user is None:
         return make_err_response('用户不存在')
     reservation = MeetingReservation.query.filter(
-        MeetingReservation.id == params.get('metting_book_id'), MeetingReservation.creater_id == user.id).first()
+        MeetingReservation.id == params.get('meeting_room_id'), MeetingReservation.creater_id == user.id).first()
     if reservation is None:
         return make_err_response('用户无权限删除预约会议室')
     reservation.is_deleted = 1
+    insert_user(reservation)
+    return make_succ_response(reservation.id)
+
+
+@app.route('/api/business/checkin_meeting_room', methods=['POST'])
+def business_checkin_meeting_room():
+    """
+    :return:签到会议室
+    """
+    # 获取请求体参数
+    params = request.get_json()
+    user = User.query.filter(User.openid == request.headers['X-WX-OPENID']).first()
+    if user is None:
+        return make_err_response('用户不存在')
+    reservation = MeetingReservation.query.filter(
+        MeetingReservation.id == params.get('meeting_room_id'), MeetingReservation.creater_id == user.id).first()
+    if reservation is None:
+        return make_err_response('用户无权限签到会议室')
+    reservation.checkin = 1
     insert_user(reservation)
     return make_succ_response(reservation.id)
 
