@@ -605,11 +605,12 @@ def send_open_msg():
         :return:发送消息
     """
     params = request.get_json()
-    users = User.query.filter(User.type == '开幕式观众', User.is_deleted == 0).all()
-    print(len(users))
-    for user in users:
-        result = send_tx_msg(phone=[user.phone], template_id='2285544')
-        print(result)
+    send_tx_msg(phone=['13022157641'], template_id='2527363',TemplateParamSet=["283475","5"])
+    # users = User.query.filter(User.type == '开幕式观众', User.is_deleted == 0).all()
+    # print(len(users))
+    # for user in users:
+    #     result = send_tx_msg(phone=[user.phone], template_id='2527363')
+    #     print(result)
     return make_succ_response(0)
 
 
