@@ -746,7 +746,7 @@ def update_BusinessInfo_statusbyid(userlist, status, reason):
 def get_meeting_record_list_byuserid(userid, page=1, page_size=1000):
     result = (db.session.query(MeetingReservation, MeetingRoom).join(MeetingRoom,
                                                                      MeetingReservation.meeting_room_id == MeetingRoom.id)
-              .filter(MeetingReservation.creater_id == userid).order_by(
+              .filter(MeetingReservation.creater_id == userid, MeetingReservation.is_deleted == 0).order_by(
         MeetingReservation.start_time.desc()).paginate(page, per_page=page_size, error_out=False))
     data = []
     for reservation, meeting_room in result.items:
