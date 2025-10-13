@@ -633,7 +633,17 @@ def business_upload_img():
     return make_succ_response(
         {'img_url': 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, filename), "cdn_param": filename})
 
-
+@app.route('/api/business/get_certified_info', methods=['GET'])
+def business_get_info():
+    """
+    :return:获取我发布的商务信息
+    """
+    # 获取请求体参数
+    wxopenid = request.headers['X-WX-OPENID']
+    code = request.args.get('code')
+    result = EnterpriseCertified.query.filter(EnterpriseCertified.code == code,EnterpriseCertified.is_deleted==0).first()
+    data = result.get()
+    return make_succ_response(data)
 @app.route('/api/business/certified', methods=['POST'])
 def business_business_certified():
     """

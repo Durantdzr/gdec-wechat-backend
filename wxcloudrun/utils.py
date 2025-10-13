@@ -216,7 +216,7 @@ def masked_view(s):
     masked = re.sub(r'(?<=.{3}).(?=.{4})', '*', s)
     return masked
 
-def send_tx_msg(phone, template_id,TemplateParamSet=None):
+def send_tx_msg(phone, template_id,template_param_set=None):
     try:
         # 密钥可前往官网控制台 https://console.cloud.tencent.com/cam/capi 进行获取
         cred = credential.Credential(config.SecretId, config.SecretKey)
@@ -236,7 +236,7 @@ def send_tx_msg(phone, template_id,TemplateParamSet=None):
             "PhoneNumberSet": phone,
             "SmsSdkAppId": config.SdkAppId,
             "TemplateId": template_id,
-            "TemplateParamSet":TemplateParamSet,
+            "TemplateParamSet":template_param_set,
             "SignName": "上海市数商协会"
         }
         req.from_json_string(json.dumps(params))
