@@ -275,14 +275,18 @@ def get_user_privilege():
         data['invited_num'] = len(
             RelationFriend.query.filter(RelationFriend.inviter_id == user.id, RelationFriend.status == 0).all())
         data['schdule_num'] = get_user_schedule_num_by_id(user.id)
-    enterprise_certified = EnterpriseCertified.query.filter(EnterpriseCertified.user_id == user.id,
-                                                            EnterpriseCertified.is_deleted == 0).first()
-    if enterprise_certified is not None:
-        status_Enum = {0: "待审核", 2: "审核通过", 1: "审核未通过"}
-        data['enterprise_certified_status'] = status_Enum.get(enterprise_certified.status)
-        data['enterprise_certified_info'] = enterprise_certified.get()
-    else:
+    r=RelationUserCertified.query.filter(RelationUserCertified.user_id == user.id,
+                                          RelationUserCertified.status == 1).first()
+    if r is None:
         data['enterprise_certified_status'] = None
+    else:
+        enterprise_certified = EnterpriseCertified.query.filter(EnterpriseCertified.id == r.enterprise_id,
+                                                                EnterpriseCertified.is_deleted == 0).first()
+        if enterprise_certified is not None:
+            data['enterprise_certified_status'] = "审核通过"
+            data['enterprise_certified_info'] = enterprise_certified.get()
+        else:
+            data['enterprise_certified_status'] = None
     return make_succ_response(data)
 
 
