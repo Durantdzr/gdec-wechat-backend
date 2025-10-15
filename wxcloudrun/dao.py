@@ -659,31 +659,31 @@ def get_enterprise_list(title=None, type=None):
 
 
 def get_business_certified_list(page, page_size, title, status):
-    if status is None:
-        result = (db.session.query(EnterpriseCertified, User).join(User,
-                                                                   EnterpriseCertified.user_id == User.id)
-                  .filter(EnterpriseCertified.name.like('%' + title + '%'),
-                          EnterpriseCertified.is_deleted == 0).order_by(
-            EnterpriseCertified.create_time.desc()).paginate(page, per_page=page_size, error_out=False))
-    else:
-        result = (db.session.query(EnterpriseCertified, User).join(User,
-                                                                   EnterpriseCertified.user_id == User.id)
-                  .filter(EnterpriseCertified.name.like('%' + title + '%'),
-                          EnterpriseCertified.is_deleted == 0,
-                          EnterpriseCertified.status == status).order_by(
-            EnterpriseCertified.create_time.desc()).paginate(page, per_page=page_size, error_out=False))
+    # if status is None:
+    #     result = (db.session.query(EnterpriseCertified, User).join(User,
+    #                                                                EnterpriseCertified.user_id == User.id)
+    #               .filter(EnterpriseCertified.name.like('%' + title + '%'),
+    #                       EnterpriseCertified.is_deleted == 0).order_by(
+    #         EnterpriseCertified.create_time.desc()).paginate(page, per_page=page_size, error_out=False))
+    # else:
+    #     result = (db.session.query(EnterpriseCertified, User).join(User,
+    #                                                                EnterpriseCertified.user_id == User.id)
+    #               .filter(EnterpriseCertified.name.like('%' + title + '%'),
+    #                       EnterpriseCertified.is_deleted == 0,
+    #                       EnterpriseCertified.status == status).order_by(
+    #         EnterpriseCertified.create_time.desc()).paginate(page, per_page=page_size, error_out=False))
     data = []
-    for enterprise, user in result.items:
-        u = user.get()
-        data.append({"id": enterprise.id, "name": enterprise.name, "code": enterprise.code,
-                     "file_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, enterprise.file_url),
-                     "scale": enterprise.scale, "invite_code": enterprise.invite_code,
-                     "industry": enterprise.industry, "area": enterprise.area,
-                     "financing_stage": enterprise.financing_stage,
-                     "result": enterprise.result, "user_id": enterprise.user_id, "user_name": u.get("name"),
-                     "status": enterprise.status, "is_deleted": enterprise.is_deleted,
-                     "create_time": enterprise.create_time.strftime('%Y-%m-%d'), "chat_object_type": "公司"
-                     })
+    # for enterprise, user in result.items:
+    #     u = user.get()
+    #     data.append({"id": enterprise.id, "name": enterprise.name, "code": enterprise.code,
+    #                  "file_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, enterprise.file_url),
+    #                  "scale": enterprise.scale, "invite_code": enterprise.invite_code,
+    #                  "industry": enterprise.industry, "area": enterprise.area,
+    #                  "financing_stage": enterprise.financing_stage,
+    #                  "result": enterprise.result, "user_id": enterprise.user_id, "user_name": u.get("name"),
+    #                  "status": enterprise.status, "is_deleted": enterprise.is_deleted,
+    #                  "create_time": enterprise.create_time.strftime('%Y-%m-%d'), "chat_object_type": "公司"
+    #                  })
     if status is None:
         result = EnterpriseCertified.query.filter(EnterpriseCertified.name.like('%' + title + '%'),
                                                   EnterpriseCertified.is_deleted == 0,
@@ -704,7 +704,8 @@ def get_business_certified_list(page, page_size, title, status):
                      "financing_stage": item.financing_stage,
                      "result": item.result, "user_id": item.user_id, "user_name": None,
                      "status": item.status, "is_deleted": item.is_deleted,
-                     "create_time": item.create_time.strftime('%Y-%m-%d'), "chat_object_type": "公司"
+                     "create_time": item.create_time.strftime('%Y-%m-%d'), "chat_object_type": "公司",
+                     "contacts_name": item.contacts_name, "contacts_phone": item.contacts_phone
                      })
     return data, result.total
 

@@ -1320,6 +1320,15 @@ def manage_create_business_certified():
     certified = EnterpriseCertified()
     certified.name = params.get('name')
     certified.code = params.get('code')
+    certified.file_url = params.get('cdn_param')
+    certified.scale = params.get('scale')
+    certified.industry = params.get('industry')
+    certified.area = params.get('area')
+    certified.financing_stage = params.get('financing_stage')
+    certified.result = params.get('result')
+    certified.contacts_name = params.get('contacts_name')
+    certified.contacts_phone = params.get('contacts_phone')
+    certified.status = 2
     certified.invite_code = generate_verification_code(6)
     insert_user(certified)
     operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
@@ -1341,25 +1350,46 @@ def manage_delete_business_certified():
     return make_succ_response(certified.id)
 
 
-@app.route('/api/manage/review_business_certified', methods=['post'])
+@app.route('/api/manage/edit_business_certified', methods=['post'])
 @jwt_required()
 @admin_required()
-def manage_review_business_certified():
+def manage_edit_business_certified():
     """
-        :return:审核企业认证
+        :return:修改企业认证
         """
     params = request.get_json()
-    opt = params.get('opt')
-    reason = params.get('reason', "审核通过")
-    certifiedList = params.get('certifiedList', '')
-    if opt == 'agree':
-        update_EnterpriseCertified_statusbyid(certifiedList, 2, reason)
-    elif opt == 'unagree':
-        update_EnterpriseCertified_statusbyid(certifiedList, 1, reason)
-    else:
-        return make_err_response('无该操作方法')
+    certified = EnterpriseCertified.query.filter_by(id=params.get('id')).first()
+    certified.name = params.get('name')
+    certified.code = params.get('code')
+    certified.file_url = params.get('cdn_param')
+    certified.scale = params.get('scale')
+    certified.industry = params.get('industry')
+    certified.area = params.get('area')
+    certified.financing_stage = params.get('financing_stage')
+    certified.result = params.get('result')
+    insert_user(certified)
     operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
-    return make_succ_response('操作成功', code=200)
+    return make_succ_response(certified.id)
+
+# @app.route('/api/manage/review_business_certified', methods=['post'])
+# @jwt_required()
+# @admin_required()
+# def manage_review_business_certified():
+#     """
+#         :return:审核企业认证
+#         """
+#     params = request.get_json()
+#     opt = params.get('opt')
+#     reason = params.get('reason', "审核通过")
+#     certifiedList = params.get('certifiedList', '')
+#     if opt == 'agree':
+#         update_EnterpriseCertified_statusbyid(certifiedList, 2, reason)
+#     elif opt == 'unagree':
+#         update_EnterpriseCertified_statusbyid(certifiedList, 1, reason)
+#     else:
+#         return make_err_response('无该操作方法')
+#     operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+#     return make_succ_response('操作成功', code=200)
 
 
 @app.route('/api/manage/get_business_info_list', methods=['GET'])

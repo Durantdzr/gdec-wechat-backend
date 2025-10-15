@@ -7,10 +7,10 @@ from wxcloudrun.dao import insert_user, search_friends_byopenid, insert_realtion
     get_hall_exhibition_byid, get_hall_exhibition, search_friends_random, refresh_guest, refresh_guest_info, is_friend, \
     get_hall_blockchain_schedule, get_business_list, get_enterprise_list, get_meeting_record_list_byuserid
 from wxcloudrun.model import ConferenceInfo, User, ConferenceHall, RelationFriend, ConferenceSignUp, DigitalCityWeek, \
-    BusinessInfo, EnterpriseCertified, BusinessNegotiation, MeetingRoom, MeetingReservation
+    BusinessInfo, EnterpriseCertified, BusinessNegotiation, MeetingRoom, MeetingReservation, RelationUserCertified
 from wxcloudrun.response import make_succ_response, make_err_response, make_succ_page_response
 from wxcloudrun.utils import batchdownloadfile, uploadfile, uploadwebfile, getscheduleqrcode, \
-    send_check_msg, makeqrcode, send_tx_msg, masked_view
+    send_check_msg, makeqrcode, send_tx_msg, masked_view, generate_verification_code
 from sqlalchemy import or_, and_, func
 from wxcloudrun.cronjob import reload_image
 import config
@@ -605,7 +605,7 @@ def send_open_msg():
         :return:发送消息
     """
     params = request.get_json()
-    send_tx_msg(phone=['13022157641'], template_id='2527363',TemplateParamSet=["283475","5"])
+    send_tx_msg(phone=['13022157641'], template_id='2527363', template_param_set=["283475", "5"])
     # users = User.query.filter(User.type == '开幕式观众', User.is_deleted == 0).all()
     # print(len(users))
     # for user in users:
@@ -633,70 +633,131 @@ def business_upload_img():
     return make_succ_response(
         {'img_url': 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, filename), "cdn_param": filename})
 
+
 @app.route('/api/business/get_certified_info', methods=['GET'])
 def business_get_info():
     """
-    :return:获取我发布的商务信息
+    :return:获取认证信息
     """
     # 获取请求体参数
     wxopenid = request.headers['X-WX-OPENID']
     code = request.args.get('code')
-    result = EnterpriseCertified.query.filter(EnterpriseCertified.code == code,EnterpriseCertified.is_deleted==0).first()
+    result = EnterpriseCertified.query.filter(EnterpriseCertified.code == code,
+                                              EnterpriseCertified.is_deleted == 0).first()
     data = result.get()
     return make_succ_response(data)
-@app.route('/api/business/certified', methods=['POST'])
-def business_business_certified():
+
+
+@app.route('/api/business/send_certified_msg', methods=['GET'])
+def send_certified_msg():
     """
-    :return:提交用户企业认证
+    :return:发送认证信息
     """
     # 获取请求体参数
-    params = request.get_json()
-    user = User.query.filter(User.openid == request.headers['X-WX-OPENID']).first()
-
-    if params.get('invite_code') is None:
-        return make_err_response('请填写邀请码')
+    wxopenid = request.headers['X-WX-OPENID']
+    user = User.query.filter(User.openid == wxopenid).first()
     if user is None:
         return make_err_response('用户不存在')
-    if user.status != 2:
-        return make_err_response('用户未完成审核，请稍后。')
-    else:
-        certified = EnterpriseCertified.query.filter(
-            or_(EnterpriseCertified.user_id == user.id, and_(EnterpriseCertified.status == 2,
-                                                             EnterpriseCertified.code == params.get('code'))),
-            EnterpriseCertified.is_deleted == 0).first()
-        if certified is not None:
-            if certified.status != 1:
-                return make_err_response('该用户或者企业已有认证，请勿重新提交')
-            else:
-                certified.name = params.get('name')
-                certified.code = params.get('code')
-                certified.file_url = params.get('cdn_param')
-                certified.scale = params.get('scale')
-                certified.industry = params.get('industry')
-                certified.area = params.get('area')
-                certified.financing_stage = params.get('financing_stage')
-                certified.result = params.get('result')
-                certified.status = 0
-                insert_user(certified)
-            return make_succ_response(certified.id)
-        certified = EnterpriseCertified.query.filter(
-            EnterpriseCertified.invite_code == params.get('invite_code')).first()
-        if certified is None:
-            return make_err_response('该邀请码错误')
-        elif certified.user_id is not None and certified.user_id != user.id:
-            return make_err_response('该邀请码已使用，非当前用户绑定')
-        else:
-            certified.user_id = user.id
-            certified.name = params.get('name')
-            certified.code = params.get('code')
-            certified.file_url = params.get('cdn_param')
-            certified.scale = params.get('scale')
-            certified.industry = params.get('industry')
-            certified.area = params.get('area')
-            certified.financing_stage = params.get('financing_stage')
-            certified.result = params.get('result')
-            insert_user(certified)
-        return make_succ_response(certified.id)
+    r = RelationUserCertified.query.filter(RelationUserCertified.user_id == user.id,
+                                           RelationUserCertified.status == 1).first()
+    if r is not None:
+        return make_err_response('用户已认证')
+    r = RelationUserCertified.query.filter(RelationUserCertified.user_id == user.id,
+                                           RelationUserCertified.status == 0,
+                                           RelationUserCertified.create_time >= datetime.datetime.now() - datetime.timedelta(
+                                               minutes=5)).first()
+    if r is not None:
+        return make_err_response('请勿重复发送')
+    code = request.args.get('code')
+    enterprise = EnterpriseCertified.query.filter(EnterpriseCertified.code == code,
+                                                  EnterpriseCertified.is_deleted == 0).first()
+    import random
+    verification_code = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+    r = RelationUserCertified()
+    r.user_id = user.id
+    r.enterprise_id = enterprise.id
+    r.verification_code = verification_code
+    insert_user(r)
+    send_tx_msg(phone=[enterprise.contacts_phone], template_id='2527363', template_param_set=[verification_code, "5"])
+    return make_succ_response(r.id)
+
+
+@app.route('/api/business/certified', methods=['GET'])
+def business_business_certified():
+    """
+    :return:发送认证信息
+    """
+    # 获取请求体参数
+    wxopenid = request.headers['X-WX-OPENID']
+    user = User.query.filter(User.openid == wxopenid).first()
+    if user is None:
+        return make_err_response('用户不存在')
+    code = request.args.get('verification_code')
+    r = RelationUserCertified.query.filter(RelationUserCertified.user_id == user.id,
+                                           RelationUserCertified.verification_code == code).first()
+    if r is None:
+        return make_err_response('验证码错误')
+    delta = (datetime.datetime.now() - r.create_time).total_seconds()
+    if delta > 60 * 5:
+        return make_err_response('验证码已过期')
+    r.status = 1
+    insert_user(r)
+    return make_succ_response(r.id)
+
+
+# @app.route('/api/business/certified', methods=['POST'])
+# def business_business_certified():
+#     """
+#     :return:提交用户企业认证
+#     """
+#     # 获取请求体参数
+#     params = request.get_json()
+#     user = User.query.filter(User.openid == request.headers['X-WX-OPENID']).first()
+#
+#     if params.get('invite_code') is None:
+#         return make_err_response('请填写邀请码')
+#     if user is None:
+#         return make_err_response('用户不存在')
+#     if user.status != 2:
+#         return make_err_response('用户未完成审核，请稍后。')
+#     else:
+#         certified = EnterpriseCertified.query.filter(
+#             or_(EnterpriseCertified.user_id == user.id, and_(EnterpriseCertified.status == 2,
+#                                                              EnterpriseCertified.code == params.get('code'))),
+#             EnterpriseCertified.is_deleted == 0).first()
+#         if certified is not None:
+#             if certified.status != 1:
+#                 return make_err_response('该用户或者企业已有认证，请勿重新提交')
+#             else:
+#                 certified.name = params.get('name')
+#                 certified.code = params.get('code')
+#                 certified.file_url = params.get('cdn_param')
+#                 certified.scale = params.get('scale')
+#                 certified.industry = params.get('industry')
+#                 certified.area = params.get('area')
+#                 certified.financing_stage = params.get('financing_stage')
+#                 certified.result = params.get('result')
+#                 certified.status = 0
+#                 insert_user(certified)
+#             return make_succ_response(certified.id)
+#         certified = EnterpriseCertified.query.filter(
+#             EnterpriseCertified.invite_code == params.get('invite_code')).first()
+#         if certified is None:
+#             return make_err_response('该邀请码错误')
+#         elif certified.user_id is not None and certified.user_id != user.id:
+#             return make_err_response('该邀请码已使用，非当前用户绑定')
+#         else:
+#             certified.user_id = user.id
+#             certified.name = params.get('name')
+#             certified.code = params.get('code')
+#             certified.file_url = params.get('cdn_param')
+#             certified.scale = params.get('scale')
+#             certified.industry = params.get('industry')
+#             certified.area = params.get('area')
+#             certified.financing_stage = params.get('financing_stage')
+#             certified.result = params.get('result')
+#             insert_user(certified)
+#         return make_succ_response(certified.id)
 
 
 @app.route('/api/business/deploy_info', methods=['POST'])
@@ -1030,4 +1091,4 @@ def business_get_meeting_record():
     if user is None:
         return make_err_response('用户不存在')
     result, total = get_meeting_record_list_byuserid(user.id, page, page_size)
-    return make_succ_page_response(data=result,code=0, total=total)
+    return make_succ_page_response(data=result, code=0, total=total)

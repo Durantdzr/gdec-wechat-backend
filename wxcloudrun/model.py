@@ -499,6 +499,8 @@ class EnterpriseCertified(db.Model):
     is_deleted = db.Column('is_deleted', db.Integer, nullable=True, default=0)
     create_time = db.Column('create_time', db.DateTime, nullable=True, default=datetime.now)
     reason = db.Column('reason', db.String(100), nullable=True)
+    contacts_name = db.Column('contacts_name', db.String(100), nullable=True)
+    contacts_phone = db.Column('contacts_phone', db.String(20), nullable=True)
 
     def get(self):
         return {"id": self.id, "name": self.name, "code": self.code, "file_url": self.file_url,
@@ -506,7 +508,8 @@ class EnterpriseCertified(db.Model):
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.file_url), "scale": self.scale,
                 "industry": self.industry, "area": self.area, "financing_stage": self.financing_stage,
                 "result": self.result, "user_id": self.user_id, "status": self.status, "is_deleted": self.is_deleted,
-                "create_time": self.create_time.strftime('%Y-%m-%d'), "chat_object_type": "公司"
+                "create_time": self.create_time.strftime('%Y-%m-%d'), "chat_object_type": "公司",
+                "contacts_name": self.contacts_name, "contacts_phone": self.contacts_phone
                 }
 
 
@@ -575,3 +578,14 @@ class MeetingReservation(db.Model):
                 "creater_id": self.creater_id, "is_deleted": self.is_deleted, "checkin": self.checkin,
                 "start_time": self.start_time.strftime('%H:%M'),
                 "end_time": self.end_time.strftime('%H:%M'), "date": self.start_time.strftime('%Y-%m-%d')}
+
+class RelationUserCertified(db.Model):
+    # 设置结构体表格名称
+    __tablename__ = 'r_user_certified'
+    # 设定结构体对应表格的字段
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column('user_id', db.Integer)
+    enterprise_id = db.Column('enterprise_id', db.Integer)
+    create_time = db.Column('create_time', db.TIMESTAMP, nullable=True, default=datetime.now)
+    verification_code = db.Column('verification_code', db.String(10), nullable=True)
+    status = db.Column('status', db.INT, default=0)
