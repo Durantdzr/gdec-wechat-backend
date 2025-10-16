@@ -19,7 +19,7 @@ from wxcloudrun.dao import update_user_statusbyid, insert_user, get_review_confe
     update_BusinessInfo_statusbyid
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, ConferenCoopearter, Media, \
     ConferenceCooperatorShow, OperaterRule, Exhibiton, ConferenceSignUp, RelationFriend, BusinessInfo, \
-    EnterpriseCertified, MeetingRoom
+    EnterpriseCertified, MeetingRoom,RelationUserCertified
 from wxcloudrun.response import make_succ_page_response, make_succ_response, make_err_response
 from wxcloudrun.utils import uploadfile, valid_image, vaild_password, uploadwebfile, download_cdn_file, zip_folder, \
     get_ticket, get_urllink, getscheduleqrcode, generate_verification_code
@@ -1346,6 +1346,7 @@ def manage_delete_business_certified():
     certified = EnterpriseCertified.query.filter_by(id=params.get('id')).first()
     certified.is_deleted = 1
     insert_user(certified)
+    RelationUserCertified.query.filter(RelationUserCertified.enterprise_id==params.get('id')).delete()
     operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     return make_succ_response(certified.id)
 
