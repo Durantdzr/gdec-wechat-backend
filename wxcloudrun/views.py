@@ -645,10 +645,20 @@ def business_get_info():
     """
     # 获取请求体参数
     wxopenid = request.headers['X-WX-OPENID']
+    user = User.query.filter(User.openid == wxopenid).first()
+    if user is None:
+        return make_err_response('用户不存在')
     code = request.args.get('code')
-    result = EnterpriseCertified.query.filter(EnterpriseCertified.code == code,
-                                              EnterpriseCertified.is_deleted == 0).first()
-    data = result.get()
+    enterprise = EnterpriseCertified.query.filter(EnterpriseCertified.code == code,
+                                                  EnterpriseCertified.is_deleted == 0).first()
+    data = enterprise.get()
+    if enterprise.contacts_phone == user.phone:
+        r = RelationUserCertified()
+        r.user_id = user.id
+        r.enterprise_id = enterprise.id
+        r.status = 1
+        insert_user(r)
+    data['certified'] = enterprise.contacts_phone == user.phone
     return make_succ_response(data)
 
 
@@ -682,8 +692,8 @@ def send_certified_msg():
     r.enterprise_id = enterprise.id
     r.verification_code = verification_code
     insert_user(r)
-    send_tx_msg(phone=[enterprise.contacts_phone], template_id='2527363', template_param_set=[verification_code, "5"])
-    return make_succ_response(r.id)
+    result=send_tx_msg(phone=[enterprise.contacts_phone], template_id='2527363', template_param_set=[verification_code, "5"])
+    return make_succ_response(result)
 
 
 @app.route('/api/business/certified', methods=['GET'])
