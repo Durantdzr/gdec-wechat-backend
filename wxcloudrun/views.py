@@ -275,8 +275,8 @@ def get_user_privilege():
         data['invited_num'] = len(
             RelationFriend.query.filter(RelationFriend.inviter_id == user.id, RelationFriend.status == 0).all())
         data['schdule_num'] = get_user_schedule_num_by_id(user.id)
-    r=RelationUserCertified.query.filter(RelationUserCertified.user_id == user.id,
-                                          RelationUserCertified.status == 1).first()
+    r = RelationUserCertified.query.filter(RelationUserCertified.user_id == user.id,
+                                           RelationUserCertified.status == 1).first()
     if r is None:
         data['enterprise_certified_status'] = None
     else:
@@ -696,9 +696,13 @@ def business_business_certified():
     user = User.query.filter(User.openid == wxopenid).first()
     if user is None:
         return make_err_response('用户不存在')
-    code = request.args.get('verification_code')
+    verification_code = request.args.get('verification_code')
+    code = request.args.get('code')
+    enterprise = EnterpriseCertified.query.filter(EnterpriseCertified.code == code,
+                                                  EnterpriseCertified.is_deleted == 0).first()
     r = RelationUserCertified.query.filter(RelationUserCertified.user_id == user.id,
-                                           RelationUserCertified.verification_code == code).first()
+                                           RelationUserCertified.enterprise_id == enterprise.id,
+                                           RelationUserCertified.verification_code == verification_code).first()
     if r is None:
         return make_err_response('验证码错误')
     delta = (datetime.datetime.now() - r.create_time).total_seconds()
