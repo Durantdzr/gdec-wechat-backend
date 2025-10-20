@@ -16,10 +16,10 @@ from wxcloudrun.dao import update_user_statusbyid, insert_user, get_review_confe
     refresh_conference_info, get_hall_schedule_byid, get_operat_list, get_hall_exhibition_byid, \
     get_hall_exhibition, get_hall_blockchain_schedule, get_all_review_conference_list, \
     get_all_signup_conference_statics, get_business_certified_list, update_EnterpriseCertified_statusbyid, \
-    update_BusinessInfo_statusbyid,update_schedule_seatbyid
+    update_BusinessInfo_statusbyid, update_schedule_seatbyid
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, ConferenCoopearter, Media, \
     ConferenceCooperatorShow, OperaterRule, Exhibiton, ConferenceSignUp, RelationFriend, BusinessInfo, \
-    EnterpriseCertified, MeetingRoom,RelationUserCertified
+    EnterpriseCertified, MeetingRoom, RelationUserCertified
 from wxcloudrun.response import make_succ_page_response, make_succ_response, make_err_response
 from wxcloudrun.utils import uploadfile, valid_image, vaild_password, uploadwebfile, download_cdn_file, zip_folder, \
     get_ticket, get_urllink, getscheduleqrcode, generate_verification_code
@@ -782,10 +782,10 @@ def get_conference_sign_up():
     page = request.args.get('page', default=1, type=int)
     page_size = request.args.get('page_size', default=10, type=int)
     status = request.args.get('status', default=None, type=int)
-    schedule_name=request.args.get('schedule_name', default= None)
-    forum=""
+    schedule_name = request.args.get('schedule_name', default=None)
+    forum = ""
     forum = get_jwt().get("forum", "")
-    result, total = get_review_conference_list(name, page, page_size, forum, status,schedule_name)
+    result, total = get_review_conference_list(name, page, page_size, forum, status, schedule_name)
     return make_succ_page_response(result, code=200, total=total)
 
 
@@ -1364,7 +1364,7 @@ def manage_delete_business_certified():
     certified = EnterpriseCertified.query.filter_by(id=params.get('id')).first()
     certified.is_deleted = 1
     insert_user(certified)
-    RelationUserCertified.query.filter(RelationUserCertified.enterprise_id==params.get('id')).delete()
+    RelationUserCertified.query.filter(RelationUserCertified.enterprise_id == params.get('id')).delete()
     operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     return make_succ_response(certified.id)
 
@@ -1389,6 +1389,7 @@ def manage_edit_business_certified():
     insert_user(certified)
     operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     return make_succ_response(certified.id)
+
 
 # @app.route('/api/manage/review_business_certified', methods=['post'])
 # @jwt_required()
@@ -1422,17 +1423,15 @@ def manage_get_business_info_list():
     status = request.args.get('status')
     page = request.args.get('page', default=1, type=int)
     page_size = request.args.get('page_size', default=10, type=int)
-    if status is None:
-        result = BusinessInfo.query.filter(BusinessInfo.is_deleted == 0,
-                                           BusinessInfo.title.like('%' + title + '%')).paginate(page,
-                                                                                                per_page=page_size,
-                                                                                                error_out=False)
-    else:
-        result = BusinessInfo.query.filter(BusinessInfo.is_deleted == 0,
-                                           BusinessInfo.title.like('%' + title + '%'),
-                                           BusinessInfo.status == status).paginate(page,
-                                                                                   per_page=page_size,
-                                                                                   error_out=False)
+    query = BusinessInfo.query.filter(
+        BusinessInfo.is_deleted == 0,
+        BusinessInfo.title.like('%' + title + '%')
+    )
+
+    if status is not None:
+        query = query.filter(BusinessInfo.status == status)
+
+    result = query.paginate(page, per_page=page_size, error_out=False)
     data = [item.get() for item in result.items]
     return make_succ_page_response(data, code=200, total=result.total)
 
@@ -1493,6 +1492,7 @@ def manage_get_meetingroom():
     data = [item.get() for item in result.items]
     return make_succ_page_response(data, code=200, total=result.total)
 
+
 @app.route('/api/manage/edit_meetingroom', methods=['post'])
 @jwt_required()
 @admin_required()
@@ -1510,6 +1510,7 @@ def manage_edit_meetingroom():
     operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     return make_succ_response(meeting_room.id, code=200)
 
+
 @app.route('/api/manage/delete_meetingroom', methods=['post'])
 @jwt_required()
 @admin_required()
@@ -1519,7 +1520,7 @@ def manage_delete_meetingroom():
         """
     params = request.get_json()
     meeting_room = MeetingRoom.query.filter_by(id=params.get('id')).first()
-    meeting_room.is_deleted=1
+    meeting_room.is_deleted = 1
     insert_user(meeting_room)
     operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     return make_succ_response(meeting_room.id, code=200)
