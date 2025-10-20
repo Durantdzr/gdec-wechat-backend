@@ -5,7 +5,8 @@ from wxcloudrun.dao import insert_user, search_friends_byopenid, insert_realtion
     get_main_hall_guests_list, get_other_hall_guests_list, get_cooperater_list, get_hall_schedule_bydate, get_live_data, \
     get_user_schedule_num_by_id, refresh_schedule_info, get_hall_schedule_byid, get_hall_exhibition_bydate, \
     get_hall_exhibition_byid, get_hall_exhibition, search_friends_random, refresh_guest, refresh_guest_info, is_friend, \
-    get_hall_blockchain_schedule, get_business_list, get_enterprise_list, get_meeting_record_list_byuserid
+    get_hall_blockchain_schedule, get_business_list, get_enterprise_list, get_meeting_record_list_byuserid, \
+    get_review_conference_listBYlabel
 from wxcloudrun.model import ConferenceInfo, User, ConferenceHall, RelationFriend, ConferenceSignUp, DigitalCityWeek, \
     BusinessInfo, EnterpriseCertified, BusinessNegotiation, MeetingRoom, MeetingReservation, RelationUserCertified
 from wxcloudrun.response import make_succ_response, make_err_response, make_succ_page_response
@@ -464,6 +465,24 @@ def get_schedule_list():
     return make_succ_response(data)
 
 
+@app.route('/api/conference/get_sign_up_seat', methods=['POST'])
+def get_sign_up_seat():
+    """
+    :return:获取某个用户的座位
+    """
+    # 获取请求体参数
+    wxopenid = request.headers['X-WX-OPENID']
+    params = request.get_json()
+    phone = params.get('phone', "")
+    name = params.get('name', "")
+    label = params.get('label')
+    user = User.query.filter(User.name == name, User.phone == phone, User.is_deleted == 0).first()
+    if user is None:
+        return make_err_response('用户不存在')
+    data = get_review_conference_listBYlabel(userid=user.id, label=label)
+    return make_succ_response(data)
+
+
 @app.route('/api/conference/get_open_guest_list', methods=['GET'])
 def get_open_guest_list():
     """
@@ -692,7 +711,8 @@ def send_certified_msg():
     r.enterprise_id = enterprise.id
     r.verification_code = verification_code
     insert_user(r)
-    result=send_tx_msg(phone=[enterprise.contacts_phone], template_id='2527363', template_param_set=[verification_code, "5"])
+    result = send_tx_msg(phone=[enterprise.contacts_phone], template_id='2527363',
+                         template_param_set=[verification_code, "5"])
     return make_succ_response(result)
 
 

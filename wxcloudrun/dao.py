@@ -258,7 +258,7 @@ def get_other_hall_guests_list():
     return data
 
 
-def get_review_conference_list(name, page, page_size, forum, status,schedule_name):
+def get_review_conference_list(name, page, page_size, forum, status, schedule_name):
     query = db.session.query(ConferenceSignUp, User, ConferenceSchedule).join(
         User, User.id == ConferenceSignUp.user_id
     ).join(
@@ -279,10 +279,33 @@ def get_review_conference_list(name, page, page_size, forum, status,schedule_nam
     result = query.paginate(page, per_page=page_size, error_out=False)
     return [{"id": signup.id, "user_name": user.name, "schedule_name": schedule.title,
              "schedule_date": schedule.conference_date.strftime('%Y-%m-%d'), "begin_time": schedule.begin_time,
+             "label": schedule.label,
              "end_time": schedule.end_time, "phone": user.phone, "status": signup.status, "company": user.company,
              "seat_img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, schedule.seat_img),
              "title": user.title, "seat_info": signup.seat_info} for signup, user, schedule in
             result.items], result.total
+
+
+def get_review_conference_listBYlabel(userid, label):
+    query = db.session.query(ConferenceSignUp, User, ConferenceSchedule).join(
+        User, User.id == ConferenceSignUp.user_id
+    ).join(
+        ConferenceSchedule, ConferenceSignUp.schedule_id == ConferenceSchedule.id
+    ).filter(
+        User.id == userid,
+        User.is_deleted == 0,
+        ConferenceSchedule.is_deleted == 0,
+    )
+
+    if label is not None:
+        query = query.filter(ConferenceSchedule.label.in_(label))
+    result = query.all()
+    return [{"id": signup.id, "user_name": user.name, "schedule_name": schedule.title,
+             "schedule_date": schedule.conference_date.strftime('%Y-%m-%d'), "begin_time": schedule.begin_time,
+             "label": schedule.label,
+             "end_time": schedule.end_time, "phone": user.phone, "status": signup.status, "company": user.company,
+             "seat_img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, schedule.seat_img),
+             "title": user.title, "seat_info": signup.seat_info} for signup, user, schedule in result]
 
 
 def get_all_review_conference_list(name, forum, status):
@@ -343,7 +366,8 @@ def get_conference_schedule_by_id(userid, date):
             "%Y-%m-%d %H:%M") - datetime.datetime.now()).total_seconds()
         data.append({"id": schedule.id, "schedule_name": schedule.title,
                      "schedule_time": schedule.conference_date.strftime('%Y-%m-%d') + ' ' + schedule.begin_time,
-                     "status": signup_status_ENUM.get(signup.status), "seat_info": schedule.seat_info,
+                     "status": signup_status_ENUM.get(signup.status), "seat_info": signup.seat_info,
+                     "seat_img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, schedule.seat_img),
                      'info': '距开始还有1小时' if delta / 60 > 0 and delta / 60 < 120 else ''})
     return data
 
