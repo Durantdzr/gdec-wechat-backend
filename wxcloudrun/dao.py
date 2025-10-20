@@ -198,6 +198,22 @@ def update_schedule_statusbyid(signuplist, status):
         return None
 
 
+def update_schedule_seatbyid(signuplist, seat):
+    """
+    :param id: Counter的ID
+    :return: Counter实体
+    """
+    try:
+        records = ConferenceSignUp.query.filter(ConferenceSignUp.id.in_(signuplist)).all()
+        for record in records:
+            record.seat_info = seat
+        db.session.commit()
+        return True
+    except OperationalError as e:
+        logger.info("query_counterbyid errorMsg= {} ".format(e))
+        return None
+
+
 def get_guests_list():
     guests = User.query.filter(User.type == '嘉宾', User.is_deleted == 0).order_by(
         User.order.desc()).all()
@@ -242,24 +258,25 @@ def get_other_hall_guests_list():
     return data
 
 
-def get_review_conference_list(name, page, page_size, forum, status):
-    if status is None:
-        result = db.session.query(ConferenceSignUp, User, ConferenceSchedule).join(User,
-                                                                                   User.id == ConferenceSignUp.user_id).join(
-            ConferenceSchedule, ConferenceSignUp.schedule_id == ConferenceSchedule.id).filter(
-            User.name.like('%' + name + '%'), User.status == 2, User.is_deleted == 0,
-                                              ConferenceSchedule.is_deleted == 0,
-            ConferenceSchedule.forum.like('%' + forum + '%')).paginate(page, per_page=page_size,
-                                                                       error_out=False)
-    else:
-        result = db.session.query(ConferenceSignUp, User, ConferenceSchedule).join(User,
-                                                                                   User.id == ConferenceSignUp.user_id).join(
-            ConferenceSchedule, ConferenceSignUp.schedule_id == ConferenceSchedule.id).filter(
-            User.name.like('%' + name + '%'), User.status == 2, User.is_deleted == 0,
-                                              ConferenceSchedule.is_deleted == 0,
-                                              ConferenceSignUp.status == status,
-            ConferenceSchedule.forum.like('%' + forum + '%')).paginate(page, per_page=page_size,
-                                                                       error_out=False)
+def get_review_conference_list(name, page, page_size, forum, status,schedule_name):
+    query = db.session.query(ConferenceSignUp, User, ConferenceSchedule).join(
+        User, User.id == ConferenceSignUp.user_id
+    ).join(
+        ConferenceSchedule, ConferenceSignUp.schedule_id == ConferenceSchedule.id
+    ).filter(
+        User.name.like('%' + name + '%'),
+        User.status == 2,
+        User.is_deleted == 0,
+        ConferenceSchedule.is_deleted == 0,
+        ConferenceSchedule.forum.like('%' + forum + '%')
+    )
+
+    if status is not None:
+        query = query.filter(ConferenceSignUp.status == status)
+    if schedule_name is not None:
+        query = query.filter(ConferenceSchedule.title.like('%' + schedule_name + '%'))
+
+    result = query.paginate(page, per_page=page_size, error_out=False)
     return [{"id": signup.id, "user_name": user.name, "schedule_name": schedule.title,
              "schedule_date": schedule.conference_date.strftime('%Y-%m-%d'), "begin_time": schedule.begin_time,
              "end_time": schedule.end_time, "phone": user.phone, "status": signup.status, "company": user.company,

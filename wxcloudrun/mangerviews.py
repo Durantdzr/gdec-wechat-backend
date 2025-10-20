@@ -16,7 +16,7 @@ from wxcloudrun.dao import update_user_statusbyid, insert_user, get_review_confe
     refresh_conference_info, get_hall_schedule_byid, get_operat_list, get_hall_exhibition_byid, \
     get_hall_exhibition, get_hall_blockchain_schedule, get_all_review_conference_list, \
     get_all_signup_conference_statics, get_business_certified_list, update_EnterpriseCertified_statusbyid, \
-    update_BusinessInfo_statusbyid
+    update_BusinessInfo_statusbyid,update_schedule_seatbyid
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, ConferenCoopearter, Media, \
     ConferenceCooperatorShow, OperaterRule, Exhibiton, ConferenceSignUp, RelationFriend, BusinessInfo, \
     EnterpriseCertified, MeetingRoom,RelationUserCertified
@@ -757,6 +757,20 @@ def review_conference_sign_up():
     return make_succ_response('操作成功', code=200)
 
 
+@app.route('/api/manage/edit_conference_sign_up_seat', methods=['post'])
+@jwt_required()
+def manage_edit_conference_sign_up_seat():
+    """
+        :return:编辑用户会议座位
+        """
+    params = request.get_json()
+    seat_info = params.get('seat_info')
+    signuplist = params.get('signuplist')
+    update_schedule_seatbyid(signuplist, seat_info)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    return make_succ_response('操作成功', code=200)
+
+
 @app.route('/api/manage/get_conference_sign_up', methods=['GET'])
 @jwt_required()
 def get_conference_sign_up():
@@ -768,9 +782,10 @@ def get_conference_sign_up():
     page = request.args.get('page', default=1, type=int)
     page_size = request.args.get('page_size', default=10, type=int)
     status = request.args.get('status', default=None, type=int)
-    # forum=""
+    schedule_name=request.args.get('schedule_name', default= None)
+    forum=""
     forum = get_jwt().get("forum", "")
-    result, total = get_review_conference_list(name, page, page_size, forum, status)
+    result, total = get_review_conference_list(name, page, page_size, forum, status,schedule_name)
     return make_succ_page_response(result, code=200, total=total)
 
 
