@@ -258,10 +258,12 @@ class ConferenCoopearter(db.Model):
     info = db.Column('info', db.String(255), nullable=True)
     is_deleted = db.Column('is_deleted', db.INT, default=0)
     forum = db.Column('forum', db.String)
+    company_img = db.Column('img_url', db.String(100), nullable=True)
 
     def get(self):
         return {"id": self.id, "name": self.name, "cdn_param": self.img_url, "type": self.type, "info": self.info,
-                "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url), "url": self.url}
+                "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url), "url": self.url,
+                "company_img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.company_img),"company_img":self.company_img}
 
 
 class ConferenceSignUp(db.Model):

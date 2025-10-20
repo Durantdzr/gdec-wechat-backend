@@ -634,9 +634,16 @@ def get_cooperater():
     return [item.get() for item in result]
 
 
+def get_pay_cooperater():
+    result = ConferenCoopearter.query.filter(ConferenCoopearter.is_deleted == 0,
+                                             ConferenCoopearter.type=='支付企业').all()
+    return [item.get() for item in result]
+
 def refresh_cooperater():
     data = get_cooperater()
     uploadwebfile(data, file='get_cooperater.json')
+    data=get_pay_cooperater()
+    uploadwebfile(data, file='get_pay_cooperater.json')
     data = get_cooperater_list('合作媒体')
     uploadwebfile(data, file='get_comedia.json')
 
