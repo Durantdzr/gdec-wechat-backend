@@ -58,6 +58,7 @@ class ConferenceSchedule(db.Model):
     background = db.Column('background', db.TEXT)
     label = db.Column('label', db.String(30), nullable=True)
     order = db.Column('order', db.Integer, default=0)
+    seat_img = db.Column('seat_img', db.String(255))
 
     def get_live(self):
         status_ENUM = {1: '即将直播', 2: '正在直播', 3: '查看回放'}
@@ -100,6 +101,8 @@ class ConferenceSchedule(db.Model):
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url),
                 'cdn_param': self.img_url, "sponsor": sponsor, "supported": supported, "organizer": organizer,
                 "coorganizer": coorganizer, "background": self.background, "label": self.label,
+                "seat_img": self.seat_img,
+                "seat_img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.seat_img),
                 "qrcode_cdn": 'https://{}.tcb.qcloud.la/{}qrcode_schedule_{}.jpg'.format(config.COS_BUCKET,
                                                                                          config.VERSION, self.id)}
 
@@ -122,6 +125,8 @@ class ConferenceSchedule(db.Model):
                 "begin_time": self.begin_time, "end_time": self.end_time, 'live_url': self.live_url,
                 "record_url": self.record_url, 'guest_id': guest_id, 'ext': self.label, "sponsor": sponsor,
                 'live_status': live_status_ENUM.get(self.live_status, ''),
+                "seat_img": self.seat_img,
+                "seat_img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.seat_img),
                 "blockchain_ext": "会议论坛" if self.label in ["开幕式", "分论坛", "分论坛（外场）"] else self.label}
 
     def get_schedule_view_simple(self):
@@ -156,6 +161,8 @@ class ConferenceSchedule(db.Model):
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url), "guest_id": guest_id,
                 'status': status_ENUM.get(self.status), 'live_status': live_status_ENUM.get(self.live_status, ''),
                 "sponsor": sponsor, "supported": supported, "organizer": organizer, "coorganizer": coorganizer,
+                "seat_img": self.seat_img,
+                "seat_img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.seat_img),
                 "background": self.background}
 
 
@@ -265,6 +272,7 @@ class ConferenceSignUp(db.Model):
     user_id = db.Column('user_id', db.Integer)
     schedule_id = db.Column('schedule_id', db.Integer)
     status = db.Column('status', db.Integer, default=0)
+    seat_info = db.Column('seat_info', db.String(50), nullable=True)
 
 
 class Media(db.Model):
@@ -578,6 +586,7 @@ class MeetingReservation(db.Model):
                 "creater_id": self.creater_id, "is_deleted": self.is_deleted, "checkin": self.checkin,
                 "start_time": self.start_time.strftime('%H:%M'),
                 "end_time": self.end_time.strftime('%H:%M'), "date": self.start_time.strftime('%Y-%m-%d')}
+
 
 class RelationUserCertified(db.Model):
     # 设置结构体表格名称

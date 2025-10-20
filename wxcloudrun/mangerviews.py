@@ -552,6 +552,7 @@ def add_hall_schedule():
     schedule.organizer = ','.join([str(item) for item in params.get('organizer', [])])
     schedule.coorganizer = ','.join([str(item) for item in params.get('coorganizer', [])])
     schedule.background = params.get('background')
+    schedule.seat_img = params.get('seat_img')
     schedule.label = params.get('label')
     if schedule.label == '分论坛':
         schedule.order = 5
@@ -604,6 +605,7 @@ def edit_hall_schedule():
     schedule.organizer = ','.join([str(item) for item in params.get('organizer', [])])
     schedule.coorganizer = ','.join([str(item) for item in params.get('coorganizer', [])])
     schedule.background = params.get('background')
+    schedule.seat_img = params.get('seat_img')
     schedule.label = params.get('label')
     if schedule.label == '分论坛':
         schedule.order = 5
@@ -766,6 +768,7 @@ def get_conference_sign_up():
     page = request.args.get('page', default=1, type=int)
     page_size = request.args.get('page_size', default=10, type=int)
     status = request.args.get('status', default=None, type=int)
+    # forum=""
     forum = get_jwt().get("forum", "")
     result, total = get_review_conference_list(name, page, page_size, forum, status)
     return make_succ_page_response(result, code=200, total=total)

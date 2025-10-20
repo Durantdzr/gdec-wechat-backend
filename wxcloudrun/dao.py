@@ -263,7 +263,9 @@ def get_review_conference_list(name, page, page_size, forum, status):
     return [{"id": signup.id, "user_name": user.name, "schedule_name": schedule.title,
              "schedule_date": schedule.conference_date.strftime('%Y-%m-%d'), "begin_time": schedule.begin_time,
              "end_time": schedule.end_time, "phone": user.phone, "status": signup.status, "company": user.company,
-             "title": user.title} for signup, user, schedule in result.items], result.total
+             "seat_img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, schedule.seat_img),
+             "title": user.title, "seat_info": signup.seat_info} for signup, user, schedule in
+            result.items], result.total
 
 
 def get_all_review_conference_list(name, forum, status):
@@ -324,7 +326,7 @@ def get_conference_schedule_by_id(userid, date):
             "%Y-%m-%d %H:%M") - datetime.datetime.now()).total_seconds()
         data.append({"id": schedule.id, "schedule_name": schedule.title,
                      "schedule_time": schedule.conference_date.strftime('%Y-%m-%d') + ' ' + schedule.begin_time,
-                     "status": signup_status_ENUM.get(signup.status),
+                     "status": signup_status_ENUM.get(signup.status), "seat_info": schedule.seat_info,
                      'info': '距开始还有1小时' if delta / 60 > 0 and delta / 60 < 120 else ''})
     return data
 
