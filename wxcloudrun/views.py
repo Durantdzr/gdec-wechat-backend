@@ -476,10 +476,11 @@ def get_sign_up_seat():
     phone = params.get('phone', "")
     name = params.get('name', "")
     label = params.get('label')
+    schedule_id = params.get('schedule_id')
     user = User.query.filter(User.name == name, User.phone == phone, User.is_deleted == 0).first()
     if user is None:
         return make_err_response('用户不存在')
-    data = get_review_conference_listBYlabel(userid=user.id, label=label)
+    data = get_review_conference_listBYlabel(userid=user.id, label=label, schedule_id=schedule_id)
     return make_succ_response(data)
 
 

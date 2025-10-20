@@ -286,7 +286,7 @@ def get_review_conference_list(name, page, page_size, forum, status, schedule_na
             result.items], result.total
 
 
-def get_review_conference_listBYlabel(userid, label):
+def get_review_conference_listBYlabel(userid, label,schedule_id):
     query = db.session.query(ConferenceSignUp, User, ConferenceSchedule).join(
         User, User.id == ConferenceSignUp.user_id
     ).join(
@@ -299,6 +299,8 @@ def get_review_conference_listBYlabel(userid, label):
 
     if label is not None:
         query = query.filter(ConferenceSchedule.label.in_(label))
+    if schedule_id is not None:
+        query = query.filter(ConferenceSchedule.id == schedule_id)
     result = query.all()
     return [{"id": signup.id, "user_name": user.name, "schedule_name": schedule.title,
              "schedule_date": schedule.conference_date.strftime('%Y-%m-%d'), "begin_time": schedule.begin_time,
