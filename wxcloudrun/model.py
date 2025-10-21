@@ -258,7 +258,7 @@ class ConferenCoopearter(db.Model):
     info = db.Column('info', db.String(255), nullable=True)
     is_deleted = db.Column('is_deleted', db.INT, default=0)
     forum = db.Column('forum', db.String)
-    company_img = db.Column('img_url', db.String(100), nullable=True)
+    company_img = db.Column('company_img', db.String(100), nullable=True)
 
     def get(self):
         return {"id": self.id, "name": self.name, "cdn_param": self.img_url, "type": self.type, "info": self.info,
