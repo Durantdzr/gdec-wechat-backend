@@ -103,7 +103,7 @@ def view_get_hall_exhibition():
     # 获取请求体参数
     wxOpenid = request.headers['X-WX-OPENID']
     data = get_hall_exhibition()
-    uploadwebfile(data, file='get_hall_exhibition.json')
+    # uploadwebfile(data, file='get_hall_exhibition.json')
     return make_succ_response(data)
 
 
@@ -566,7 +566,7 @@ def get_schedule_by_id():
     # 获取请求体参数
     wxopenid = request.headers['X-WX-OPENID']
     data = get_hall_schedule_byid(request.args.get('id'))
-    uploadwebfile(data, openid=wxopenid, file='get_schedule_by_id' + str(request.args.get('id')) + '.json')
+    # uploadwebfile(data, openid=wxopenid, file='get_schedule_by_id' + str(request.args.get('id')) + '.json')
     return make_succ_response(data)
 
 
