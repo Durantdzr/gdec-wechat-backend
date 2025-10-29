@@ -1071,7 +1071,7 @@ def business_modify_meeting_room():
     if user is None:
         return make_err_response('用户不存在')
     reservation = MeetingReservation.query.filter(
-        MeetingReservation.id == params.get('meeting_room_id')).first()
+        MeetingReservation.id == params.get('meeting_book_id')).first()
     reservation.meeting_room_id = params.get('meeting_room_id')
     reservation.start_time = params.get('start_time')
     reservation.end_time = params.get('end_time')
