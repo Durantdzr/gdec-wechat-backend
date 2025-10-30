@@ -174,6 +174,9 @@ def delete_user():
     user = User.query.filter_by(id=params.get('id')).first()
     user.is_deleted = 1
     insert_user(user)
+    r=RelationUserCertified.query.filter_by(user_id=params.get('id')).first()
+    r.status=0
+    insert_user(r)
     operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     return make_succ_response(user.id, code=200)
 
