@@ -671,6 +671,8 @@ def business_get_info():
     code = request.args.get('code')
     enterprise = EnterpriseCertified.query.filter(EnterpriseCertified.code == code,
                                                   EnterpriseCertified.is_deleted == 0).first()
+    if enterprise is None:
+        return make_err_response('信用代码不存在')
     data = enterprise.get()
     if enterprise.contacts_phone == user.phone:
         r = RelationUserCertified()
