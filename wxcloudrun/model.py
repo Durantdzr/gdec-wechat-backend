@@ -201,6 +201,7 @@ class User(db.Model):
     origin_userid = db.Column('origin_user_id', db.INT)
     branch = db.Column('branch', db.INT)
     auto_flag = db.Column('auto_flag', db.INT)
+    identity_verification = db.Column('identity_verification', db.INT)
 
     def get_status(self):
         status_ENUM = {1: '审核未通过', 2: '审核已通过', 0: '未审核', 3: '待审核'}
@@ -224,7 +225,8 @@ class User(db.Model):
                 "socail": self.socail,
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET,
                                                                 self.img_url) if self.img_url is not None else None,
-                'cdn_param': self.img_url, "status": self.status, "reason": self.reason, "guest_id": self.origin_userid}
+                'cdn_param': self.img_url, "status": self.status, "reason": self.reason, "guest_id": self.origin_userid,
+                "identity_verification": self.identity_verification}
 
     def get_guest(self):
         return {"id": self.id, "name": self.name, "company": self.company, "title": self.title, "info": self.guest_info,
@@ -263,7 +265,8 @@ class ConferenCoopearter(db.Model):
     def get(self):
         return {"id": self.id, "name": self.name, "cdn_param": self.img_url, "type": self.type, "info": self.info,
                 "img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.img_url), "url": self.url,
-                "company_img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.company_img),"company_img":self.company_img}
+                "company_img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.company_img),
+                "company_img": self.company_img}
 
 
 class ConferenceSignUp(db.Model):

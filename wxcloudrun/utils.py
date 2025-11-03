@@ -20,7 +20,7 @@ import io
 import string
 from PIL import Image
 from cryptography.fernet import Fernet
-import types
+import datetime
 from tencentcloud.common import credential
 from tencentcloud.common.profile.client_profile import ClientProfile
 from tencentcloud.common.profile.http_profile import HttpProfile
@@ -29,7 +29,9 @@ from tencentcloud.sms.v20210111 import sms_client, models
 import re
 
 cipher_suite = Fernet(config.FERNET_KEY)
-def batchdownloadfile(filelist,openid='omf5s7V9tfLS25ZxIXE0TtJCaZ3w'):
+
+
+def batchdownloadfile(filelist, openid='omf5s7V9tfLS25ZxIXE0TtJCaZ3w'):
     data = {
         "env": config.ENV,
         "file_list": [
@@ -50,25 +52,26 @@ def getqrcodeimg(path="page/index/index", openid='omf5s7V9tfLS25ZxIXE0TtJCaZ3w')
     data = {
         "path": path,
         "width": 430,
-        "env_version":"develop" if config.VERSION=='test/' else "release"
+        "env_version": "develop" if config.VERSION == 'test/' else "release"
     }
 
     result = requests.post('http://api.weixin.qq.com/wxa/getwxacode', params={"openid": openid},
                            json=data)
     return io.BytesIO(result.content)
 
+
 def getscheduleqrcode(id):
-    imgBuffer=getqrcodeimg(path="myHome/agenda/index?id={}".format(id))
-    img=Image.open(imgBuffer)
+    imgBuffer = getqrcodeimg(path="myHome/agenda/index?id={}".format(id))
+    img = Image.open(imgBuffer)
     img.save(config.VERSION + 'qrcode_schedule_' + str(id) + '.jpg', 'JPEG')
     uploadfile(config.VERSION + 'qrcode_schedule_' + str(id) + '.jpg')
 
-def makeqrcode(url,filename):
+
+def makeqrcode(url, filename):
     imgBuffer = getqrcodeimg(path=url)
     img = Image.open(imgBuffer)
     img.save(config.VERSION + filename, 'JPEG')
     uploadfile(config.VERSION + filename)
-
 
 
 def uploadfile(file, openid='omf5s7V9tfLS25ZxIXE0TtJCaZ3w'):
@@ -206,9 +209,11 @@ def encrypt(message):
     encrypted = cipher_suite.encrypt(message.encode('utf-8'))
     return encrypted
 
+
 def decrypt(encrypted):
     decrypted = cipher_suite.decrypt(encrypted)
     return decrypted.decode('utf-8')
+
 
 def masked_view(s):
     if len(s) <= 7:
@@ -216,7 +221,8 @@ def masked_view(s):
     masked = re.sub(r'(?<=.{3}).(?=.{4})', '*', s)
     return masked
 
-def send_tx_msg(phone, template_id,template_param_set=None):
+
+def send_tx_msg(phone, template_id, template_param_set=None):
     try:
         # 密钥可前往官网控制台 https://console.cloud.tencent.com/cam/capi 进行获取
         cred = credential.Credential(config.SecretId, config.SecretKey)
@@ -236,7 +242,7 @@ def send_tx_msg(phone, template_id,template_param_set=None):
             "PhoneNumberSet": phone,
             "SmsSdkAppId": config.SdkAppId,
             "TemplateId": template_id,
-            "TemplateParamSet":template_param_set,
+            "TemplateParamSet": template_param_set,
             "SignName": "上海市数商协会"
         }
         req.from_json_string(json.dumps(params))
@@ -244,13 +250,35 @@ def send_tx_msg(phone, template_id,template_param_set=None):
         # 返回的resp是一个SendSmsResponse的实例，与请求对象对应
         resp = client.SendSms(req)
         # 输出json格式的字符串回包
-        return(resp.to_json_string())
+        return (resp.to_json_string())
 
     except TencentCloudSDKException as err:
         print(err)
+
+
 def generate_verification_code(length=6):
     # 定义验证码可能包含的字符集（大小写字母 + 数字）
     characters = string.ascii_letters + string.digits
     # 随机选择字符并拼接成验证码
     verification_code = ''.join(random.choice(characters) for _ in range(length))
     return verification_code
+
+
+def CA_identification(name, phone, code, openid=None):
+    url = "https://trust.sheca.com/api/"
+    result=requests.post(url + 'auth/token', data={"appId": "GDEC", "appSecret": "GDEC"})
+    data=result.json()['result']
+    token = data.get('access_token')
+    headers = {"Authorization": token}
+    result = requests.post(url + 'openApi/auth/mobile', data={"name": name, "mobile": phone, "idNo": code,
+                                                              "transactionId": "GDEC-{}-{}".format(phone,
+                                                                                                   int(time.time()))})
+    if openid is not None:
+        status = {1001: "一致", 1002: "不一致",
+                  2001: "姓名为空或格式错误", 2002: "证件号码为空或格式错误", 2003: "手机号码为空或格式错误",
+                  3001: "参数异常", 3002: "无效的身份证", 3003: "未查询到信息", 3004: "姓名不匹配", 3005: "证件不匹配", 3006: "手机号码不匹配",
+                  3007: "姓名证件不匹配", 3008: "姓名手机号不匹配", 3009: "证件手机号不匹配", 3010: "姓名证件手机号不匹配"}
+        send_check_msg(openid=openid, meetingname='全球数商大会', content=name + '用户报名审核',
+                       reason=status.get(result.json().get("code", 0), "实名认证未通过"),
+                       phrase3='审核未通过', date=datetime.datetime.now().strftime('%Y-%m-%d'))
+    return result.json()
