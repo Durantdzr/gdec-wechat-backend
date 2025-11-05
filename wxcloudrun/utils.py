@@ -265,20 +265,30 @@ def generate_verification_code(length=6):
 
 
 def CA_identification(name, phone, code, openid=None):
-    url = "https://trust.sheca.com/api/"
-    result=requests.post(url + 'auth/token', data={"appId": "GDEC", "appSecret": "GDEC"})
+    url = config.CA_url
+    result = requests.post(url+'auth/token',headers={"Content-Type": "application/json","UniTrust-AppId": config.CA_appId}, json={"appId": config.CA_appId, "appSecret": config.CA_appSecret})
+    data = result.json()['result']
+    token = data.get('accessToken')
+    headers = {"Authorization": token,"UniTrust-AppId": config.CA_appId}
+    result = requests.post(url + 'openApi/auth/mobile', headers=headers,
+                            json={"name": name, "mobile": phone, "idNo": code,
+                                 "transactionId": "GDEC-{}-{}".format(phone,
+                                                                      int(time.time()))})
+
+    if result.json()['status'] != 200:
+        return -1
+    print(result.json())
     data=result.json()['result']
-    token = data.get('access_token')
-    headers = {"Authorization": token}
-    result = requests.post(url + 'openApi/auth/mobile', data={"name": name, "mobile": phone, "idNo": code,
-                                                              "transactionId": "GDEC-{}-{}".format(phone,
-                                                                                                   int(time.time()))})
     if openid is not None:
         status = {1001: "一致", 1002: "不一致",
                   2001: "姓名为空或格式错误", 2002: "证件号码为空或格式错误", 2003: "手机号码为空或格式错误",
-                  3001: "参数异常", 3002: "无效的身份证", 3003: "未查询到信息", 3004: "姓名不匹配", 3005: "证件不匹配", 3006: "手机号码不匹配",
-                  3007: "姓名证件不匹配", 3008: "姓名手机号不匹配", 3009: "证件手机号不匹配", 3010: "姓名证件手机号不匹配"}
+                  3001: "参数异常", 3002: "无效的身份证", 3003: "未查询到信息", 3004: "姓名不匹配", 3005: "证件不匹配",
+                  3006: "手机号码不匹配",
+                  3007: "姓名证件不匹配", 3008: "姓名手机号不匹配", 3009: "证件手机号不匹配",
+                  3010: "姓名证件手机号不匹配"}
         send_check_msg(openid=openid, meetingname='全球数商大会', content=name + '用户报名审核',
-                       reason=status.get(result.json().get("code", 0), "实名认证未通过"),
+                       reason=status.get(data.get("subCode", 0), "实名认证未通过"),
                        phrase3='审核未通过', date=datetime.datetime.now().strftime('%Y-%m-%d'))
-    return result.json()
+    return data.get("subCode", 0)
+
+

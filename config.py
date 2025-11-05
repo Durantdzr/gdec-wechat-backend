@@ -20,3 +20,7 @@ VERSION = os.environ.get("VERSION", '')
 SecretId = os.environ.get("SecretId", '')
 SecretKey = os.environ.get("SecretKey", '')
 SdkAppId= os.environ.get("SdkAppId", '')
+
+CA_url = os.environ.get("CA_url", "")
+CA_appId = os.environ.get("CA_appId", '')
+CA_appSecret = os.environ.get("CA_appSecret", '')

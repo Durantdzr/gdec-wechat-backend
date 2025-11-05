@@ -11,7 +11,7 @@ from wxcloudrun.model import ConferenceInfo, User, ConferenceHall, RelationFrien
     BusinessInfo, EnterpriseCertified, BusinessNegotiation, MeetingRoom, MeetingReservation, RelationUserCertified
 from wxcloudrun.response import make_succ_response, make_err_response, make_succ_page_response
 from wxcloudrun.utils import batchdownloadfile, uploadfile, uploadwebfile, getscheduleqrcode, \
-    send_check_msg, makeqrcode, send_tx_msg, masked_view, generate_verification_code
+    send_check_msg, makeqrcode, send_tx_msg, masked_view, generate_verification_code, CA_identification
 from sqlalchemy import or_, and_, func
 from wxcloudrun.cronjob import reload_image
 import config
@@ -232,6 +232,9 @@ def upload_user_info():
     user.img_url = params.get("cdn_param")
     user.status = 3
     insert_user(user)
+    subcode = CA_identification(user.name, user.phone, user.code, user.openid)
+    user.identity_verification = subcode
+    insert_user(user)
     return make_succ_response(user.id)
 
 
@@ -275,7 +278,7 @@ def get_user_privilege():
         data['document'] = True
         data['invited_num'] = len(
             RelationFriend.query.filter(RelationFriend.inviter_id == user.id, RelationFriend.status == 0).all())
-        data['schdule_num'],data['main_label'] = get_user_schedule_num_by_id(user.id)
+        data['schdule_num'], data['main_label'] = get_user_schedule_num_by_id(user.id)
     r = RelationUserCertified.query.filter(RelationUserCertified.user_id == user.id,
                                            RelationUserCertified.status == 1).first()
     if r is None:
@@ -1133,3 +1136,18 @@ def business_get_meeting_record():
         return make_err_response('用户不存在')
     result, total = get_meeting_record_list_byuserid(user.id, page, page_size)
     return make_succ_page_response(data=result, code=0, total=total)
+
+
+@app.route('/api/refresh_ca_identity_verification', methods=['GET'])
+def refresh_ca_identity_verification():
+    """
+    :return:刷新CA身份验证
+    """
+    # 获取请求体参数
+    # wxopenid = request.headers['X-WX-OPENID']
+    users = User.query.filter(User.status == 2, User.type != '管理员', User.is_deleted == 0, User.name is not None,
+                             User.phone is not None, User.code is not None, User.identity_verification ==0).all()
+    for user in users:
+        user.identity_verification = CA_identification(user.name, user.phone, user.code)
+        insert_user(user)
+    return make_succ_response(user.id)
