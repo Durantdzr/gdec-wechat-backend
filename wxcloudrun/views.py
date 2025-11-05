@@ -280,7 +280,7 @@ def get_user_privilege():
             RelationFriend.query.filter(RelationFriend.inviter_id == user.id, RelationFriend.status == 0).all())
         data['schdule_num'], data['main_label'] = get_user_schedule_num_by_id(user.id)
     r = RelationUserCertified.query.filter(RelationUserCertified.user_id == user.id,
-                                           RelationUserCertified.status == 1).first()
+                                           RelationUserCertified.status == 2).first()
     if r is None:
         data['enterprise_certified_status'] = None
     else:
