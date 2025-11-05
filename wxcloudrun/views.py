@@ -744,7 +744,7 @@ def business_business_certified():
     delta = (datetime.datetime.now() - r.create_time).total_seconds()
     if delta > 60 * 5:
         return make_err_response('验证码已过期')
-    r.status = 1
+    r.status = 2
     insert_user(r)
     return make_succ_response(r.id)
 
