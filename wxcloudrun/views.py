@@ -206,9 +206,9 @@ def upload_user_info():
     if user is None:
         user = User()
         user.openid = request.headers['X-WX-OPENID']
-    if user.status == 2 and user.socail == params.get("socail", 0):
+    if user.status == 2 and user.socail == params.get("socail", 0) and user.identity_verification==1001:
         return make_err_response('用户已完成审核，无法再次提交审核。')
-    elif user.status == 2:
+    elif user.status == 2 and user.identity_verification==1001:
         user.socail = params.get("socail", 0)
         insert_user(user)
         if user.origin_userid is not None:
