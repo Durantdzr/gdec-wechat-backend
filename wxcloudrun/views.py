@@ -262,7 +262,7 @@ def get_user_privilege():
     """
     # 获取请求体参数
     data = {'account_status': '未审核', 'find_friend': False, 'invited': False, 'schdule': False, 'document': False,
-            'invited_num': 0, 'schdule_num': 0}
+            'invited_num': 0, 'schdule_num': 0, 'main_label': False}
     wxopenid = request.headers['X-WX-OPENID']
     user = User.query.filter(User.openid == wxopenid, User.is_deleted == 0).first()
     if user is None:
@@ -275,7 +275,7 @@ def get_user_privilege():
         data['document'] = True
         data['invited_num'] = len(
             RelationFriend.query.filter(RelationFriend.inviter_id == user.id, RelationFriend.status == 0).all())
-        data['schdule_num'] = get_user_schedule_num_by_id(user.id)
+        data['schdule_num'],data['main_label'] = get_user_schedule_num_by_id(user.id)
     r = RelationUserCertified.query.filter(RelationUserCertified.user_id == user.id,
                                            RelationUserCertified.status == 1).first()
     if r is None:

@@ -379,13 +379,16 @@ def get_user_schedule_num_by_id(userid):
         ConferenceSchedule, ConferenceSignUp.schedule_id == ConferenceSchedule.id).filter(
         ConferenceSchedule.is_deleted == 0, ConferenceSignUp.user_id == userid).all()
     num = 0
+    main_label=False
     for signup, schedule in result:
         delta = (datetime.datetime.strptime(
             schedule.conference_date.strftime('%Y-%m-%d') + ' ' + schedule.begin_time,
             "%Y-%m-%d %H:%M") - datetime.datetime.now()).total_seconds()
         if delta / 60 > 0 and delta / 60 < 120:
             num += 1
-    return num
+        if schedule.label in ['主论坛','开幕式']:
+            main_label=True
+    return num,main_label
 
 
 def get_user_picture():
