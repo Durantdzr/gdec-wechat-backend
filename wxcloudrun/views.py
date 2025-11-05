@@ -814,9 +814,8 @@ def business_deploy_info():
     user = User.query.filter(User.openid == request.headers['X-WX-OPENID']).first()
     if user is None:
         return make_err_response('用户不存在')
-    certified = EnterpriseCertified.query.filter(EnterpriseCertified.user_id == user.id,
-                                                 EnterpriseCertified.status == 2,
-                                                 EnterpriseCertified.is_deleted == 0).first()
+    certified = RelationUserCertified.query.filter(RelationUserCertified.user_id == user.id,
+                                                 RelationUserCertified.status == 2).first()
     if certified is None:
         return make_err_response('该用户未完成企业认证')
     business = BusinessInfo()
@@ -841,9 +840,8 @@ def business_delete_info():
     user = User.query.filter(User.openid == request.headers['X-WX-OPENID']).first()
     if user is None:
         return make_err_response('用户不存在')
-    certified = EnterpriseCertified.query.filter(EnterpriseCertified.user_id == user.id,
-                                                 EnterpriseCertified.status == 2,
-                                                 EnterpriseCertified.is_deleted == 0).first()
+    certified = RelationUserCertified.query.filter(RelationUserCertified.user_id == user.id,
+                                                 RelationUserCertified.status == 2).first()
     if certified is None:
         return make_err_response('该用户未完成企业认证')
     business = BusinessInfo.query.filter(BusinessInfo.id == params.get('id'), BusinessInfo.is_deleted == 0).first()
