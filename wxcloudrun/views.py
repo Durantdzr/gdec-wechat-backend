@@ -218,7 +218,7 @@ def upload_user_info():
             refresh_guest()
             refresh_guest_info(guest.id)
         return make_succ_response(user.id)
-    elif user.status == 3:
+    elif user.status == 3 and user.identity_verification==1001:
         return make_err_response('无法提交用户数据')
     user.name = params.get("name")
     user.phone = params.get("phone")
