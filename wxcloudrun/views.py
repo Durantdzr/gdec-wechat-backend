@@ -818,6 +818,8 @@ def business_deploy_info():
                                                  RelationUserCertified.status == 2).first()
     if certified is None:
         return make_err_response('该用户未完成企业认证')
+    else:
+        certified=EnterpriseCertified.query.filter(EnterpriseCertified.id == certified.enterprise_id).first()
     business = BusinessInfo()
     business.title = params.get('title')
     business.company = certified.name
