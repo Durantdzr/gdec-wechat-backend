@@ -205,6 +205,8 @@ class User(db.Model):
 
     def get_status(self):
         status_ENUM = {1: '审核未通过', 2: '审核已通过', 0: '未审核', 3: '待审核'}
+        if self.status == 2:
+            return '审核已通过'
         if self.identity_verification != 1001:
             return '审核未通过'
         return status_ENUM.get(self.status, '审核未通过')

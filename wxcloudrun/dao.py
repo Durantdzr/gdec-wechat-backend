@@ -173,8 +173,8 @@ def update_user_statusbyid(userlist, status, reason):
             send_check_msg(openid=record.openid, meetingname='全球数商大会', content=record.name + '用户报名审核',
                            reason=reason,
                            phrase3=status_ENUM.get(status), date=datetime.datetime.now().strftime('%Y-%m-%d'))
-            if status == 2:
-                record.identity_verification = 1001
+            # if status == 2:
+            #     record.identity_verification = 1001
             record.status = status
             record.reason = reason
         db.session.commit()
