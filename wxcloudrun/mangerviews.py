@@ -35,6 +35,7 @@ import os
 from functools import wraps
 from wxcloudrun.logger import operatr_log
 import shutil
+import jwt
 
 
 def admin_required():
@@ -108,7 +109,7 @@ def get_register_list():
     type = request.args.get('type', default='', type=str)
     if status is None:
         users = User.query.filter(User.name.like('%' + name + '%'), User.status != 2, User.is_deleted == 0,
-                                  User.type.like('%' + type + '%'),User.identity_verification!=1001).paginate(
+                                  User.type.like('%' + type + '%'), User.identity_verification != 1001).paginate(
             page,
             per_page=page_size,
             error_out=False)
@@ -174,8 +175,8 @@ def delete_user():
     user = User.query.filter_by(id=params.get('id')).first()
     user.is_deleted = 1
     insert_user(user)
-    r=RelationUserCertified.query.filter_by(user_id=params.get('id')).first()
-    r.status=0
+    r = RelationUserCertified.query.filter_by(user_id=params.get('id')).first()
+    r.status = 0
     insert_user(r)
     operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     return make_succ_response(user.id, code=200)
@@ -1529,3 +1530,40 @@ def manage_delete_meetingroom():
     insert_user(meeting_room)
     operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
     return make_succ_response(meeting_room.id, code=200)
+
+
+@app.route('/api/manage/get_user_phone', methods=['get'])
+@jwt_required()
+@admin_required()
+def manage_get_user_phone():
+    """
+        :return:获取手机号
+        """
+    result = User.query.filter(User.status == 2, User.is_deleted == 0, User.phone != None).all()
+    data = [item.phone for item in result]
+    return make_succ_response(data, code=200)
+
+
+@app.route('/api/manage/check_in', methods=['get'])
+@jwt_required()
+@admin_required()
+def manage_check_in():
+    """
+        :return:闸机入场检查
+        """
+    code = request.args.get('code', default='', type=str)
+    er_code = request.args.get('er_code', default='', type=str)
+    if er_code!='':
+        try:
+            # 解析 JWT，不验证签名
+            decoded_jwt = jwt.decode(er_code,options={"verify_signature": False})
+            er_code=decoded_jwt.get('sub')
+        except Exception as e:
+            print(e)
+            return make_err_response('er_code解析异常')
+    result = User.query.filter(User.status == 2, User.is_deleted == 0, or_(User.code==code, User.id==er_code)).first()
+    if result:
+        return make_succ_response(True, code=200)
+    else:
+        return make_succ_response(False, code=200)
+

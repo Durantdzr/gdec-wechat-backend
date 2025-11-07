@@ -12,6 +12,8 @@ from wxcloudrun.model import ConferenceInfo, User, ConferenceHall, RelationFrien
 from wxcloudrun.response import make_succ_response, make_err_response, make_succ_page_response
 from wxcloudrun.utils import batchdownloadfile, uploadfile, uploadwebfile, getscheduleqrcode, \
     send_check_msg, makeqrcode, send_tx_msg, masked_view, generate_verification_code, CA_identification
+from flask_jwt_extended import create_access_token
+from datetime import timedelta
 from sqlalchemy import or_, and_, func
 from wxcloudrun.cronjob import reload_image
 import config
@@ -327,6 +329,9 @@ def get_user_by_openid():
         data['enterprise_certified_status'] = status_Enum.get(enterprise_certified.status)
     else:
         data['enterprise_certified_status'] = None
+    ercode = create_access_token(identity=user.id, expires_delta=timedelta(minutes=30),
+                                       additional_claims={'used':'闸机对接'})
+    data['er_code'] = ercode
     return make_succ_response(data)
 
 
