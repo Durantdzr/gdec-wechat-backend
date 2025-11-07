@@ -109,7 +109,7 @@ def get_register_list():
     type = request.args.get('type', default='', type=str)
     if status is None:
         users = User.query.filter(User.name.like('%' + name + '%'), User.status != 2, User.is_deleted == 0,
-                                  User.type.like('%' + type + '%'), User.identity_verification != 1001).paginate(
+                                  User.type.like('%' + type + '%'), User.identity_verification == 1001).paginate(
             page,
             per_page=page_size,
             error_out=False)
