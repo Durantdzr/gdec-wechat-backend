@@ -334,7 +334,8 @@ def manage_get_guest_list():
     forum = get_jwt().get("forum", "")
     if forum1 != '' and forum == '主论坛':
         forum = forum1
-
+    if forum=='主论坛':
+        forum=''
     if bind_status is None:
         guests = User.query.filter(User.type == '嘉宾', User.is_deleted == 0, User.name.like('%' + name + '%'),
                                    User.forum.like('%' + forum + '%')).order_by(
