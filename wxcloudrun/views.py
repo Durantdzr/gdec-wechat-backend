@@ -237,7 +237,7 @@ def upload_user_info():
     subcode = CA_identification(user.name, user.phone, user.code, user.openid)
     user.identity_verification = subcode
     insert_user(user)
-    if subcode != 1001:
+    if subcode != '1001':
         return make_err_response('实名认证不通过')
     return make_succ_response(user.id)
 
