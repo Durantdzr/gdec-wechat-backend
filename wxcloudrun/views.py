@@ -221,7 +221,7 @@ def upload_user_info():
             refresh_guest_info(guest.id)
         return make_succ_response(user.id)
     elif user.status == 3 and user.identity_verification==1001:
-        return make_err_response('无法提交用户数据')
+        return make_err_response('用户信息待审核无法提交')
     user.name = params.get("name")
     user.phone = params.get("phone")
     user.savephoneEncrypted(params.get("phone"))
@@ -1151,7 +1151,7 @@ def refresh_ca_identity_verification():
     :return:刷新CA身份验证
     """
     # 获取请求体参数
-    # wxopenid = request.headers['X-WX-OPENID']
+    wxopenid = request.headers['X-WX-OPENID']
     users = User.query.filter(User.status == 2, User.type != '管理员', User.is_deleted == 0, User.name is not None,
                              User.phone is not None, User.code is not None, User.identity_verification ==0).all()
     for user in users:
