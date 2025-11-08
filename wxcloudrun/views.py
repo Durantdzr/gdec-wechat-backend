@@ -688,7 +688,7 @@ def business_get_info():
         r = RelationUserCertified()
         r.user_id = user.id
         r.enterprise_id = enterprise.id
-        r.status = 1
+        r.status = 2
         insert_user(r)
     data['certified'] = enterprise.contacts_phone == user.phone
     return make_succ_response(data)
