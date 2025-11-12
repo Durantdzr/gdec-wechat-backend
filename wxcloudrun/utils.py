@@ -60,8 +60,8 @@ def getqrcodeimg(path="page/index/index", openid='omf5s7V9tfLS25ZxIXE0TtJCaZ3w')
     return io.BytesIO(result.content)
 
 
-def getscheduleqrcode(id):
-    imgBuffer = getqrcodeimg(path="myHome/agenda/index?id={}".format(id))
+def getscheduleqrcode(id,label):
+    imgBuffer = getqrcodeimg(path="myHome/meeting/detail/index?id={}&type={}".format(id,label))
     img = Image.open(imgBuffer)
     img.save(config.VERSION + 'qrcode_schedule_' + str(id) + '.jpg', 'JPEG')
     uploadfile(config.VERSION + 'qrcode_schedule_' + str(id) + '.jpg')

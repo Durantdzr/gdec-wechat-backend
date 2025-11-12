@@ -579,7 +579,7 @@ def add_hall_schedule():
         data = get_hall_blockchain_schedule()
         uploadwebfile(data, file='get_hall_blockchain_schedule.json')
     operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
-    getscheduleqrcode(schedule.id)
+    getscheduleqrcode(schedule.id,schedule.label)
     return make_succ_response(schedule.id, code=200)
 
 

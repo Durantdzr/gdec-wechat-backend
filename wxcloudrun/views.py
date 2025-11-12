@@ -633,8 +633,7 @@ def reload_schedule():
     # 获取请求体参数
     schedules=ConferenceSchedule.query.filter(ConferenceSchedule.is_deleted==0).all()
     for schedule in schedules:
-        getscheduleqrcode(schedule.id)
-
+        getscheduleqrcode(schedule.id,schedule.label)
     return make_succ_response(0)
 
 
