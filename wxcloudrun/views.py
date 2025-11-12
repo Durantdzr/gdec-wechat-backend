@@ -8,7 +8,7 @@ from wxcloudrun.dao import insert_user, search_friends_byopenid, insert_realtion
     get_hall_blockchain_schedule, get_business_list, get_enterprise_list, get_meeting_record_list_byuserid, \
     get_review_conference_listBYlabel
 from wxcloudrun.model import ConferenceInfo, User, ConferenceHall, RelationFriend, ConferenceSignUp, DigitalCityWeek, \
-    BusinessInfo, EnterpriseCertified, BusinessNegotiation, MeetingRoom, MeetingReservation, RelationUserCertified
+    BusinessInfo, EnterpriseCertified, BusinessNegotiation, MeetingRoom, MeetingReservation, RelationUserCertified,ConferenceSchedule
 from wxcloudrun.response import make_succ_response, make_err_response, make_succ_page_response
 from wxcloudrun.utils import batchdownloadfile, uploadfile, uploadwebfile, getscheduleqrcode, \
     send_check_msg, makeqrcode, send_tx_msg, masked_view, generate_verification_code, CA_identification
@@ -624,6 +624,19 @@ def reload_images():
     # 获取请求体参数
     reload_image()
     return make_succ_response(0)
+
+@app.route('/api/conference/reload_schedule', methods=['GET'])
+def reload_schedule():
+    """
+    :return:刷新图片
+    """
+    # 获取请求体参数
+    schedules=ConferenceSchedule.query.filter(ConferenceSchedule.is_deleted==0).all()
+    for schedule in schedules:
+        getscheduleqrcode(schedule.id)
+
+    return make_succ_response(0)
+
 
 
 @app.route('/api/conference/get_reload_schedule', methods=['GET'])
