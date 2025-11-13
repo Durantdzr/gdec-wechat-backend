@@ -24,3 +24,5 @@ SdkAppId= os.environ.get("SdkAppId", '')
 CA_url = os.environ.get("CA_url", "")
 CA_appId = os.environ.get("CA_appId", '')
 CA_appSecret = os.environ.get("CA_appSecret", '')
+
+TOY_MAX_NUM=os.environ.get("TOY_MAX_NUM", 10)

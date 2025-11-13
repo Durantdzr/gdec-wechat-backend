@@ -609,3 +609,14 @@ class RelationUserCertified(db.Model):
     create_time = db.Column('create_time', db.TIMESTAMP, nullable=True, default=datetime.now)
     verification_code = db.Column('verification_code', db.String(10), nullable=True)
     status = db.Column('status', db.INT, default=0)
+
+
+class Toy(db.Model):
+    # 设置结构体表格名称
+    __tablename__ = 't_toy_pickup'
+    # 设定结构体对应表格的字段
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column('userid', db.Integer)
+    apply_time = db.Column('apply_time', db.TIMESTAMP, nullable=True, default=datetime.now)
+    pickup_time = db.Column('pickup_time', db.TIMESTAMP, nullable=True)
+    status = db.Column('status', db.INT, default=0)

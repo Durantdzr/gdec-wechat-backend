@@ -19,7 +19,7 @@ from wxcloudrun.dao import update_user_statusbyid, insert_user, get_review_confe
     update_BusinessInfo_statusbyid, update_schedule_seatbyid
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, ConferenCoopearter, Media, \
     ConferenceCooperatorShow, OperaterRule, Exhibiton, ConferenceSignUp, RelationFriend, BusinessInfo, \
-    EnterpriseCertified, MeetingRoom, RelationUserCertified
+    EnterpriseCertified, MeetingRoom, RelationUserCertified, Toy
 from wxcloudrun.response import make_succ_page_response, make_succ_response, make_err_response
 from wxcloudrun.utils import uploadfile, valid_image, vaild_password, uploadwebfile, download_cdn_file, zip_folder, \
     get_ticket, get_urllink, getscheduleqrcode, generate_verification_code
@@ -334,8 +334,8 @@ def manage_get_guest_list():
     forum = get_jwt().get("forum", "")
     if forum1 != '' and forum == '主论坛':
         forum = forum1
-    if forum=='主论坛':
-        forum=''
+    if forum == '主论坛':
+        forum = ''
     if bind_status is None:
         guests = User.query.filter(User.type == '嘉宾', User.is_deleted == 0, User.name.like('%' + name + '%'),
                                    User.forum.like('%' + forum + '%')).order_by(
@@ -579,7 +579,7 @@ def add_hall_schedule():
         data = get_hall_blockchain_schedule()
         uploadwebfile(data, file='get_hall_blockchain_schedule.json')
     operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
-    getscheduleqrcode(schedule.id,schedule.label)
+    getscheduleqrcode(schedule.id, schedule.label)
     return make_succ_response(schedule.id, code=200)
 
 
@@ -1525,6 +1525,7 @@ def manage_delete_meetingroom():
     """
         :return:创建会议室
         """
+
     params = request.get_json()
     meeting_room = MeetingRoom.query.filter_by(id=params.get('id')).first()
     meeting_room.is_deleted = 1
@@ -1554,17 +1555,77 @@ def manage_check_in():
         """
     code = request.args.get('code', default='', type=str)
     er_code = request.args.get('er_code', default='', type=str)
-    if er_code!='':
+    if er_code != '':
         try:
             # 解析 JWT，不验证签名
-            decoded_jwt = jwt.decode(er_code,options={"verify_signature": False})
-            er_code=decoded_jwt.get('sub')
+            decoded_jwt = jwt.decode(er_code, options={"verify_signature": False})
+            er_code = decoded_jwt.get('sub')
         except Exception as e:
             print(e)
             return make_err_response('er_code解析异常')
-    result = User.query.filter(User.status == 2, User.is_deleted == 0, or_(User.code==code, User.id==er_code)).first()
+    result = User.query.filter(User.status == 2, User.is_deleted == 0,
+                               or_(User.code == code, User.id == er_code)).first()
     if result:
         return make_succ_response(True, code=200)
     else:
         return make_succ_response(False, code=200)
 
+
+@app.route('/api/toy/apply', methods=['post'])
+@jwt_required()
+def toy_apply():
+    """
+        :return:申请玩具
+        """
+    current_user = get_jwt()
+    user_id = current_user.get("sub")
+    if not user_id:
+        return make_err_response('用户信息失效')
+    toy = Toy.query.filter(Toy.user_id == user_id).first()
+    toys = Toy.query.all()
+    if len(toys) >= config.TOY_MAX_NUM:
+        return make_err_response('不好意思已领完')
+    if toy:
+        return make_err_response('请勿重复申请')
+    toy = Toy()
+    toy.user_id = user_id
+    insert_user(toy)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, user_id, request.remote_addr)
+    return make_succ_response(toy.id, code=200)
+
+
+@app.route('/api/toy/pickup', methods=['post'])
+@jwt_required()
+def toy_pickup():
+    """
+        :return:创建会议室
+        """
+    current_user = get_jwt()
+    user_id = current_user.get("sub")
+    toy = Toy.query.filter(Toy.user_id == user_id).first()
+    if toy:
+        toy.status=1
+        toy.pickup_time = datetime.datetime.now()
+        insert_user(toy)
+        return make_succ_response(toy.id, code=200)
+    else:
+        return make_err_response('请先申请。')
+
+
+@app.route('/api/toy/info', methods=['GET'])
+@jwt_required()
+def toy_info():
+    """
+        :return:创建会议室
+        """
+    current_user = get_jwt()
+    user_id = current_user.get("sub")
+    toy = Toy.query.filter(Toy.user_id == user_id).first()
+    if toy:
+        status = {0: '未领取', 1: '已领取'}
+        return make_succ_response(status.get(toy.status), code=200)
+    else:
+        toys = Toy.query.all()
+        if len(toys) >= config.TOY_MAX_NUM:
+            return make_err_response('不好意思已领完')
+        return make_succ_response('当前剩余{}个玩偶'.format(config.TOY_MAX_NUM - len(toys)), code=200)
