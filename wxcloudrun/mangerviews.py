@@ -1474,6 +1474,21 @@ def manage_review_business_info():
     operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response('操作成功', code=200)
 
+@app.route('/api/manage/delete_business_info', methods=['post'])
+@jwt_required()
+@admin_required()
+def manage_delete_business_info():
+    """
+        :return:删除项目发布
+        """
+    params = request.get_json()
+    id = params.get('id')
+    info=BusinessInfo.query.filter(BusinessInfo.id == id).first()
+    info.is_delete = 1
+    insert_user(info)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
+    return make_succ_response('操作成功', code=200)
+
 
 @app.route('/api/manage/create_meetingroom', methods=['post'])
 @jwt_required()
