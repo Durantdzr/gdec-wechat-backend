@@ -94,7 +94,7 @@ def logout():
         :return:用户登出
         """
     forum = get_jwt().get("forum", "")
-    operatr_log(get_jwt_identity(), request.url_rule.rule, '登出成功', request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, '登出成功', request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response('用户已登出', code=200)
 
 
@@ -163,7 +163,7 @@ def edit_user():
     user.savephoneEncrypted(params.get('phone'))
     user.savecodeEncrypted(params.get('code'))
     insert_user(user)
-    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response(user.id, code=200)
 
 
@@ -181,7 +181,7 @@ def delete_user():
     r = RelationUserCertified.query.filter_by(user_id=params.get('id')).first()
     r.status = 0
     insert_user(r)
-    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response(user.id, code=200)
 
 
@@ -202,7 +202,7 @@ def review_register():
         update_user_statusbyid(userlist, 1, reason)
     else:
         return make_err_response('无该操作方法')
-    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response('操作成功', code=200)
 
 
@@ -228,7 +228,7 @@ def add_guest():
     insert_user(user)
     refresh_guest()
     refresh_guest_info(user.id)
-    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response(user.id, code=200)
 
 
@@ -257,7 +257,7 @@ def bind_guest():
     insert_user(guest)
     refresh_guest()
     refresh_guest_info(guest.id)
-    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response(user.id, code=200)
 
 
@@ -277,7 +277,7 @@ def unbind_guest():
         insert_user(guest)
         refresh_guest()
         refresh_guest_info(guest.id)
-    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response(user.id, code=200)
 
 
@@ -298,7 +298,7 @@ def edit_guest():
     insert_user(user)
     refresh_guest()
     refresh_guest_info(user.id)
-    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response(user.id, code=200)
 
 
@@ -316,7 +316,7 @@ def delete_guest():
         user.is_deleted = 1
         insert_user(user)
         refresh_guest()
-        operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+        operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
         return make_succ_response(user.id, code=200)
     else:
         return make_err_response('嘉宾在日程中存在，无法删除')
@@ -417,7 +417,7 @@ def download_guest_list():
                         "照片路径(相对路径)": '/' + user.img_url}, ignore_index=True)
     df.to_excel('{}/人员信息表.xlsx'.format(now), index=False)
     zip_folder(now, '数商大会人员信息导出{}.zip'.format(now))
-    operatr_log(get_jwt_identity(), request.url_rule.rule, '下载成功', request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, '下载成功', request.headers.get("X-Forwarded-For", request.remote_addr))
     return send_file('../数商大会人员信息导出{}.zip'.format(now),
                      download_name='数商大会人员信息导出{}.zip'.format(now))
 
@@ -435,7 +435,7 @@ def upload_img():
         filename = 'guest/' + str(u) + format
         file.save(filename)
         uploadfile(filename)
-        operatr_log(get_jwt_identity(), request.url_rule.rule, filename, request.remote_addr)
+        operatr_log(get_jwt_identity(), request.url_rule.rule, filename, request.headers.get("X-Forwarded-For", request.remote_addr))
         return make_succ_response(
             {'img_url': 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, filename), "cdn_param": filename},
             code=200)
@@ -458,7 +458,7 @@ def upload_base64img():
     with open(filename, 'wb') as file_to_save:
         file_to_save.write(image_data)
     uploadfile(filename)
-    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response(
         {'img_url': 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, filename), "cdn_param": filename})
 
@@ -583,7 +583,7 @@ def add_hall_schedule():
     if '链' in schedule.title:
         data = get_hall_blockchain_schedule()
         uploadwebfile(data, file='get_hall_blockchain_schedule.json')
-    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
     getscheduleqrcode(schedule.id, schedule.label)
     return make_succ_response(schedule.id, code=200)
 
@@ -636,7 +636,7 @@ def edit_hall_schedule():
     if '链' in schedule.title:
         data = get_hall_blockchain_schedule()
         uploadwebfile(data, file='get_hall_blockchain_schedule.json')
-    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response(schedule.id, code=200)
 
 
@@ -659,7 +659,7 @@ def delete_hall_schedule():
     if '链' in schedule.title:
         data = get_hall_blockchain_schedule()
         uploadwebfile(data, file='get_hall_blockchain_schedule.json')
-    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response(schedule.id, code=200)
 
 
@@ -711,7 +711,7 @@ def add_cooperater():
     cooperater.company_img = params.get('company_img')
     insert_user(cooperater)
     refresh_cooperater()
-    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response(cooperater.id, code=200)
 
 
@@ -731,7 +731,7 @@ def edit_cooperater():
     cooperater.company_img = params.get('company_img')
     insert_user(cooperater)
     refresh_cooperater()
-    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response(cooperater.id, code=200)
 
 
@@ -746,7 +746,7 @@ def delete_cooperater():
     cooperater.is_deleted = 1
     insert_user(cooperater)
     refresh_cooperater()
-    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response(cooperater.id, code=200)
 
 
@@ -765,7 +765,7 @@ def review_conference_sign_up():
         update_schedule_statusbyid(signuplist, 1)
     else:
         return make_err_response('无该操作方法')
-    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response('操作成功', code=200)
 
 
@@ -779,7 +779,7 @@ def manage_edit_conference_sign_up_seat():
     seat_info = params.get('seat_info')
     signuplist = params.get('signuplist')
     update_schedule_seatbyid(signuplist, seat_info)
-    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response('操作成功', code=200)
 
 
@@ -820,7 +820,7 @@ def download_conference_sign_up():
     os.mkdir(now)
     df.to_excel('{}/会议报名表.xlsx'.format(now), index=False)
     zip_folder(now, '数商大会会议报名表{}.zip'.format(now))
-    operatr_log(get_jwt_identity(), request.url_rule.rule, '下载成功', request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, '下载成功', request.headers.get("X-Forwarded-For", request.remote_addr))
     return send_file('../数商大会会议报名表{}.zip'.format(now),
                      download_name='数商大会会议报名表{}.zip'.format(now))
 
@@ -850,7 +850,7 @@ def add_media():
         with open(filename, 'wb') as f:
             f.write(img)
         uploadfile(filename)
-    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response(media.id, code=200)
 
 
@@ -879,7 +879,7 @@ def edit_media():
         with open(filename, 'wb') as f:
             f.write(img)
         uploadfile(filename)
-    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response(media.id, code=200)
 
 
@@ -894,7 +894,7 @@ def delete_media():
     media = Media.query.filter(Media.id == params.get('id')).first()
     media.is_deleted = 1
     insert_user(media)
-    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response(media.id, code=200)
 
 
@@ -951,7 +951,7 @@ def manage_add_information_list():
     conferenceinfo.order = params.get('order')
     insert_user(conferenceinfo)
     refresh_conference_info()
-    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response(conferenceinfo.id, code=200)
 
 
@@ -973,7 +973,7 @@ def manage_edit_information_list():
     conferenceinfo.order = params.get('order')
     insert_user(conferenceinfo)
     refresh_conference_info()
-    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response(conferenceinfo.id, code=200)
 
 
@@ -990,7 +990,7 @@ def manage_delete_information_list():
     conferenceinfo.is_deleted = 1
     insert_user(conferenceinfo)
     refresh_conference_info()
-    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response(conferenceinfo.id, code=200)
 
 
@@ -1022,7 +1022,7 @@ def download_user_list():
                         "照片路径(相对路径)": '/' + user.img_url}, ignore_index=True)
     df.to_excel('{}/人员信息表.xlsx'.format(now), index=False)
     zip_folder(now, '数商大会人员信息导出{}.zip'.format(now))
-    operatr_log(get_jwt_identity(), request.url_rule.rule, '下载成功', request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, '下载成功', request.headers.get("X-Forwarded-For", request.remote_addr))
     return send_file('../数商大会人员信息导出{}.zip'.format(now),
                      download_name='数商大会人员信息导出{}.zip'.format(now))
 
@@ -1059,7 +1059,7 @@ def download_register_user_list():
                         "照片路径(相对路径)": '/' + user.img_url}, ignore_index=True)
     df.to_excel('{}/人员信息表.xlsx'.format(now), index=False)
     zip_folder(now, '数商大会人员信息导出{}.zip'.format(now))
-    operatr_log(get_jwt_identity(), request.url_rule.rule, '下载成功', request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, '下载成功', request.headers.get("X-Forwarded-For", request.remote_addr))
     return send_file('../数商大会人员信息导出{}.zip'.format(now),
                      download_name='数商大会人员信息导出{}.zip'.format(now))
 
@@ -1072,7 +1072,7 @@ def download_schedule_qrcode():
     """
     id = request.args.get('id', default='', type=str)
     download_cdn_file(config.VERSION + 'qrcode_schedule_' + str(id) + '.jpg', 'qrcode_schedule_' + str(id) + '.jpg')
-    operatr_log(get_jwt_identity(), request.url_rule.rule, '下载成功', request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, '下载成功', request.headers.get("X-Forwarded-For", request.remote_addr))
     return send_file('../' + 'qrcode_schedule_' + str(id) + '.jpg',
                      download_name='qrcode_schedule_' + str(id) + '.jpg')
 
@@ -1111,7 +1111,7 @@ def edit_cooperater_show():
         show.is_show = False
         insert_user(show)
     refresh_cooperater()
-    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response(params.get('id'), code=200)
 
 
@@ -1172,7 +1172,7 @@ def add_exhibiton():
     exhibiton.info = params.get('info')
     exhibiton.label = params.get('label')
     insert_user(exhibiton)
-    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
     refresh_cooperater()
     data = get_hall_exhibition()
     uploadwebfile(data, file='get_hall_exhibition.json')
@@ -1209,7 +1209,7 @@ def edit_exhibtion():
     exhibiton.info = params.get('info')
     exhibiton.label = params.get('label')
     insert_user(exhibiton)
-    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
     refresh_cooperater()
     data = get_hall_exhibition()
     uploadwebfile(data, file='get_hall_exhibition.json')
@@ -1231,7 +1231,7 @@ def delete_exhibtion():
     exhibiton = Exhibiton.query.filter_by(id=params.get('id')).first()
     exhibiton.is_deleted = 1
     insert_user(exhibiton)
-    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
     refresh_cooperater()
     data = get_hall_exhibition()
     uploadwebfile(data, file='get_hall_exhibition.json')
@@ -1325,7 +1325,7 @@ def download_conference_sign_up_num():
     os.mkdir(now)
     df.to_excel('{}/会议报名统计.xlsx'.format(now), index=False)
     zip_folder(now, '数商大会会议报名统计{}.zip'.format(now))
-    operatr_log(get_jwt_identity(), request.url_rule.rule, '下载成功', request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, '下载成功', request.headers.get("X-Forwarded-For", request.remote_addr))
     return send_file('../数商大会会议报名统计{}.zip'.format(now),
                      download_name='数商大会会议报名统计{}.zip'.format(now))
 
@@ -1367,7 +1367,7 @@ def manage_create_business_certified():
     certified.status = 2
     certified.invite_code = generate_verification_code(6)
     insert_user(certified)
-    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response(certified.id)
 
 
@@ -1383,7 +1383,7 @@ def manage_delete_business_certified():
     certified.is_deleted = 1
     insert_user(certified)
     RelationUserCertified.query.filter(RelationUserCertified.enterprise_id == params.get('id')).delete()
-    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response(certified.id)
 
 
@@ -1405,7 +1405,7 @@ def manage_edit_business_certified():
     certified.financing_stage = params.get('financing_stage')
     certified.result = params.get('result')
     insert_user(certified)
-    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response(certified.id)
 
 
@@ -1426,7 +1426,7 @@ def manage_edit_business_certified():
 #         update_EnterpriseCertified_statusbyid(certifiedList, 1, reason)
 #     else:
 #         return make_err_response('无该操作方法')
-#     operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+#     operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
 #     return make_succ_response('操作成功', code=200)
 
 
@@ -1471,7 +1471,7 @@ def manage_review_business_info():
         update_BusinessInfo_statusbyid(certifiedList, 1, reason)
     else:
         return make_err_response('无该操作方法')
-    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response('操作成功', code=200)
 
 
@@ -1489,7 +1489,7 @@ def manage_create_meetingroom():
     meeting_room.introduce = params.get('introduce')
     meeting_room.manager = params.get('manager')
     insert_user(meeting_room)
-    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response(meeting_room.id, code=200)
 
 
@@ -1525,7 +1525,7 @@ def manage_edit_meetingroom():
     meeting_room.introduce = params.get('introduce')
     meeting_room.manager = params.get('manager')
     insert_user(meeting_room)
-    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response(meeting_room.id, code=200)
 
 
@@ -1541,7 +1541,7 @@ def manage_delete_meetingroom():
     meeting_room = MeetingRoom.query.filter_by(id=params.get('id')).first()
     meeting_room.is_deleted = 1
     insert_user(meeting_room)
-    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response(meeting_room.id, code=200)
 
 
@@ -1601,7 +1601,7 @@ def toy_apply():
     toy = Toy()
     toy.user_id = user_id
     insert_user(toy)
-    operatr_log(get_jwt_identity(), request.url_rule.rule, user_id, request.remote_addr)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, user_id, request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response(toy.id, code=200)
 
 
@@ -1609,7 +1609,7 @@ def toy_apply():
 @jwt_required()
 def toy_pickup():
     """
-        :return:创建会议室
+        :return:核销玩具
         """
     current_user = get_jwt()
     user_id = current_user.get("sub")
@@ -1627,7 +1627,7 @@ def toy_pickup():
 @jwt_required()
 def toy_info():
     """
-        :return:创建会议室
+        :return:玩具信息
         """
     current_user = get_jwt()
     user_id = current_user.get("sub")
