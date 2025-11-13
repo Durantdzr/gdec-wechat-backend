@@ -288,7 +288,7 @@ def get_review_conference_list(name, page, page_size, forum, status, schedule_na
             result.items], result.total
 
 
-def get_review_conference_listBYlabel(userid, label,schedule_id):
+def get_review_conference_listBYlabel(userid, label, schedule_id):
     query = db.session.query(ConferenceSignUp, User, ConferenceSchedule).join(
         User, User.id == ConferenceSignUp.user_id
     ).join(
@@ -381,16 +381,25 @@ def get_user_schedule_num_by_id(userid):
         ConferenceSchedule, ConferenceSignUp.schedule_id == ConferenceSchedule.id).filter(
         ConferenceSchedule.is_deleted == 0, ConferenceSignUp.user_id == userid).all()
     num = 0
-    main_label=False
+    main_label = False
     for signup, schedule in result:
         delta = (datetime.datetime.strptime(
             schedule.conference_date.strftime('%Y-%m-%d') + ' ' + schedule.begin_time,
             "%Y-%m-%d %H:%M") - datetime.datetime.now()).total_seconds()
         if delta / 60 > 0 and delta / 60 < 120:
             num += 1
-        if schedule.label in ['主论坛','开幕式']:
-            main_label=True
-    return num,main_label
+        if schedule.label in ['主论坛', '开幕式']:
+            main_label = True
+    return num, main_label
+
+
+def check_login_times(username, ip):
+    log = OperaterLog.query.filter(OperaterLog.event == '/api/manage/login',
+                                   OperaterLog.data.in_(['不存在该用户', '密码错误']),
+                                   OperaterLog.create_time >= datetime.datetime.now() - datetime.timedelta(
+                                       minutes=config.LOGIN_ERROR_LOCK_TIME),
+                                   or_(OperaterLog.operator == username, OperaterLog.ip == ip)).all()
+    return len(log)
 
 
 def get_user_picture():
@@ -641,13 +650,14 @@ def get_cooperater():
 
 def get_pay_cooperater():
     result = ConferenCoopearter.query.filter(ConferenCoopearter.is_deleted == 0,
-                                             ConferenCoopearter.type=='支付企业').all()
+                                             ConferenCoopearter.type == '支付企业').all()
     return [item.get() for item in result]
+
 
 def refresh_cooperater():
     data = get_cooperater()
     uploadwebfile(data, file='get_cooperater.json')
-    data=get_pay_cooperater()
+    data = get_pay_cooperater()
     uploadwebfile(data, file='get_pay_cooperater.json')
     data = get_cooperater_list('合作媒体')
     uploadwebfile(data, file='get_comedia.json')

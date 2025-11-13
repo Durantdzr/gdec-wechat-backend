@@ -16,7 +16,7 @@ from wxcloudrun.dao import update_user_statusbyid, insert_user, get_review_confe
     refresh_conference_info, get_hall_schedule_byid, get_operat_list, get_hall_exhibition_byid, \
     get_hall_exhibition, get_hall_blockchain_schedule, get_all_review_conference_list, \
     get_all_signup_conference_statics, get_business_certified_list, update_EnterpriseCertified_statusbyid, \
-    update_BusinessInfo_statusbyid, update_schedule_seatbyid
+    update_BusinessInfo_statusbyid, update_schedule_seatbyid, check_login_times
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, ConferenCoopearter, Media, \
     ConferenceCooperatorShow, OperaterRule, Exhibiton, ConferenceSignUp, RelationFriend, BusinessInfo, \
     EnterpriseCertified, MeetingRoom, RelationUserCertified, Toy
@@ -64,11 +64,15 @@ def login():
     username = params.get('username')
     pwdhash = params.get('pwdhash')
     user = User.query.filter_by(name=username, type='管理员').first()
+    remote = request.headers.get("X-Forwarded-For", request.remote_addr)
+    if check_login_times(username, remote) > config.MAX_LOGIN_ERROR_TIMES:
+        operatr_log(username, request.url_rule.rule, '用户登录错误次数过多', remote)
+        return make_err_response('用户登录错误次数过多,请五分钟后尝试')
     if not user:
-        operatr_log(username, request.url_rule.rule, '不存在该用户', request.remote_addr)
+        operatr_log(username, request.url_rule.rule, '不存在该用户', remote)
         return make_err_response('认证失败')
     if pwdhash != vaild_password(user.password):
-        operatr_log(username, request.url_rule.rule, '密码错误', request.remote_addr)
+        operatr_log(username, request.url_rule.rule, '密码错误', remote)
         return make_err_response('认证失败')
 
     if user.forum == '':
@@ -79,8 +83,7 @@ def login():
         additional_claims = {"forum": user.forum}
     access_token = create_access_token(identity=username, expires_delta=timedelta(days=1),
                                        additional_claims=additional_claims)
-    operatr_log(username, request.url_rule.rule, '登录成功',
-                request.headers.get("X-Forwarded-For", request.remote_addr))
+    operatr_log(username, request.url_rule.rule, '登录成功', remote)
     return make_succ_response({"access_token": access_token, "branch": branch}, code=200)
 
 
@@ -1612,7 +1615,7 @@ def toy_pickup():
     user_id = current_user.get("sub")
     toy = Toy.query.filter(Toy.user_id == user_id).first()
     if toy:
-        toy.status=1
+        toy.status = 1
         toy.pickup_time = datetime.datetime.now()
         insert_user(toy)
         return make_succ_response(toy.id, code=200)
