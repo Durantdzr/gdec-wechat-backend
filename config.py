@@ -26,3 +26,6 @@ CA_appId = os.environ.get("CA_appId", '')
 CA_appSecret = os.environ.get("CA_appSecret", '')
 
 TOY_MAX_NUM=os.environ.get("TOY_MAX_NUM", 10)
+
+MAX_LOGIN_ERROR_TIMES=os.environ.get("MAX_LOGIN_ERROR_TIMES", 5)
+LOGIN_ERROR_LOCK_TIME=os.environ.get("LOGIN_ERROR_LOCK_TIME", 5)
