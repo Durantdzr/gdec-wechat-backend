@@ -259,7 +259,7 @@ class ConferenCoopearter(db.Model):
     __tablename__ = 'conference_coopearter'
     # 设定结构体对应表格的字段
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column('name', db.String(30), nullable=True)
+    name = db.Column('name', db.String(255), nullable=True)
     img_url = db.Column('img_url', db.String(100), nullable=True)
     url = db.Column('url', db.String(50), nullable=True)
     type = db.Column('type', db.String(10), nullable=True)
