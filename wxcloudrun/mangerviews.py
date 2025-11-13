@@ -19,7 +19,7 @@ from wxcloudrun.dao import update_user_statusbyid, insert_user, get_review_confe
     update_BusinessInfo_statusbyid, update_schedule_seatbyid, check_login_times
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, ConferenCoopearter, Media, \
     ConferenceCooperatorShow, OperaterRule, Exhibiton, ConferenceSignUp, RelationFriend, BusinessInfo, \
-    EnterpriseCertified, MeetingRoom, RelationUserCertified, Toy
+    EnterpriseCertified, MeetingRoom, RelationUserCertified, Toy, InvestInfo
 from wxcloudrun.response import make_succ_page_response, make_succ_response, make_err_response
 from wxcloudrun.utils import uploadfile, valid_image, vaild_password, uploadwebfile, download_cdn_file, zip_folder, \
     get_ticket, get_urllink, getscheduleqrcode, generate_verification_code
@@ -1655,3 +1655,79 @@ def toy_info():
         if len(toys) >= config.TOY_MAX_NUM:
             return make_err_response('不好意思已领完')
         return make_succ_response('当前剩余{}个玩偶'.format(config.TOY_MAX_NUM - len(toys)), code=200)
+
+@app.route('/api/manage/create_invest_info', methods=['post'])
+# @jwt_required()
+# @admin_required()
+def manage_create_invest_infom():
+    """
+        :return:创建投资项目
+        """
+    params = request.get_json()
+    invest_info = InvestInfo()
+    invest_info.district=params.get('district')
+    invest_info.phone=params.get('phone')
+    invest_info.info=params.get('info')
+    invest_info.advantage=params.get('advantage')
+    invest_info.policy=params.get('policy')
+    invest_info.ercode_cdn=params.get('ercode_cdn')
+    invest_info.pic_1_cdn=params.get('pic_1_cdn')
+    invest_info.pic_2_cdn=params.get('pic_2_cdn')
+    insert_user(invest_info)
+    # operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
+    return make_succ_response(invest_info.id, code=200)
+
+
+@app.route('/api/manage/get_invest_info', methods=['GET'])
+# @jwt_required()
+def manage_get_invest_info():
+    """
+        :return:获取投资项目
+    """
+    # 获取请求体参数
+    name = request.args.get('district', '')
+    page = request.args.get('page', default=1, type=int)
+    page_size = request.args.get('page_size', default=10, type=int)
+    result = InvestInfo.query.filter(InvestInfo.is_deleted == 0,
+                                      InvestInfo.district.like('%' + name + '%')).order_by(InvestInfo.order.desc()).paginate(page,
+                                                                                        per_page=page_size,
+                                                                                        error_out=False)
+    data = [item.get() for item in result.items]
+    return make_succ_page_response(data, code=200, total=result.total)
+
+
+@app.route('/api/manage/edit_invest_info', methods=['post'])
+@jwt_required()
+@admin_required()
+def manage_edit_invest_info():
+    """
+        :return:创建投资项目
+        """
+    params = request.get_json()
+    invest_info = InvestInfo.query.filter_by(id=params.get('id')).first()
+    invest_info.district=params.get('district')
+    invest_info.phone=params.get('phone')
+    invest_info.info=params.get('info')
+    invest_info.advantage=params.get('advantage')
+    invest_info.policy=params.get('policy')
+    invest_info.ercode_cdn=params.get('ercode_cdn')
+    invest_info.pic_1_cdn=params.get('pic_1_cdn')
+    invest_info.pic_2_cdn=params.get('pic_2_cdn')
+    invest_info.order = params.get('order',0)
+    insert_user(invest_info)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
+    return make_succ_response(invest_info.id, code=200)
+
+@app.route('/api/manage/delete_invest_info', methods=['post'])
+@jwt_required()
+@admin_required()
+def manage_delete_invest_info():
+    """
+        :return:删除投资项目
+        """
+    params = request.get_json()
+    invest_info = InvestInfo.query.filter_by(id=params.get('id')).first()
+    invest_info.is_deleted = 1
+    insert_user(invest_info)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
+    return make_succ_response(invest_info.id, code=200)

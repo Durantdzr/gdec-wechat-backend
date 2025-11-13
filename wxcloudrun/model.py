@@ -620,3 +620,28 @@ class Toy(db.Model):
     apply_time = db.Column('apply_time', db.TIMESTAMP, nullable=True, default=datetime.now)
     pickup_time = db.Column('pickup_time', db.TIMESTAMP, nullable=True)
     status = db.Column('status', db.INT, default=0)
+
+
+class InvestInfo(db.Model):
+    # 設定结构体表格名称
+    __tablename__ = 't_invest_info'
+    # 設定结构体对应表格的字段
+    id = db.Column(db.Integer, primary_key=True)
+    district = db.Column('district', db.String(100), nullable=True)
+    phone = db.Column('phone', db.String(100), nullable=True)
+    info = db.Column('info', db.String(100), nullable=True)
+    advantage = db.Column('advantage', db.String(200), nullable=True)
+    policy = db.Column('policy', db.String(200), nullable=True)
+    ercode_cdn = db.Column('ercode_cdn', db.String(100), nullable=True)
+    pic_1_cdn = db.Column('pic_1_cdn', db.String(100), nullable=True)
+    pic_2_cdn = db.Column('pic_2_cdn', db.String(100), nullable=True)
+    order = db.Column('order', db.Integer, nullable=True, default=0)
+    is_deleted = db.Column('is_deleted', db.Integer, nullable=True, default=0)
+
+    def get(self):
+        return {"id": self.id, "district": self.district, "phone": self.phone, "info": self.info,
+                "advantage": self.advantage, "policy": self.policy, "ercode_cdn": self.ercode_cdn,
+                "pic_1_cdn": self.pic_1_cdn, "pic_2_cdn": self.pic_2_cdn,"order": self.order,
+                "ercode_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.ercode_cdn) if self.ercode_cdn else  None,
+                "pic_1_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.pic_1_cdn) if self.pic_1_cdn else  None,
+                "pic_2_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.pic_2_cdn) if self.pic_2_cdn else  None}
