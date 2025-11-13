@@ -824,3 +824,19 @@ def get_meeting_record_list_byuserid(userid, page=1, page_size=1000):
         r["meeting_room_location"] = meeting_room.location
         data.append(r)
     return data, result.total
+
+
+# import json
+# def check_64():
+#     logs=OperaterLog.query.filter(OperaterLog.operator=='gdec_admin64',OperaterLog.event=='/api/manage/review_register').all()
+#     users=[]
+#     for log in logs:
+#         data=json.loads(log.data)
+#         if data['opt']=='agree':
+#             users.extend(data['userlist'])
+#     users=User.query.filter(User.id.in_(users),User.identity_verification!=1001)
+#     for user in users:
+#         user.status=0
+#         insert_user( user)
+#         print(user.id)
+
