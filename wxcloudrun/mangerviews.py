@@ -471,6 +471,8 @@ def manage_get_hall_schedule():
     page = request.args.get('page', default=1, type=int)
     page_size = request.args.get('page_size', default=10, type=int)
     forum = get_jwt().get("forum", "")
+    if forum == '主论坛':
+        forum = ''
     result = ConferenceSchedule.query.filter(ConferenceSchedule.is_deleted == 0,
                                              ConferenceSchedule.title.like('%' + title + '%'),
                                              ConferenceSchedule.forum.like('%' + forum + '%')).paginate(page,
@@ -792,6 +794,8 @@ def get_conference_sign_up():
     schedule_name = request.args.get('schedule_name', default=None)
     forum = ""
     forum = get_jwt().get("forum", "")
+    if forum == '主论坛':
+        forum = ''
     result, total = get_review_conference_list(name, page, page_size, forum, status, schedule_name)
     return make_succ_page_response(result, code=200, total=total)
 
@@ -805,6 +809,8 @@ def download_conference_sign_up():
     name = request.args.get('user_name', '')
     status = request.args.get('status', default=None, type=int)
     forum = get_jwt().get("forum", "")
+    if forum == '主论坛':
+        forum = ''
     result = get_all_review_conference_list(name, forum, status)
     df = pd.DataFrame(result)
     now = datetime.datetime.now().strftime('%Y-%m-%d%H:%M:%S')
@@ -1243,6 +1249,8 @@ def get_exhibtion():
     page = request.args.get('page', default=1, type=int)
     page_size = request.args.get('page_size', default=10, type=int)
     forum = get_jwt().get("forum", "")
+    if forum == '主论坛':
+        forum = ''
     result = Exhibiton.query.filter(Exhibiton.is_deleted == 0, Exhibiton.title.like('%' + title + '%'),
                                     Exhibiton.forum.like('%' + forum + '%')).paginate(page,
                                                                                       per_page=page_size,
