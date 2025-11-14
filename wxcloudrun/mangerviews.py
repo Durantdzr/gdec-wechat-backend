@@ -1657,9 +1657,9 @@ def toy_info():
         return make_succ_response('当前剩余{}个玩偶'.format(config.TOY_MAX_NUM - len(toys)), code=200)
 
 @app.route('/api/manage/create_invest_info', methods=['post'])
-# @jwt_required()
-# @admin_required()
-def manage_create_invest_infom():
+@jwt_required()
+@admin_required()
+def manage_create_invest_info():
     """
         :return:创建投资项目
         """
@@ -1674,7 +1674,7 @@ def manage_create_invest_infom():
     invest_info.pic_1_cdn=params.get('pic_1_cdn')
     invest_info.pic_2_cdn=params.get('pic_2_cdn')
     insert_user(invest_info)
-    # operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params, request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response(invest_info.id, code=200)
 
 
