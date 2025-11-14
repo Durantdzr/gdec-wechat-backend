@@ -1648,7 +1648,7 @@ def toy_info():
     user_id = current_user.get("sub")
     toy = Toy.query.filter(Toy.user_id == user_id).first()
     if toy:
-        status = {0: '未领取', 1: '已领取'}
+        status = {0: '已申请', 1: '已领取'}
         return make_succ_response(status.get(toy.status), code=200)
     else:
         toys = Toy.query.all()
