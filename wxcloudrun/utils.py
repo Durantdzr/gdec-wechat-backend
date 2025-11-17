@@ -301,7 +301,7 @@ def encode_ercode(id):
     encrypted = cipher_suite.encrypt(str(id).encode('utf-8'))
 
     # 转换为URL安全的base64并缩短
-    short_token = base64.urlsafe_b64encode(encrypted[:500]).decode('utf-8').rstrip('=')
+    short_token = base64.urlsafe_b64encode(encrypted).decode('utf-8').rstrip('=')
     return short_token
 
 
