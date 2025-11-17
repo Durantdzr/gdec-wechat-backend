@@ -1577,8 +1577,6 @@ def manage_get_user_phone():
 
 
 @app.route('/api/manage/check_in', methods=['get'])
-@jwt_required()
-@admin_required()
 def manage_check_in():
     """
         :return:闸机入场检查
@@ -1600,7 +1598,6 @@ def manage_check_in():
 
 
 @app.route('/api/toy/apply', methods=['post'])
-@jwt_required()
 def toy_apply():
     """
         :return:申请玩具
@@ -1627,7 +1624,6 @@ def toy_apply():
 
 
 @app.route('/api/toy/pickup', methods=['post'])
-@jwt_required()
 def toy_pickup():
     """
         :return:核销玩具
@@ -1651,7 +1647,6 @@ def toy_pickup():
 
 
 @app.route('/api/toy/info', methods=['GET'])
-@jwt_required()
 def toy_info():
     """
         :return:玩具信息
