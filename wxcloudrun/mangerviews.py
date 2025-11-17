@@ -110,18 +110,22 @@ def get_register_list():
     name = request.args.get('name', default='', type=str)
     status = request.args.get('status', type=int)
     type = request.args.get('type', default='', type=str)
+    is_identity = request.args.get('is_identity', type=bool, default=True)
+    query = User.query.filter(
+        User.name.like('%' + name + '%'),
+        User.is_deleted == 0,
+        User.type.like('%' + type + '%')
+    )
+    # 根据status和is_identity参数添加额外过滤条件
     if status is None:
-        users = User.query.filter(User.name.like('%' + name + '%'), User.status != 2, User.is_deleted == 0,
-                                  User.type.like('%' + type + '%'), User.identity_verification == 1001).paginate(
-            page,
-            per_page=page_size,
-            error_out=False)
+        query = query.filter(User.status != 2)
     else:
-        users = User.query.filter(User.name.like('%' + name + '%'), User.status == status,
-                                  User.is_deleted == 0, User.type.like('%' + type + '%')).paginate(
-            page,
-            per_page=page_size,
-            error_out=False)
+        query = query.filter(User.status == status)
+    if is_identity:
+        query = query.filter(User.identity_verification == 1001)
+    else:
+        query = query.filter(User.identity_verification != 1001)
+    users = query.paginate(page, per_page=page_size, error_out=False)
     return make_succ_page_response([user.get_full() for user in users.items], code=200, total=users.total)
 
 
