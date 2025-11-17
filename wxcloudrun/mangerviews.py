@@ -1577,6 +1577,8 @@ def manage_get_user_phone():
 
 
 @app.route('/api/manage/check_in', methods=['get'])
+@jwt_required()
+@admin_required()
 def manage_check_in():
     """
         :return:闸机入场检查
