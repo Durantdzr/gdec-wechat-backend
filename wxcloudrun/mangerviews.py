@@ -1621,7 +1621,7 @@ def toy_apply():
     toy = Toy()
     toy.user_id = user_id
     insert_user(toy)
-    operatr_log(get_jwt_identity(), request.url_rule.rule, user_id, request.headers.get("X-Forwarded-For", request.remote_addr))
+    operatr_log(user_id, request.url_rule.rule, user_id, request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response(toy.id, code=200)
 
 
@@ -1643,6 +1643,9 @@ def toy_pickup():
         toy.status = 1
         toy.pickup_time = datetime.datetime.now()
         insert_user(toy)
+        operatr_log(user_id, request.url_rule.rule, user_id,
+                    request.headers.get("X-Forwarded-For", request.remote_addr))
+
         return make_succ_response(toy.id, code=200)
     else:
         return make_err_response('请先申请。')
