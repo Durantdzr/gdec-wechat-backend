@@ -298,7 +298,8 @@ def CA_identification(name, phone, code, openid=None):
 def encode_ercode(id):
     """生成更短的加密字符串"""
     # 使用Fernet加密
-    encrypted = cipher_suite.encrypt(str(id).encode('utf-8'))
+    data_with_timestamp = f"{id}|{int(time.time())}"
+    encrypted = cipher_suite.encrypt(data_with_timestamp.encode('utf-8'))
 
     # 转换为URL安全的base64并缩短
     short_token = base64.urlsafe_b64encode(encrypted).decode('utf-8').rstrip('=')
@@ -318,6 +319,23 @@ def decode_ercode(short_token):
 
         # 使用Fernet解密
         decrypted = cipher_suite.decrypt(encrypted_data)
-        return decrypted.decode('utf-8')
+        decrypted_str = decrypted.decode('utf-8')
+
+        # 分离ID和时间戳
+        parts = decrypted_str.split('|')
+        if len(parts) != 2:
+            raise ValueError("数据格式错误")
+
+        id_value = parts[0]
+        timestamp = int(parts[1])
+
+        # 验证时间戳有效性（5分钟=300秒）
+        current_time = int(time.time())
+        if current_time - timestamp > 600:  # 5分钟有效期
+            raise ValueError("数据已过期")
+
+        return id_value
     except Exception as e:
         raise ValueError(f"解密失败: {e}")
+
+

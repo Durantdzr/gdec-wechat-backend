@@ -1608,7 +1608,11 @@ def toy_apply():
     if not request.headers.get('Authorization'):
         return make_err_response('用户信息失效')
     ercode=request.headers.get('Authorization')[7:]
-    user_id = decode_ercode(ercode)
+    try:
+        user_id = decode_ercode(ercode)
+    except Exception as e:
+        print(e)
+        return make_err_response('用户信息失效')
     toy = Toy.query.filter(Toy.user_id == user_id).first()
     toys = Toy.query.all()
     if len(toys) >= config.TOY_MAX_NUM:
@@ -1631,7 +1635,11 @@ def toy_pickup():
     if not request.headers.get('Authorization'):
         return make_err_response('用户信息失效')
     ercode = request.headers.get('Authorization')[7:]
-    user_id = decode_ercode(ercode)
+    try:
+        user_id = decode_ercode(ercode)
+    except Exception as e:
+        print(e)
+        return make_err_response('用户信息失效')
     toy = Toy.query.filter(Toy.user_id == user_id).first()
     if toy:
         toy.status = 1
@@ -1651,7 +1659,11 @@ def toy_info():
     if not request.headers.get('Authorization'):
         return make_err_response('用户信息失效')
     ercode = request.headers.get('Authorization')[7:]
-    user_id = decode_ercode(ercode)
+    try:
+        user_id = decode_ercode(ercode)
+    except Exception as e:
+        print(e)
+        return make_err_response('用户信息失效')
     toy = Toy.query.filter(Toy.user_id == user_id).first()
     if toy:
         status = {0: '已申请', 1: '已领取'}
