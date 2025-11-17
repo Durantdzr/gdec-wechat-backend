@@ -1590,7 +1590,7 @@ def manage_check_in():
             er_code = int(decode_ercode(er_code))
         except Exception as e:
             print(e)
-            return make_err_response('er_code解析异常')
+            return make_succ_response(False, code=200)
     result = User.query.filter(User.status == 2, User.is_deleted == 0,
                                or_(User.code == code, User.id == er_code)).first()
     if result:
