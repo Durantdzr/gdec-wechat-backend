@@ -27,7 +27,7 @@ from tencentcloud.common.profile.http_profile import HttpProfile
 from tencentcloud.common.exception.tencent_cloud_sdk_exception import TencentCloudSDKException
 from tencentcloud.sms.v20210111 import sms_client, models
 import re
-
+import base64
 cipher_suite = Fernet(config.FERNET_KEY)
 
 
@@ -293,3 +293,31 @@ def CA_identification(name, phone, code, openid=None):
                        reason=status.get(data.get("subCode", 0), "实名认证未通过"),
                        phrase3='审核未通过', date=datetime.datetime.now().strftime('%Y-%m-%d'))
     return data.get("subCode", 0)
+
+
+def encode_ercode(id):
+    """生成更短的加密字符串"""
+    # 使用Fernet加密
+    encrypted = cipher_suite.encrypt(str(id).encode('utf-8'))
+
+    # 转换为URL安全的base64并缩短
+    short_token = base64.urlsafe_b64encode(encrypted[:500]).decode('utf-8').rstrip('=')
+    return short_token
+
+
+def decode_ercode(short_token):
+    """解密由create_ercode生成的短字符串"""
+    try:
+        # 补充Base64编码的填充字符
+        missing_padding = len(short_token) % 4
+        if missing_padding:
+            short_token += '=' * (4 - missing_padding)
+
+        # 解码Base64
+        encrypted_data = base64.urlsafe_b64decode(short_token.encode('utf-8'))
+
+        # 使用Fernet解密
+        decrypted = cipher_suite.decrypt(encrypted_data)
+        return decrypted.decode('utf-8')
+    except Exception as e:
+        raise ValueError(f"解密失败: {e}")

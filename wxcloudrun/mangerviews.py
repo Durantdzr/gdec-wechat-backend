@@ -22,7 +22,7 @@ from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, Conferenc
     EnterpriseCertified, MeetingRoom, RelationUserCertified, Toy, InvestInfo
 from wxcloudrun.response import make_succ_page_response, make_succ_response, make_err_response
 from wxcloudrun.utils import uploadfile, valid_image, vaild_password, uploadwebfile, download_cdn_file, zip_folder, \
-    get_ticket, get_urllink, getscheduleqrcode, generate_verification_code
+    get_ticket, get_urllink, getscheduleqrcode, generate_verification_code,decode_ercode
 from datetime import timedelta
 from sqlalchemy import or_
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, get_jwt, verify_jwt_in_request
@@ -1587,9 +1587,7 @@ def manage_check_in():
     er_code = request.args.get('er_code', default='', type=str)
     if er_code != '':
         try:
-            # 解析 JWT，不验证签名
-            decoded_jwt = jwt.decode(er_code, options={"verify_signature": False})
-            er_code = decoded_jwt.get('sub')
+            er_code = int(decode_ercode(er_code))
         except Exception as e:
             print(e)
             return make_err_response('er_code解析异常')
@@ -1607,10 +1605,10 @@ def toy_apply():
     """
         :return:申请玩具
         """
-    current_user = get_jwt()
-    user_id = current_user.get("sub")
-    if not user_id:
+    if not request.headers.get('Authorization'):
         return make_err_response('用户信息失效')
+    ercode=request.headers.get('Authorization')[7:]
+    user_id = decode_ercode(ercode)
     toy = Toy.query.filter(Toy.user_id == user_id).first()
     toys = Toy.query.all()
     if len(toys) >= config.TOY_MAX_NUM:
@@ -1630,8 +1628,10 @@ def toy_pickup():
     """
         :return:核销玩具
         """
-    current_user = get_jwt()
-    user_id = current_user.get("sub")
+    if not request.headers.get('Authorization'):
+        return make_err_response('用户信息失效')
+    ercode = request.headers.get('Authorization')[7:]
+    user_id = decode_ercode(ercode)
     toy = Toy.query.filter(Toy.user_id == user_id).first()
     if toy:
         toy.status = 1
@@ -1648,8 +1648,10 @@ def toy_info():
     """
         :return:玩具信息
         """
-    current_user = get_jwt()
-    user_id = current_user.get("sub")
+    if not request.headers.get('Authorization'):
+        return make_err_response('用户信息失效')
+    ercode = request.headers.get('Authorization')[7:]
+    user_id = decode_ercode(ercode)
     toy = Toy.query.filter(Toy.user_id == user_id).first()
     if toy:
         status = {0: '已申请', 1: '已领取'}
