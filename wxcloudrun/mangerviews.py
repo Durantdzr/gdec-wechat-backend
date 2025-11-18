@@ -1614,7 +1614,7 @@ def toy_apply():
         return make_err_response('用户信息失效')
     toy = Toy.query.filter(Toy.user_id == user_id).first()
     toys = Toy.query.all()
-    if len(toys) >= config.TOY_MAX_NUM:
+    if len(toys) >= int(config.TOY_MAX_NUM):
         return make_err_response('不好意思已领完')
     if toy:
         return make_err_response('请勿重复申请')
