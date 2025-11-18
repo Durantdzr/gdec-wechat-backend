@@ -1670,7 +1670,7 @@ def toy_info():
         return make_succ_response(status.get(toy.status), code=200)
     else:
         toys = Toy.query.all()
-        if len(toys) >= config.TOY_MAX_NUM:
+        if len(toys) >= int(config.TOY_MAX_NUM):
             return make_err_response('不好意思已领完')
         return make_succ_response('当前剩余{}个玩偶'.format(config.TOY_MAX_NUM - len(toys)), code=200)
 
