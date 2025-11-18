@@ -826,6 +826,17 @@ def get_meeting_record_list_byuserid(userid, page=1, page_size=1000):
     return data, result.total
 
 
+def check_in_label_byUserid(userid):
+    """
+    :param id: Counter的ID
+    :return: Counter实体
+    """
+    result = ConferenceSignUp.query.filter(ConferenceSignUp.user_id == userid, ConferenceSignUp.status == 2,
+                                           ConferenceSignUp.schedule_id.in_([config.OPEN_SCHEDULE_ID, config.MAIN_SCHEDULE_ID])).first()
+    if result:
+        return True
+    else:
+        return False
 # import json
 # def check_64():
 #     logs=OperaterLog.query.filter(OperaterLog.operator=='gdec_admin64',OperaterLog.event=='/api/manage/review_register').all()

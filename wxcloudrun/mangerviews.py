@@ -16,7 +16,7 @@ from wxcloudrun.dao import update_user_statusbyid, insert_user, get_review_confe
     refresh_conference_info, get_hall_schedule_byid, get_operat_list, get_hall_exhibition_byid, \
     get_hall_exhibition, get_hall_blockchain_schedule, get_all_review_conference_list, \
     get_all_signup_conference_statics, get_business_certified_list, update_EnterpriseCertified_statusbyid, \
-    update_BusinessInfo_statusbyid, update_schedule_seatbyid, check_login_times
+    update_BusinessInfo_statusbyid, update_schedule_seatbyid, check_login_times,get_user_schedule_num_by_id,check_in_label_byUserid
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, ConferenCoopearter, Media, \
     ConferenceCooperatorShow, OperaterRule, Exhibiton, ConferenceSignUp, RelationFriend, BusinessInfo, \
     EnterpriseCertified, MeetingRoom, RelationUserCertified, Toy, InvestInfo
@@ -35,7 +35,7 @@ import os
 from functools import wraps
 from wxcloudrun.logger import operatr_log
 import shutil
-import jwt
+import time
 
 
 def admin_required():
@@ -1572,7 +1572,10 @@ def manage_get_user_phone():
         :return:获取手机号
         """
     result = User.query.filter(User.status == 2, User.is_deleted == 0, User.phone != None).all()
-    data = [item.phone for item in result]
+    data=[]
+    for item in result:
+        label=check_in_label_byUserid(item.id)
+        data.append({"phone":item.phone,"label": label})
     return make_succ_response(data, code=200)
 
 
@@ -1593,6 +1596,11 @@ def manage_check_in():
             return make_succ_response(False, code=200)
     result = User.query.filter(User.status == 2, User.is_deleted == 0,
                                or_(User.code == code, User.id == er_code)).first()
+    if int(time.time())>int(config.DOOR_OPEN_TIME) and int(time.time())<int(config.DOOR_CLOSE_TIME):
+        label=check_in_label_byUserid(result.id)
+        if label:
+            return make_succ_response(True, code=200)
+        return make_succ_response(False, code=200)
     if result:
         operatr_log(result.id, request.url_rule.rule, request.args,
                     request.headers.get("X-Forwarded-For", request.remote_addr))
