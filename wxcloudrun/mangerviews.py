@@ -110,7 +110,7 @@ def get_register_list():
     name = request.args.get('name', default='', type=str)
     status = request.args.get('status', type=int)
     type = request.args.get('type', default='', type=str)
-    is_identity = request.args.get('is_identity', type=bool, default=True)
+    is_identity = request.args.get('is_identity',default='true')
     query = User.query.filter(
         User.name.like('%' + name + '%'),
         User.is_deleted == 0,
@@ -121,7 +121,7 @@ def get_register_list():
         query = query.filter(User.status != 2)
     else:
         query = query.filter(User.status == status)
-    if is_identity:
+    if is_identity =='true':
         query = query.filter(User.identity_verification == 1001)
     else:
         query = query.filter(User.identity_verification != 1001)
