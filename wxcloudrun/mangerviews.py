@@ -23,6 +23,7 @@ from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, Conferenc
 from wxcloudrun.response import make_succ_page_response, make_succ_response, make_err_response
 from wxcloudrun.utils import uploadfile, valid_image, vaild_password, uploadwebfile, download_cdn_file, zip_folder, \
     get_ticket, get_urllink, getscheduleqrcode, generate_verification_code,decode_ercode
+from wxcloudrun import db
 from datetime import timedelta
 from sqlalchemy import or_
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, get_jwt, verify_jwt_in_request
@@ -1571,11 +1572,20 @@ def manage_get_user_phone():
     """
         :return:获取手机号
         """
-    result = User.query.filter(User.status == 2, User.is_deleted == 0, User.phone != None).all()
-    data=[]
-    for item in result:
-        label=check_in_label_byUserid(item.id)
-        data.append({"phone":item.phone,"label": label})
+    signed_up_users = db.session.query(User.id).join(ConferenceSignUp,
+                                                     ConferenceSignUp.user_id == User.id).filter(
+        ConferenceSignUp.status == 2,
+        ConferenceSignUp.schedule_id.in_([config.OPEN_SCHEDULE_ID, config.MAIN_SCHEDULE_ID])
+    ).all()
+
+    # 提取用户ID列表
+    signed_up_user_ids = [user_id[0] for user_id in signed_up_users]
+
+    # 获取所有用户
+    all_users = User.query.filter(User.status == 2, User.is_deleted == 0, User.phone != None).all()
+    data = []
+    for user in all_users:
+        data.append({"phone": user.phone, "label": user.id in signed_up_user_ids})
     return make_succ_response(data, code=200)
 
 
