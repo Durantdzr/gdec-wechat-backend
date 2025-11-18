@@ -1594,6 +1594,8 @@ def manage_check_in():
     result = User.query.filter(User.status == 2, User.is_deleted == 0,
                                or_(User.code == code, User.id == er_code)).first()
     if result:
+        operatr_log(result.id, request.url_rule.rule, request.args,
+                    request.headers.get("X-Forwarded-For", request.remote_addr))
         return make_succ_response(True, code=200)
     else:
         return make_succ_response(False, code=200)
