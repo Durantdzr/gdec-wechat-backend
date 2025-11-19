@@ -141,8 +141,9 @@ def get_success_user_list():
     page_size = request.args.get('page_size', default=10, type=int)
     name = request.args.get('name', default='', type=str)
     type = request.args.get('type', default='', type=str)
+    company = request.args.get('company', default='', type=str)
     users = User.query.filter(User.name.like('%' + name + '%'), User.status == 2, User.is_deleted == 0,
-                              User.type.like('%' + type + '%'),
+                              User.type.like('%' + type + '%'),User.company.like('%' + company + '%'),
                               User.type.notin_(['管理员', '嘉宾'])).paginate(page,
                                                                              per_page=page_size,
                                                                              error_out=False)
