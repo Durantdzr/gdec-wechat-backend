@@ -284,7 +284,8 @@ def get_review_conference_list(name, page, page_size, forum, status, schedule_na
              "label": schedule.label,
              "end_time": schedule.end_time, "phone": user.phone, "status": signup.status, "company": user.company,
              "seat_img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, schedule.seat_img),
-             "title": user.title, "seat_info": signup.seat_info} for signup, user, schedule in
+             "title": user.title, "seat_info": signup.seat_info, "seat_region": signup.seat_region,
+             "seat_type": signup.type} for signup, user, schedule in
             result.items], result.total
 
 
@@ -309,7 +310,8 @@ def get_review_conference_listBYlabel(userid, label, schedule_id):
              "label": schedule.label,
              "end_time": schedule.end_time, "phone": user.phone, "status": signup.status, "company": user.company,
              "seat_img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, schedule.seat_img),
-             "title": user.title, "seat_info": signup.seat_info} for signup, user, schedule in result]
+             "title": user.title, "seat_info": signup.seat_info, "seat_region": signup.seat_region,
+             "seat_type": signup.type} for signup, user, schedule in result]
 
 
 def get_all_review_conference_list(name, forum, status):
@@ -832,7 +834,8 @@ def check_in_label_byUserid(userid):
     :return: Counter实体
     """
     result = ConferenceSignUp.query.filter(ConferenceSignUp.user_id == userid, ConferenceSignUp.status == 2,
-                                           ConferenceSignUp.schedule_id.in_([config.OPEN_SCHEDULE_ID, config.MAIN_SCHEDULE_ID])).first()
+                                           ConferenceSignUp.schedule_id.in_(
+                                               [config.OPEN_SCHEDULE_ID, config.MAIN_SCHEDULE_ID])).first()
     if result:
         return True
     else:
@@ -850,4 +853,3 @@ def check_in_label_byUserid(userid):
 #         user.status=0
 #         insert_user( user)
 #         print(user.id)
-

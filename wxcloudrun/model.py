@@ -283,8 +283,12 @@ class ConferenceSignUp(db.Model):
     user_id = db.Column('user_id', db.Integer)
     schedule_id = db.Column('schedule_id', db.Integer)
     status = db.Column('status', db.Integer, default=0)
+    seat_region = db.Column('seat_region', db.String(100), nullable=True)
     seat_info = db.Column('seat_info', db.String(50), nullable=True)
-
+    type=db.Column('type', db.String(100), nullable=True, default='普通申请')
+    remark = db.Column('remark', db.String(100), nullable=True)
+    create_time = db.Column('create_time', db.TIMESTAMP, nullable=False, default=datetime.now)
+    is_deleted = db.Column('is_deleted', db.INT, default=0)
 
 class Media(db.Model):
     # 设置结构体表格名称
