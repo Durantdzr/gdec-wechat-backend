@@ -808,6 +808,8 @@ def manage_edit_conference_sign_up_seat():
                                   ConferenceSignUp.is_deleted == 0, ConferenceSignUp.type == '定向邀请').update(
         {ConferenceSignUp.is_deleted: 1})
     for info in seat_data:
+        name = info.get('name')
+        company = info.get('company')
         phone = info.get('phone')
         user_type = info.get('user_type')
         seat_region = info.get('seat_region')
@@ -815,7 +817,12 @@ def manage_edit_conference_sign_up_seat():
         remark = info.get('remark')
         user = User.query.filter(User.phone == phone, User.is_deleted == 0).first()
         if user is None:
-            continue
+            user = User()
+            user.name = name
+            user.phone = phone
+            user.company = company
+            user.type = user_type
+            insert_user(user)
         else:
             user.type = user_type
             insert_user(user)

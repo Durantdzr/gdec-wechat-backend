@@ -153,14 +153,17 @@ def get_user_phone():
     data = result.json()
     user = User.query.filter(User.openid == request.headers['X-WX-OPENID']).first()
     if user is None and data.get('errmsg') == 'ok':
-        user = User()
-        user.openid = request.headers['X-WX-OPENID']
+
         data_list = data.get('data_list', [{}])[0]
         json_data = json.loads(data_list.get('json', ''))
         json_data = json_data.get('data', {})
         phoneNumber = json_data.get('phoneNumber', '')
-        user.phone = phoneNumber
-        user.savephoneEncrypted(phoneNumber)
+        user=User.query.filter(User.phone == phoneNumber).first()
+        if user is None:
+            user = User()
+            user.phone = phoneNumber
+            user.savephoneEncrypted(phoneNumber)
+        user.openid = request.headers['X-WX-OPENID']
         insert_user(user)
     if user is not None and data.get('errmsg') == 'ok':
         data_list = data.get('data_list', [{}])[0]
