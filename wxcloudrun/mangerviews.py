@@ -813,7 +813,7 @@ def manage_edit_conference_sign_up_seat():
 
 @app.route('/api/manage/update_conference_sign_up_seat', methods=['post'])
 @jwt_required()
-def manage_edit_conference_sign_up_seat():
+def manage_update_conference_sign_up_seat():
     """
         :return:编辑用户会议座位
         """
