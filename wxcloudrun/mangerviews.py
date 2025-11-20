@@ -16,7 +16,7 @@ from wxcloudrun.dao import update_user_statusbyid, insert_user, get_review_confe
     refresh_conference_info, get_hall_schedule_byid, get_operat_list, get_hall_exhibition_byid, \
     get_hall_exhibition, get_hall_blockchain_schedule, get_all_review_conference_list, \
     get_all_signup_conference_statics, get_business_certified_list, update_EnterpriseCertified_statusbyid, \
-    update_BusinessInfo_statusbyid, update_schedule_seatbyid, check_login_times, get_user_schedule_num_by_id, \
+    update_BusinessInfo_statusbyid, update_schedule_seatbyid, check_login_times, \
     check_in_label_byUserid
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, ConferenCoopearter, Media, \
     ConferenceCooperatorShow, OperaterRule, Exhibiton, ConferenceSignUp, RelationFriend, BusinessInfo, \

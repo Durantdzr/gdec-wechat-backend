@@ -11,6 +11,7 @@ from wxcloudrun.model import ConferenceInfo, RelationFriend, User, ConferenceSig
 from sqlalchemy import or_, and_
 from wxcloudrun.utils import uploadwebfile, send_check_msg, masked_view
 import config
+import time
 
 # 初始化日志
 logger = logging.getLogger('log')
@@ -385,6 +386,9 @@ def get_user_schedule_num_by_id(userid):
         ConferenceSchedule.is_deleted == 0, ConferenceSignUp.user_id == userid).all()
     num = 0
     main_label = False
+    has_opening = False
+    has_main = False
+    color=config.BLACK_COLOR
     for signup, schedule in result:
         delta = (datetime.datetime.strptime(
             schedule.conference_date.strftime('%Y-%m-%d') + ' ' + schedule.begin_time,
@@ -393,7 +397,25 @@ def get_user_schedule_num_by_id(userid):
             num += 1
         if schedule.label in ['主论坛', '开幕式']:
             main_label = True
-    return num, main_label
+            if schedule.label == '主论坛':
+                has_main = True
+            if schedule.label == '开幕式':
+                has_opening = True
+        # 根据新规则确定颜色
+    if has_opening and has_main:
+        # 如果两个都有，则11点之前显示开幕式颜色，11点之后显示主论坛颜色
+        now=int(time.time())
+        if now < config.ERCODE_EXCHANGE_TIME:
+            color = config.OPEN_SCHEDULE_COLOR
+        else:
+            color = config.MAIN_SCHEDULE_COLOR
+    elif has_opening:
+        # 只有开幕式显示开幕式颜色
+        color = config.OPEN_SCHEDULE_COLOR
+    elif has_main:
+        # 只有主论坛显示主论坛颜色
+        color = config.MAIN_SCHEDULE_COLOR
+    return num, main_label,color
 
 
 def check_login_times(username, ip):
