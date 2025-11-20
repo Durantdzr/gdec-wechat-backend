@@ -795,8 +795,24 @@ def review_conference_sign_up():
     return make_succ_response('操作成功', code=200)
 
 
+@app.route('/api/manage/edit_conference_sign_up_seat', methods=['post'])
+@jwt_required()
+def manage_edit_conference_sign_up_seat():
+    """
+        :return:编辑用户会议座位
+        """
+    params = request.get_json()
+    seat_info = params.get('seat_info')
+    seat_region= params.get('seat_region')
+    signuplist = params.get('signuplist')
+    update_schedule_seatbyid(signuplist, seat_info,seat_region)
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params,
+                request.headers.get("X-Forwarded-For", request.remote_addr))
+    return make_succ_response('操作成功', code=200)
+
+
 @app.route('/api/manage/update_conference_sign_up_seat', methods=['post'])
-# @jwt_required()
+@jwt_required()
 def manage_edit_conference_sign_up_seat():
     """
         :return:编辑用户会议座位
@@ -835,8 +851,8 @@ def manage_edit_conference_sign_up_seat():
         signup.status = 2
         signup.type = '定向邀请'
         insert_user(signup)
-    # operatr_log(get_jwt_identity(), request.url_rule.rule, params,
-    #             request.headers.get("X-Forwarded-For", request.remote_addr))
+    operatr_log(get_jwt_identity(), request.url_rule.rule, params,
+                request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response('操作成功', code=200)
 
 
@@ -852,7 +868,6 @@ def get_conference_sign_up():
     page_size = request.args.get('page_size', default=10, type=int)
     status = request.args.get('status', default=None, type=int)
     schedule_name = request.args.get('schedule_name', default=None)
-    forum = ""
     forum = get_jwt().get("forum", "")
     if forum == '主论坛':
         forum = ''

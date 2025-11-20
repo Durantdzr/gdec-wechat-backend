@@ -200,7 +200,7 @@ def update_schedule_statusbyid(signuplist, status):
         return None
 
 
-def update_schedule_seatbyid(signuplist, seat):
+def update_schedule_seatbyid(signuplist, seat,seat_region):
     """
     :param id: Counter的ID
     :return: Counter实体
@@ -209,6 +209,7 @@ def update_schedule_seatbyid(signuplist, seat):
         records = ConferenceSignUp.query.filter(ConferenceSignUp.id.in_(signuplist)).all()
         for record in records:
             record.seat_info = seat
+            record.seat_region=seat_region
         db.session.commit()
         return True
     except OperationalError as e:
