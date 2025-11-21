@@ -284,11 +284,13 @@ class ConferenceSignUp(db.Model):
     schedule_id = db.Column('schedule_id', db.Integer)
     status = db.Column('status', db.Integer, default=0)
     seat_region = db.Column('seat_region', db.String(100), nullable=True)
+    seat_row = db.Column('seat_row', db.String(100), nullable=True)
     seat_info = db.Column('seat_info', db.String(50), nullable=True)
-    type=db.Column('type', db.String(100), nullable=True, default='普通申请')
+    type = db.Column('type', db.String(100), nullable=True, default='普通申请')
     remark = db.Column('remark', db.String(100), nullable=True)
     create_time = db.Column('create_time', db.TIMESTAMP, nullable=False, default=datetime.now)
     is_deleted = db.Column('is_deleted', db.INT, default=0)
+
 
 class Media(db.Model):
     # 设置结构体表格名称
@@ -645,7 +647,10 @@ class InvestInfo(db.Model):
     def get(self):
         return {"id": self.id, "district": self.district, "phone": self.phone, "info": self.info,
                 "advantage": self.advantage, "policy": self.policy, "ercode_cdn": self.ercode_cdn,
-                "pic_1_cdn": self.pic_1_cdn, "pic_2_cdn": self.pic_2_cdn,"order": self.order,
-                "ercode_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.ercode_cdn) if self.ercode_cdn else  None,
-                "pic_1_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.pic_1_cdn) if self.pic_1_cdn else  None,
-                "pic_2_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, self.pic_2_cdn) if self.pic_2_cdn else  None}
+                "pic_1_cdn": self.pic_1_cdn, "pic_2_cdn": self.pic_2_cdn, "order": self.order,
+                "ercode_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET,
+                                                                   self.ercode_cdn) if self.ercode_cdn else None,
+                "pic_1_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET,
+                                                                  self.pic_1_cdn) if self.pic_1_cdn else None,
+                "pic_2_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET,
+                                                                  self.pic_2_cdn) if self.pic_2_cdn else None}

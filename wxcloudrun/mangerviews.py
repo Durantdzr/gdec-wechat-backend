@@ -804,8 +804,9 @@ def manage_edit_conference_sign_up_seat():
     params = request.get_json()
     seat_info = params.get('seat_info')
     seat_region = params.get('seat_region')
+    seat_row=params.get('seat_row')
     signuplist = params.get('signuplist')
-    update_schedule_seatbyid(signuplist, seat_info, seat_region)
+    update_schedule_seatbyid(signuplist, seat_info, seat_region,seat_row)
     operatr_log(get_jwt_identity(), request.url_rule.rule, params,
                 request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response('操作成功', code=200)
@@ -829,6 +830,7 @@ def manage_update_conference_sign_up_seat():
         phone = info.get('phone')
         user_type = info.get('user_type')
         seat_region = info.get('seat_region')
+        seat_row=info.get('seat_row')
         seat_info = info.get('seat_info')
         remark = info.get('remark')
         user = User.query.filter(User.phone == phone, User.is_deleted == 0).first()
@@ -847,6 +849,7 @@ def manage_update_conference_sign_up_seat():
         signup.schedule_id = schedule_id
         signup.seat_region = seat_region
         signup.seat_info = seat_info
+        signup.seat_row = seat_row
         signup.remark = remark
         signup.status = 2
         signup.type = '定向邀请'

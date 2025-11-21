@@ -201,7 +201,7 @@ def update_schedule_statusbyid(signuplist, status):
         return None
 
 
-def update_schedule_seatbyid(signuplist, seat, seat_region):
+def update_schedule_seatbyid(signuplist, seat, seat_region,seat_row):
     """
     :param id: Counter的ID
     :return: Counter实体
@@ -211,6 +211,7 @@ def update_schedule_seatbyid(signuplist, seat, seat_region):
         for record in records:
             record.seat_info = seat
             record.seat_region = seat_region
+            record.seat_row = seat_row
         db.session.commit()
         return True
     except OperationalError as e:
@@ -308,13 +309,37 @@ def get_review_conference_listBYlabel(userid, label, schedule_id):
     if schedule_id is not None:
         query = query.filter(ConferenceSchedule.id == schedule_id)
     result = query.all()
-    return [{"id": signup.id, "user_name": user.name, "schedule_name": schedule.title,
-             "schedule_date": schedule.conference_date.strftime('%Y-%m-%d'), "begin_time": schedule.begin_time,
-             "label": schedule.label,
-             "end_time": schedule.end_time, "phone": user.phone, "status": signup.status, "company": user.company,
-             "seat_img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, schedule.seat_img),
-             "title": user.title, "seat_info": signup.seat_info, "seat_region": signup.seat_region,
-             "seat_type": signup.type} for signup, user, schedule in result]
+    data = []
+    for signup, user, schedule in result:
+        # 拼接座位信息
+        seat_parts = []
+        if signup.seat_region and signup.seat_region.strip():
+            seat_parts.append(f"{signup.seat_region}区")
+        if signup.seat_row and signup.seat_row.strip():
+            seat_parts.append(f"{signup.seat_row}排")
+        if signup.seat_info and signup.seat_info.strip():
+            seat_parts.append(f"{signup.seat_info}号")
+        seat_display = "-".join(seat_parts) if seat_parts else ""
+
+        data.append({
+            "id": signup.id,
+            "user_name": user.name,
+            "schedule_name": schedule.title,
+            "schedule_date": schedule.conference_date.strftime('%Y-%m-%d'),
+            "begin_time": schedule.begin_time,
+            "label": schedule.label,
+            "end_time": schedule.end_time,
+            "phone": user.phone,
+            "status": signup.status,
+            "company": user.company,
+            "seat_img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, schedule.seat_img),
+            "title": user.title,
+            "seat_info": seat_display,
+            "seat_region": signup.seat_region,
+            "seat_row": signup.seat_row,
+            "seat_type": signup.type
+        })
+    return data
 
 
 def get_all_review_conference_list(name, forum, status):
