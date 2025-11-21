@@ -283,7 +283,7 @@ def get_review_conference_list(name, page, page_size, forum, status, schedule_na
     result = query.paginate(page, per_page=page_size, error_out=False)
     return [{"id": signup.id, "user_name": user.name, "schedule_name": schedule.title,
              "schedule_date": schedule.conference_date.strftime('%Y-%m-%d'), "begin_time": schedule.begin_time,
-             "label": schedule.label,
+             "label": schedule.label,"type":user.type,
              "end_time": schedule.end_time, "phone": user.phone, "status": signup.status, "company": user.company,
              "seat_img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, schedule.seat_img),
              "title": user.title, "seat_info": signup.seat_info, "seat_region": signup.seat_region,
