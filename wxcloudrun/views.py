@@ -1,5 +1,6 @@
 from flask import request
 from run import app
+from wxcloudrun import cache
 from wxcloudrun.dao import insert_user, search_friends_byopenid, insert_realtion_friend, get_friend_list, \
     save_realtion_friendbyid, is_invited_user, get_guests_list, get_conference_schedule_by_id, get_open_guests_list, \
     get_main_hall_guests_list, get_other_hall_guests_list, get_cooperater_list, get_hall_schedule_bydate, get_live_data, \
@@ -313,8 +314,19 @@ def get_user_by_id():
         return make_err_response('没有该用户')
     return make_succ_response(user.get())
 
+def make_cache_key(*args, **kwargs):
+    """生成基于openid的缓存键"""
+    openid = request.headers.get('X-WX-OPENID')
+    return f"user_by_openid_{openid}"
 
+def conditional_cache(f):
+    """条件缓存装饰器"""
+    if config.CACHE_ENABLED:
+        return cache.cached(timeout=60, key_prefix=make_cache_key)(f)  # 5分钟缓存
+    else:
+        return f
 @app.route('/api/user/get_user_by_openid', methods=['GET'])
+@conditional_cache
 def get_user_by_openid():
     """
     :return:获取小程序用户信息

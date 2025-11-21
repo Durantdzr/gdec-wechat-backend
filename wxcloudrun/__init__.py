@@ -38,6 +38,31 @@ scheduler.start()
 # def job1():
 #     send_begin_msg()
 
+if getattr(config, 'CACHE_ENABLED', False):
+    from flask_caching import Cache
+
+    cache = Cache(app, config={
+        'CACHE_TYPE': getattr(config, 'CACHE_TYPE', 'simple'),
+        'CACHE_DEFAULT_TIMEOUT': getattr(config, 'CACHE_DEFAULT_TIMEOUT', 300)
+    })
+else:
+    # 创建一个虚拟缓存对象，避免代码中出现未定义错误
+    class NoOpCache:
+        def cached(self, *args, **kwargs):
+            def decorator(f):
+                return f
+
+            return decorator
+
+        def delete(self, *args, **kwargs):
+            pass
+
+        def clear(self, *args, **kwargs):
+            pass
+
+
+    cache = NoOpCache()
+
 # 加载控制器
 from wxcloudrun import views, mangerviews
 
