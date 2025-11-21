@@ -272,7 +272,8 @@ def get_review_conference_list(name, page, page_size, forum, status, schedule_na
         User.status == 2,
         User.is_deleted == 0,
         ConferenceSchedule.is_deleted == 0,
-        ConferenceSchedule.forum.like('%' + forum + '%')
+        ConferenceSchedule.forum.like('%' + forum + '%'),
+        ConferenceSignUp.is_deleted==0
     )
 
     if status is not None:
