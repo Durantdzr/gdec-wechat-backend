@@ -803,9 +803,9 @@ def manage_edit_conference_sign_up_seat():
         """
     params = request.get_json()
     seat_info = params.get('seat_info')
-    seat_region= params.get('seat_region')
+    seat_region = params.get('seat_region')
     signuplist = params.get('signuplist')
-    update_schedule_seatbyid(signuplist, seat_info,seat_region)
+    update_schedule_seatbyid(signuplist, seat_info, seat_region)
     operatr_log(get_jwt_identity(), request.url_rule.rule, params,
                 request.headers.get("X-Forwarded-For", request.remote_addr))
     return make_succ_response('操作成功', code=200)

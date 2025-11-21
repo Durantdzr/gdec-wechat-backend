@@ -201,7 +201,7 @@ def update_schedule_statusbyid(signuplist, status):
         return None
 
 
-def update_schedule_seatbyid(signuplist, seat,seat_region):
+def update_schedule_seatbyid(signuplist, seat, seat_region):
     """
     :param id: Counter的ID
     :return: Counter实体
@@ -210,7 +210,7 @@ def update_schedule_seatbyid(signuplist, seat,seat_region):
         records = ConferenceSignUp.query.filter(ConferenceSignUp.id.in_(signuplist)).all()
         for record in records:
             record.seat_info = seat
-            record.seat_region=seat_region
+            record.seat_region = seat_region
         db.session.commit()
         return True
     except OperationalError as e:
@@ -273,7 +273,7 @@ def get_review_conference_list(name, page, page_size, forum, status, schedule_na
         User.is_deleted == 0,
         ConferenceSchedule.is_deleted == 0,
         ConferenceSchedule.forum.like('%' + forum + '%'),
-        ConferenceSignUp.is_deleted==0
+        ConferenceSignUp.is_deleted == 0
     )
 
     if status is not None:
@@ -284,7 +284,7 @@ def get_review_conference_list(name, page, page_size, forum, status, schedule_na
     result = query.paginate(page, per_page=page_size, error_out=False)
     return [{"id": signup.id, "user_name": user.name, "schedule_name": schedule.title,
              "schedule_date": schedule.conference_date.strftime('%Y-%m-%d'), "begin_time": schedule.begin_time,
-             "label": schedule.label,"type":user.type,
+             "label": schedule.label, "type": user.type,
              "end_time": schedule.end_time, "phone": user.phone, "status": signup.status, "company": user.company,
              "seat_img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, schedule.seat_img),
              "title": user.title, "seat_info": signup.seat_info, "seat_region": signup.seat_region,
@@ -389,7 +389,7 @@ def get_user_schedule_num_by_id(userid):
     main_label = False
     has_opening = False
     has_main = False
-    color=config.BLACK_COLOR
+    color = config.BLACK_COLOR
     for signup, schedule in result:
         delta = (datetime.datetime.strptime(
             schedule.conference_date.strftime('%Y-%m-%d') + ' ' + schedule.begin_time,
@@ -405,7 +405,7 @@ def get_user_schedule_num_by_id(userid):
         # 根据新规则确定颜色
     if has_opening and has_main:
         # 如果两个都有，则11点之前显示开幕式颜色，11点之后显示主论坛颜色
-        now=int(time.time())
+        now = int(time.time())
         if now < config.ERCODE_EXCHANGE_TIME:
             color = config.OPEN_SCHEDULE_COLOR
         else:
@@ -416,7 +416,7 @@ def get_user_schedule_num_by_id(userid):
     elif has_main:
         # 只有主论坛显示主论坛颜色
         color = config.MAIN_SCHEDULE_COLOR
-    return num, main_label,color
+    return num, main_label, color
 
 
 def check_login_times(username, ip):
