@@ -20,7 +20,7 @@ from wxcloudrun.dao import update_user_statusbyid, insert_user, get_review_confe
     check_in_label_byUserid
 from wxcloudrun.model import ConferenceInfo, ConferenceSchedule, User, ConferenceHall, ConferenCoopearter, Media, \
     ConferenceCooperatorShow, OperaterRule, Exhibiton, ConferenceSignUp, RelationFriend, BusinessInfo, \
-    EnterpriseCertified, MeetingRoom, RelationUserCertified, Toy, InvestInfo
+    EnterpriseCertified, MeetingRoom, RelationUserCertified, Toy, InvestInfo,OperaterLog
 from wxcloudrun.response import make_succ_page_response, make_succ_response, make_err_response
 from wxcloudrun.utils import uploadfile, valid_image, vaild_password, uploadwebfile, download_cdn_file, zip_folder, \
     get_ticket, get_urllink, getscheduleqrcode, generate_verification_code, decode_ercode
@@ -1694,10 +1694,18 @@ def manage_check_in():
     er_code = request.args.get('er_code', default='', type=str)
     if er_code != '':
         try:
-            er_code = int(decode_ercode(er_code))
+            er_code = decode_ercode(er_code)
         except Exception as e:
             print(e)
             return make_succ_response(False, code=200)
+    if "VIP" in er_code:
+        if len(OperaterLog.query.filter(OperaterLog.operator == er_code).all())>=config.VIP_USAGE_TIMES:
+            operatr_log(er_code, request.url_rule.rule, '使用超限制，无法使用',
+                        request.headers.get("X-Forwarded-For", request.remote_addr))
+            return make_succ_response(False, code=200)
+        operatr_log(er_code, request.url_rule.rule, '使用成功',
+                    request.headers.get("X-Forwarded-For", request.remote_addr))
+        return make_succ_response(True, code=200)
     result = User.query.filter(User.status == 2, User.is_deleted == 0,
                                or_(User.code == code, User.id == er_code)).first()
     if int(time.time()) > int(config.DOOR_OPEN_TIME) and int(time.time()) < int(config.DOOR_CLOSE_TIME):

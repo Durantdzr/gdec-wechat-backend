@@ -289,7 +289,7 @@ def get_review_conference_list(name, page, page_size, forum, status, schedule_na
              "end_time": schedule.end_time, "phone": user.phone, "status": signup.status, "company": user.company,
              "seat_img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, schedule.seat_img),
              "title": user.title, "seat_info": signup.seat_info, "seat_region": signup.seat_region,"seat_row":signup.seat_row,
-             "seat_type": signup.type} for signup, user, schedule in
+             "seat_type": signup.type,"remark":signup.remark} for signup, user, schedule in
             result.items], result.total
 
 

@@ -331,7 +331,7 @@ def decode_ercode(short_token):
 
         # 验证时间戳有效性（5分钟=300秒）
         current_time = int(time.time())
-        if current_time - timestamp > 600:  # 5分钟有效期
+        if current_time - timestamp > 300:  # 5分钟有效期
             raise ValueError("数据已过期")
 
         return id_value
