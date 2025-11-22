@@ -9,7 +9,7 @@ from wxcloudrun.model import ConferenceInfo, RelationFriend, User, ConferenceSig
     ConferenCoopearter, ConferenceCooperatorShow, OperaterLog, OperaterRule, Exhibiton, BusinessInfo, \
     EnterpriseCertified, MeetingReservation, MeetingRoom
 from sqlalchemy import or_, and_
-from wxcloudrun.utils import uploadwebfile, send_check_msg, masked_view
+from wxcloudrun.utils import uploadwebfile, send_check_msg
 import config
 import time
 
@@ -61,7 +61,7 @@ def search_friends_byopenid(openid, name):
         schedule_id.append(schedule.get('id'))
     user_id = []
     sign_up = ConferenceSignUp.query.filter(ConferenceSignUp.schedule_id.in_(schedule_id),
-                                            ConferenceSignUp.status == 2).all()
+                                            ConferenceSignUp.status == 2, ConferenceSignUp.is_deleted == 0).all()
     for item in sign_up:
         user_id.append(item.user_id)
     socail_user = User.query.filter(
@@ -201,7 +201,7 @@ def update_schedule_statusbyid(signuplist, status):
         return None
 
 
-def update_schedule_seatbyid(signuplist, seat, seat_region,seat_row):
+def update_schedule_seatbyid(signuplist, seat, seat_region, seat_row):
     """
     :param id: Counter的ID
     :return: Counter实体
@@ -288,8 +288,9 @@ def get_review_conference_list(name, page, page_size, forum, status, schedule_na
              "label": schedule.label, "type": user.type,
              "end_time": schedule.end_time, "phone": user.phone, "status": signup.status, "company": user.company,
              "seat_img_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET, schedule.seat_img),
-             "title": user.title, "seat_info": signup.seat_info, "seat_region": signup.seat_region,"seat_row":signup.seat_row,
-             "seat_type": signup.type,"remark":signup.remark} for signup, user, schedule in
+             "title": user.title, "seat_info": signup.seat_info, "seat_region": signup.seat_region,
+             "seat_row": signup.seat_row,
+             "seat_type": signup.type, "remark": signup.remark} for signup, user, schedule in
             result.items], result.total
 
 
@@ -302,6 +303,7 @@ def get_review_conference_listBYlabel(userid, label, schedule_id):
         User.id == userid,
         User.is_deleted == 0,
         ConferenceSchedule.is_deleted == 0,
+        ConferenceSignUp.is_deleted == 0
     )
 
     if label is not None:
@@ -348,14 +350,14 @@ def get_all_review_conference_list(name, forum, status):
                                                                                    User.id == ConferenceSignUp.user_id).join(
             ConferenceSchedule, ConferenceSignUp.schedule_id == ConferenceSchedule.id).filter(
             User.name.like('%' + name + '%'), User.status == 2, User.is_deleted == 0,
-                                              ConferenceSchedule.is_deleted == 0,
+                                              ConferenceSchedule.is_deleted == 0, ConferenceSignUp.is_deleted == 0,
             ConferenceSchedule.forum.like('%' + forum + '%')).all()
     else:
         result = db.session.query(ConferenceSignUp, User, ConferenceSchedule).join(User,
                                                                                    User.id == ConferenceSignUp.user_id).join(
             ConferenceSchedule, ConferenceSignUp.schedule_id == ConferenceSchedule.id).filter(
             User.name.like('%' + name + '%'), User.status == 2, User.is_deleted == 0,
-                                              ConferenceSchedule.is_deleted == 0,
+                                              ConferenceSchedule.is_deleted == 0, ConferenceSignUp.is_deleted == 0,
                                               ConferenceSignUp.status == status,
             ConferenceSchedule.forum.like('%' + forum + '%')).all()
     signup_status_ENUM = {0: '等待审核', 1: '审核未通过', 2: '审核通过'}
@@ -377,7 +379,7 @@ def get_all_signup_conference_statics():
         ConferenceScheduleAlias, ConferenceSignUp.schedule_id == ConferenceScheduleAlias.id
     ).filter(
         User.is_deleted == 0,
-        ConferenceScheduleAlias.is_deleted == 0
+        ConferenceScheduleAlias.is_deleted == 0, ConferenceSignUp.is_deleted == 0
     ).group_by(
         ConferenceScheduleAlias.title
     ).all()
@@ -391,7 +393,7 @@ def get_conference_schedule_by_id(userid, date):
     signup_status_ENUM = {0: '等待审核', 1: '审核未通过', 2: '审核通过'}
     result = db.session.query(ConferenceSignUp, ConferenceSchedule).join(
         ConferenceSchedule, ConferenceSignUp.schedule_id == ConferenceSchedule.id).filter(
-        ConferenceSchedule.is_deleted == 0, ConferenceSignUp.user_id == userid,
+        ConferenceSchedule.is_deleted == 0, ConferenceSignUp.user_id == userid, ConferenceSignUp.is_deleted == 0,
         ConferenceSchedule.conference_date == date).all()
     data = []
     for signup, schedule in result:
@@ -409,7 +411,7 @@ def get_conference_schedule_by_id(userid, date):
 def get_user_schedule_num_by_id(userid):
     result = db.session.query(ConferenceSignUp, ConferenceSchedule).join(
         ConferenceSchedule, ConferenceSignUp.schedule_id == ConferenceSchedule.id).filter(
-        ConferenceSchedule.is_deleted == 0, ConferenceSignUp.user_id == userid).all()
+        ConferenceSchedule.is_deleted == 0, ConferenceSignUp.is_deleted == 0, ConferenceSignUp.user_id == userid).all()
     num = 0
     main_label = False
     has_opening = False
@@ -462,7 +464,7 @@ def find_user_schedule_tobegin():
     result = db.session.query(ConferenceSignUp, ConferenceSchedule, User).join(
         ConferenceSchedule, ConferenceSignUp.schedule_id == ConferenceSchedule.id).join(User,
                                                                                         ConferenceSignUp.user_id == User.id).filter(
-        ConferenceSchedule.is_deleted == 0).all()
+        ConferenceSchedule.is_deleted == 0, ConferenceSignUp.is_deleted == 0).all()
     data = []
     for signup, schedule, user in result:
         delta = (datetime.datetime.strptime(
@@ -884,7 +886,8 @@ def check_in_label_byUserid(userid):
     """
     result = ConferenceSignUp.query.filter(ConferenceSignUp.user_id == userid, ConferenceSignUp.status == 2,
                                            ConferenceSignUp.schedule_id.in_(
-                                               [config.OPEN_SCHEDULE_ID, config.MAIN_SCHEDULE_ID])).first()
+                                               [config.OPEN_SCHEDULE_ID, config.MAIN_SCHEDULE_ID]),
+                                           ConferenceSignUp.is_deleted == 0).first()
     if result:
         return True
     else:

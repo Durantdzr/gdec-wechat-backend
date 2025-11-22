@@ -4,17 +4,16 @@ from wxcloudrun import cache
 from wxcloudrun.dao import insert_user, search_friends_byopenid, insert_realtion_friend, get_friend_list, \
     save_realtion_friendbyid, is_invited_user, get_guests_list, get_conference_schedule_by_id, get_open_guests_list, \
     get_main_hall_guests_list, get_other_hall_guests_list, get_cooperater_list, get_hall_schedule_bydate, get_live_data, \
-    get_user_schedule_num_by_id, refresh_schedule_info, get_hall_schedule_byid, get_hall_exhibition_bydate, \
+    get_user_schedule_num_by_id, refresh_schedule_info, get_hall_schedule_byid, \
     get_hall_exhibition_byid, get_hall_exhibition, search_friends_random, refresh_guest, refresh_guest_info, is_friend, \
     get_hall_blockchain_schedule, get_business_list, get_enterprise_list, get_meeting_record_list_byuserid, \
     get_review_conference_listBYlabel
 from wxcloudrun.model import ConferenceInfo, User, ConferenceHall, RelationFriend, ConferenceSignUp, DigitalCityWeek, \
-    BusinessInfo, EnterpriseCertified, BusinessNegotiation, MeetingRoom, MeetingReservation, RelationUserCertified,ConferenceSchedule
+    BusinessInfo, EnterpriseCertified, BusinessNegotiation, MeetingRoom, MeetingReservation, RelationUserCertified, \
+    ConferenceSchedule
 from wxcloudrun.response import make_succ_response, make_err_response, make_succ_page_response
 from wxcloudrun.utils import batchdownloadfile, uploadfile, uploadwebfile, getscheduleqrcode, \
-    send_check_msg, makeqrcode, send_tx_msg, masked_view, generate_verification_code, CA_identification,encode_ercode
-from flask_jwt_extended import create_access_token
-from datetime import timedelta
+    makeqrcode, send_tx_msg, masked_view, CA_identification, encode_ercode
 from sqlalchemy import or_, and_, func
 from wxcloudrun.cronjob import reload_image
 import config
@@ -131,7 +130,7 @@ def sign_up_conference():
     params = request.get_json()
     user = User.query.filter(User.openid == request.headers['X-WX-OPENID']).first()
     if ConferenceSignUp.query.filter(ConferenceSignUp.schedule_id == params['schedule_id'],
-                                     ConferenceSignUp.user_id == user.id).first():
+                                     ConferenceSignUp.user_id == user.id, ConferenceSignUp.is_deleted == 0).first():
         return make_err_response('已报名过该会议')
     sign_up = ConferenceSignUp()
     sign_up.user_id = user.id
@@ -159,7 +158,7 @@ def get_user_phone():
         json_data = json.loads(data_list.get('json', ''))
         json_data = json_data.get('data', {})
         phoneNumber = json_data.get('phoneNumber', '')
-        user=User.query.filter(User.phone == phoneNumber).first()
+        user = User.query.filter(User.phone == phoneNumber).first()
         if user is None:
             user = User()
             user.phone = phoneNumber
@@ -212,9 +211,9 @@ def upload_user_info():
     if user is None:
         user = User()
         user.openid = request.headers['X-WX-OPENID']
-    if user.status == 2 and user.socail == params.get("socail", 0) and user.identity_verification==1001:
+    if user.status == 2 and user.socail == params.get("socail", 0) and user.identity_verification == 1001:
         return make_err_response('用户已完成审核，无法再次提交审核。')
-    elif user.status == 2 and user.identity_verification==1001:
+    elif user.status == 2 and user.identity_verification == 1001:
         user.socail = params.get("socail", 0)
         insert_user(user)
         if user.origin_userid is not None:
@@ -224,7 +223,7 @@ def upload_user_info():
             refresh_guest()
             refresh_guest_info(guest.id)
         return make_succ_response(user.id)
-    elif user.status == 3 and user.identity_verification==1001:
+    elif user.status == 3 and user.identity_verification == 1001:
         return make_err_response('用户信息待审核无法提交')
     user.name = params.get("name")
     user.phone = params.get("phone")
@@ -273,7 +272,7 @@ def get_user_privilege():
     """
     # 获取请求体参数
     data = {'account_status': '未审核', 'find_friend': False, 'invited': False, 'schdule': False, 'document': False,
-            'invited_num': 0, 'schdule_num': 0, 'main_label': False,"er_colour":config.BLACK_COLOR}
+            'invited_num': 0, 'schdule_num': 0, 'main_label': False, "er_colour": config.BLACK_COLOR}
     wxopenid = request.headers['X-WX-OPENID']
     user = User.query.filter(User.openid == wxopenid, User.is_deleted == 0).first()
     if user is None:
@@ -314,10 +313,12 @@ def get_user_by_id():
         return make_err_response('没有该用户')
     return make_succ_response(user.get())
 
+
 def make_cache_key(*args, **kwargs):
     """生成基于openid的缓存键"""
     openid = request.headers.get('X-WX-OPENID')
     return f"user_by_openid_{openid}"
+
 
 def conditional_cache(f):
     """条件缓存装饰器"""
@@ -325,6 +326,8 @@ def conditional_cache(f):
         return cache.cached(timeout=60, key_prefix=make_cache_key)(f)  # 5分钟缓存
     else:
         return f
+
+
 @app.route('/api/user/get_user_by_openid', methods=['GET'])
 @conditional_cache
 def get_user_by_openid():
@@ -640,17 +643,17 @@ def reload_images():
     reload_image()
     return make_succ_response(0)
 
+
 @app.route('/api/conference/reload_schedule', methods=['GET'])
 def reload_schedule():
     """
     :return:刷新图片
     """
     # 获取请求体参数
-    schedules=ConferenceSchedule.query.filter(ConferenceSchedule.is_deleted==0).all()
+    schedules = ConferenceSchedule.query.filter(ConferenceSchedule.is_deleted == 0).all()
     for schedule in schedules:
-        getscheduleqrcode(schedule.id,schedule.label)
+        getscheduleqrcode(schedule.id, schedule.label)
     return make_succ_response(0)
-
 
 
 @app.route('/api/conference/get_reload_schedule', methods=['GET'])
@@ -849,11 +852,11 @@ def business_deploy_info():
     if user is None:
         return make_err_response('用户不存在')
     certified = RelationUserCertified.query.filter(RelationUserCertified.user_id == user.id,
-                                                 RelationUserCertified.status == 2).first()
+                                                   RelationUserCertified.status == 2).first()
     if certified is None:
         return make_err_response('该用户未完成企业认证')
     else:
-        certified=EnterpriseCertified.query.filter(EnterpriseCertified.id == certified.enterprise_id).first()
+        certified = EnterpriseCertified.query.filter(EnterpriseCertified.id == certified.enterprise_id).first()
     business = BusinessInfo()
     business.title = params.get('title')
     business.company = certified.name
@@ -877,7 +880,7 @@ def business_delete_info():
     if user is None:
         return make_err_response('用户不存在')
     certified = RelationUserCertified.query.filter(RelationUserCertified.user_id == user.id,
-                                                 RelationUserCertified.status == 2).first()
+                                                   RelationUserCertified.status == 2).first()
     if certified is None:
         return make_err_response('该用户未完成企业认证')
     business = BusinessInfo.query.filter(BusinessInfo.id == params.get('id'), BusinessInfo.is_deleted == 0).first()
@@ -1180,7 +1183,7 @@ def refresh_ca_identity_verification():
     # 获取请求体参数
     wxopenid = request.headers['X-WX-OPENID']
     users = User.query.filter(User.status == 2, User.type != '管理员', User.is_deleted == 0, User.name is not None,
-                             User.phone is not None, User.code is not None, User.identity_verification ==0).all()
+                              User.phone is not None, User.code is not None, User.identity_verification == 0).all()
     for user in users:
         user.identity_verification = CA_identification(user.name, user.phone, user.code)
         insert_user(user)

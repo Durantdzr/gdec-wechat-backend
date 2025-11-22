@@ -1668,7 +1668,7 @@ def manage_get_user_phone():
         """
     signed_up_users = db.session.query(User.id).join(ConferenceSignUp,
                                                      ConferenceSignUp.user_id == User.id).filter(
-        ConferenceSignUp.status == 2,
+        ConferenceSignUp.status == 2,ConferenceSignUp.is_deleted == 0,
         ConferenceSignUp.schedule_id.in_([config.OPEN_SCHEDULE_ID, config.MAIN_SCHEDULE_ID])
     ).all()
 
