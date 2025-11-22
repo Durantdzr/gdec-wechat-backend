@@ -30,6 +30,18 @@ import datetime
 #     """
 #     初始化数据
 #     """
+def make_cache_key(*args, **kwargs):
+    """生成基于openid的缓存键"""
+    openid = request.headers.get('X-WX-OPENID')
+    return f"user_by_openid_{openid}"
+
+
+def conditional_cache(f):
+    """条件缓存装饰器"""
+    if config.CACHE_ENABLED:
+        return cache.cached(timeout=config.CACHE_DEFAULT_TIMEOUT, key_prefix=make_cache_key)(f)  # 5分钟缓存
+    else:
+        return f
 
 
 @app.route('/api/conference/get_information_list', methods=['GET'])
@@ -266,6 +278,7 @@ def upload_user_img():
 
 
 @app.route('/api/user/privilege', methods=['GET'])
+@conditional_cache
 def get_user_privilege():
     """
     :return:获取用户权限
@@ -314,18 +327,6 @@ def get_user_by_id():
     return make_succ_response(user.get())
 
 
-def make_cache_key(*args, **kwargs):
-    """生成基于openid的缓存键"""
-    openid = request.headers.get('X-WX-OPENID')
-    return f"user_by_openid_{openid}"
-
-
-def conditional_cache(f):
-    """条件缓存装饰器"""
-    if config.CACHE_ENABLED:
-        return cache.cached(timeout=60, key_prefix=make_cache_key)(f)  # 5分钟缓存
-    else:
-        return f
 
 
 @app.route('/api/user/get_user_by_openid', methods=['GET'])
