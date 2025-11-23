@@ -178,7 +178,7 @@ def update_user_statusbyid(userlist, status, reason):
             #     record.identity_verification = 1001
             record.status = status
             record.reason = reason
-            clear_user_cache(record.openid)
+            # clear_user_cache(record.openid)
         db.session.commit()
         return True
     except OperationalError as e:
