@@ -33,7 +33,8 @@ import datetime
 def make_cache_key(*args, **kwargs):
     """生成基于openid的缓存键"""
     openid = request.headers.get('X-WX-OPENID')
-    return f"user_by_openid_{openid}"
+    rule=request.url_rule.rule
+    return f"{rule}_{openid}"
 
 
 def conditional_cache(f):
@@ -278,7 +279,7 @@ def upload_user_img():
 
 
 @app.route('/api/user/privilege', methods=['GET'])
-# @conditional_cache
+@conditional_cache
 def get_user_privilege():
     """
     :return:获取用户权限
