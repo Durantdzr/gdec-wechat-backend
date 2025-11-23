@@ -28,6 +28,7 @@ from tencentcloud.common.exception.tencent_cloud_sdk_exception import TencentClo
 from tencentcloud.sms.v20210111 import sms_client, models
 import re
 import base64
+from wxcloudrun import cache
 cipher_suite = Fernet(config.FERNET_KEY)
 
 
@@ -338,4 +339,15 @@ def decode_ercode(short_token):
     except Exception as e:
         raise ValueError(f"解密失败: {e}")
 
+def make_user_cache_key(openid):
+    """生成用户相关缓存键"""
+    return f"/api/user/get_user_by_openid_{openid}"
 
+def make_privilege_cache_key(openid):
+    """生成用户权限缓存键"""
+    return f"/api/user/privilege_{openid}"
+def clear_user_cache(user_openid):
+    """清除用户相关的所有缓存"""
+    if config.CACHE_ENABLED:
+        cache.delete(make_user_cache_key(user_openid))
+        cache.delete(make_privilege_cache_key(user_openid))

@@ -9,7 +9,7 @@ from wxcloudrun.model import ConferenceInfo, RelationFriend, User, ConferenceSig
     ConferenCoopearter, ConferenceCooperatorShow, OperaterLog, OperaterRule, Exhibiton, BusinessInfo, \
     EnterpriseCertified, MeetingReservation, MeetingRoom
 from sqlalchemy import or_, and_
-from wxcloudrun.utils import uploadwebfile, send_check_msg
+from wxcloudrun.utils import uploadwebfile, send_check_msg, clear_user_cache
 import config
 import time
 
@@ -178,6 +178,7 @@ def update_user_statusbyid(userlist, status, reason):
             #     record.identity_verification = 1001
             record.status = status
             record.reason = reason
+            clear_user_cache(record.openid)
         db.session.commit()
         return True
     except OperationalError as e:
