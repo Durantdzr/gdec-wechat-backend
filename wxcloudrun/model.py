@@ -352,7 +352,7 @@ class Exhibiton(db.Model):
 
     # 设定结构体对应表格的字段
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column('title', db.String(100), nullable=True)
+    title = db.Column('title', db.String(200), nullable=True)
     hall = db.Column('hall', db.String(50), nullable=True)
     location = db.Column('location', db.String(50), nullable=True)
     status = db.Column('status', db.INT, default=0)
