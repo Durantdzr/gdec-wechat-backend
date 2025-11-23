@@ -367,7 +367,7 @@ class Exhibiton(db.Model):
     organizer = db.Column('organizer', db.String(100), default='')
     coorganizer = db.Column('co-organizer', db.String(100), default='')
     info = db.Column('info', db.TEXT)
-    label = db.Column('label', db.String(30), nullable=True)
+    label = db.Column('label', db.String(200), nullable=True)
     district = db.Column('district', db.String(255), nullable=True)
 
     def get(self):
