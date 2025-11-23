@@ -13,7 +13,7 @@ from wxcloudrun.model import ConferenceInfo, User, ConferenceHall, RelationFrien
     ConferenceSchedule
 from wxcloudrun.response import make_succ_response, make_err_response, make_succ_page_response
 from wxcloudrun.utils import batchdownloadfile, uploadfile, uploadwebfile, getscheduleqrcode, \
-    makeqrcode, send_tx_msg, masked_view, CA_identification, encode_ercode
+    makeqrcode, send_tx_msg, masked_view, CA_identification, encode_ercode,clear_user_cache
 from sqlalchemy import or_, and_, func
 from wxcloudrun.cronjob import reload_image
 import config
@@ -253,6 +253,7 @@ def upload_user_info():
     subcode = CA_identification(user.name, user.phone, user.code, user.openid)
     user.identity_verification = subcode
     insert_user(user)
+    clear_user_cache(user.openid)
     if subcode != '1001':
         return make_err_response('实名认证不通过')
     return make_succ_response(user.id)
