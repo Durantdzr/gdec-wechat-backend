@@ -279,7 +279,7 @@ def upload_user_img():
 
 
 @app.route('/api/user/privilege', methods=['GET'])
-@conditional_cache
+# @conditional_cache
 def get_user_privilege():
     """
     :return:获取用户权限
