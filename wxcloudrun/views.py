@@ -674,11 +674,28 @@ def send_open_msg():
         :return:发送消息
     """
     params = request.get_json()
-    send_tx_msg(phone=['13022157641'], template_id='2527363', template_param_set=["283475", "5"])
-    # users = User.query.filter(User.type == '开幕式观众', User.is_deleted == 0).all()
+    # send_tx_msg(phone=['13127625980'], template_id='2558566', template_param_set=["，请于08：30前入场"])
+    # send_tx_msg(phone=['15901909920'], template_id='2558694', template_param_set=["22:00"])
+    #2558538模板用户
+    # black_phone=MsgBlack.query.all()
+    # blck_phone=[item.phone for item in black_phone]
+    # blck_phone.extend([''])
+    # signup = ConferenceSignUp.query.filter(ConferenceSignUp.is_deleted == 0,ConferenceSignUp.status==2).all()
+    # sign_ids = [item.user_id for item in signup]
+    # users = User.query.filter(User.id.in_(sign_ids),User.type.in_([1,2,3,4,8,9]),User.status==2, User.is_deleted == 0, User.phone.notin_(blck_phone)).all()
     # print(len(users))
+
+
+    #2558694模板用户
+    # signup = ConferenceSignUp.query.filter(ConferenceSignUp.is_deleted == 0,ConferenceSignUp.status==2).all()
+    # sign_ids = [item.user_id for item in signup]
+    # users = User.query.filter(User.id.notin_(sign_ids),User.type.in_([1,2,3,4,8,9]),User.status==2, User.is_deleted == 0,User.identity_verification==1001).all()
+    # print(len(users))
+
+    # users = MsgBlack.query.all()
     # for user in users:
-    #     result = send_tx_msg(phone=[user.phone], template_id='2527363')
+    #     print(user.phone[:11])
+    #     result = send_tx_msg(phone=[user.phone[:11]], template_id='2558566', template_param_set=["，请于08：30前入场"])
     #     print(result)
     return make_succ_response(0)
 
@@ -1187,7 +1204,7 @@ def refresh_ca_identity_verification():
     """
     # 获取请求体参数
     wxopenid = request.headers['X-WX-OPENID']
-    users = User.query.filter(User.status == 2, User.type != '管理员', User.is_deleted == 0, User.name is not None,
+    users = User.query.filter(User.status == 2, User.type.notin_(['管理员','嘉宾']), User.is_deleted == 0, User.name is not None,
                               User.phone is not None, User.code is not None, User.identity_verification == 0).all()
     for user in users:
         user.identity_verification = CA_identification(user.name, user.phone, user.code)
