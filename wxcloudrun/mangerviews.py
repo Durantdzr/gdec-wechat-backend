@@ -1674,6 +1674,8 @@ def manage_get_user_phone():
 
     # 提取用户ID列表
     signed_up_user_ids = [user_id[0] for user_id in signed_up_users]
+    user_x=User.query.filter(User.type==9,User.status==2,User.is_deleted==0).all()
+    signed_up_user_ids.extend([user.id for user in user_x])
 
     # 获取所有用户
     all_users = User.query.filter(User.status == 2, User.is_deleted == 0, User.phone != None).all()
@@ -1710,7 +1712,7 @@ def manage_check_in():
                                or_(User.code == code, User.id == er_code)).first()
     if int(time.time()) > int(config.DOOR_OPEN_TIME) and int(time.time()) < int(config.DOOR_CLOSE_TIME):
         label = check_in_label_byUserid(result.id)
-        if label:
+        if label or result.type in ["9"]:
             return make_succ_response(True, code=200)
         return make_succ_response(False, code=200)
     if result:

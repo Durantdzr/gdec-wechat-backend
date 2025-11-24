@@ -10,7 +10,7 @@ from wxcloudrun.dao import insert_user, search_friends_byopenid, insert_realtion
     get_review_conference_listBYlabel
 from wxcloudrun.model import ConferenceInfo, User, ConferenceHall, RelationFriend, ConferenceSignUp, DigitalCityWeek, \
     BusinessInfo, EnterpriseCertified, BusinessNegotiation, MeetingRoom, MeetingReservation, RelationUserCertified, \
-    ConferenceSchedule
+    ConferenceSchedule,MsgBlack
 from wxcloudrun.response import make_succ_response, make_err_response, make_succ_page_response
 from wxcloudrun.utils import batchdownloadfile, uploadfile, uploadwebfile, getscheduleqrcode, \
     makeqrcode, send_tx_msg, masked_view, CA_identification, encode_ercode,clear_user_cache
@@ -303,6 +303,8 @@ def get_user_privilege():
         data['schdule_num'], data['main_label'], data['er_colour'] = get_user_schedule_num_by_id(user.id)
     r = RelationUserCertified.query.filter(RelationUserCertified.user_id == user.id,
                                            RelationUserCertified.status == 2).first()
+    if user.type=="9":
+        data['er_colour']=config.OPEN_SCHEDULE_COLOR
     if r is None:
         data['enterprise_certified_status'] = None
     else:

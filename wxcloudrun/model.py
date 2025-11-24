@@ -654,3 +654,11 @@ class InvestInfo(db.Model):
                                                                   self.pic_1_cdn) if self.pic_1_cdn else None,
                 "pic_2_url": 'https://{}.tcb.qcloud.la/{}'.format(config.COS_BUCKET,
                                                                   self.pic_2_cdn) if self.pic_2_cdn else None}
+
+
+class MsgBlack(db.Model):
+    # 設定结构体表格名称
+    __tablename__ = 'msg_black'
+    # 設定结构体对应表格的字段
+    id = db.Column(db.Integer, primary_key=True)
+    phone = db.Column('phone', db.String(20), nullable=True)
