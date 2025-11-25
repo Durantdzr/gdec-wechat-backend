@@ -424,7 +424,7 @@ def get_user_schedule_num_by_id(userid):
             "%Y-%m-%d %H:%M") - datetime.datetime.now()).total_seconds()
         if delta / 60 > 0 and delta / 60 < 120:
             num += 1
-        if schedule.label in ['开幕式'] and signup.status == 2:
+        if schedule.label in ['主论坛','开幕式'] and signup.status == 2:
             main_label = True
             if schedule.label == '主论坛':
                 has_main = True
