@@ -303,8 +303,6 @@ def get_user_privilege():
         data['schdule_num'], data['main_label'], data['er_colour'] = get_user_schedule_num_by_id(user.id)
     r = RelationUserCertified.query.filter(RelationUserCertified.user_id == user.id,
                                            RelationUserCertified.status == 2).first()
-    if user.type=="9":
-        data['er_colour']=config.OPEN_SCHEDULE_COLOR
     if r is None:
         data['enterprise_certified_status'] = None
     else:
