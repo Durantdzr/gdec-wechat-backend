@@ -595,7 +595,7 @@ def get_schedule_by_id():
     :return:获取某id的会议议程
     """
     # 获取请求体参数
-    wxopenid = request.headers['X-WX-OPENID']
+    # wxopenid = request.headers['X-WX-OPENID']
     data = get_hall_schedule_byid(request.args.get('id'))
     # uploadwebfile(data, openid=wxopenid, file='get_schedule_by_id' + str(request.args.get('id')) + '.json')
     return make_succ_response(data)
